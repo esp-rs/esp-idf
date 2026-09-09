@@ -76,7 +76,7 @@ mod example {
                 state = current_state;
 
                 // If the inner encoder completed, one count has been completed.
-                if let EncoderState::EncodingComplete = state {
+                if state.is_complete() {
                     // only increment the count if there is a target, otherwise it might crash in debug mode because of overflow
                     if self.target.is_some() {
                         self.count += 1;

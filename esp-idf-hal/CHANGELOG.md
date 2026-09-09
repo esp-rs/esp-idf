@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed issue 502 - some ADC/RTC pins for esp32c5 and esp32c6 had mapping errors
 - Fixed async SPI transactions occasionally hanging forever on multi-core chips
 - SPI: `SpiBusDriver::new` no longer leaves the device attached to the bus when acquiring the bus lock fails. The device used to stay registered, so freeing the bus later failed with `ESP_ERR_INVALID_STATE` ("not all CSses freed") and panicked in `SpiDriver`'s destructor
+- Fix a real, live-hardware-reproduced panic in `rmt::encoder::EncoderState`'s
+  `From<rmt_encode_state_t>` conversion, surfacing as an unexplained ESP-IDF `abort()` rather than
+  a normal panic message, since the panic occurs inside the RMT ISR where Rust's panic handling
+  can't safely lock/print (newlib's own lock code detects the invalid ISR-context lock attempt and
+  aborts instead). `rmt_encode_state_t` is a genuine C bitmask (`RMT_ENCODING_RESET = 0`,
+  `RMT_ENCODING_COMPLETE = (1 << 0)`, `RMT_ENCODING_MEM_FULL = (1 << 1)`,
+  `RMT_ENCODING_WITH_EOF = (1 << 2)`), but `EncoderState` modeled the individual flags as
+  mutually-exclusive enum variants, which panicked on any combined value it hadn't special-cased.
+  Confirmed on real hardware this isn't an edge case: a small WS2812-strip transmission that
+  finishes encoding while also exactly filling the remaining RMT memory block produces
+  `COMPLETE | MEM_FULL` on its last encode step - a different combination than the also-valid
+  `COMPLETE | WITH_EOF`, and not necessarily the only one.
 
 ### Added
 - `QueueSet2`, `QueueSet3`, `QueueSet4` for waiting on multiple heterogeneous queues
@@ -24,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking
 - I2S: `ClockSource::Apll` and `ClockSource::Xtal` on `esp32p4`, where the XTAL is now the default for this chip
 - Dropped support for RGB/BGR666 format on ESP-IDF 6.0.
+
+### Changed (breaking)
+- `rmt::encoder::EncoderState` is now a bitmask wrapper type instead of an enum, matching the C
+  type it mirrors and able to represent any real flag combination without panicking:
+  `EncoderState::EncodingComplete`/`EncodingMemoryFull`/`EncodingReset`/`EncodingWithEof` are
+  replaced by associated consts `EncoderState::COMPLETE`/`MEM_FULL`/`RESET`/`WITH_EOF`, combinable
+  via `|` (`impl BitOr`), and by query methods `is_complete()`/`is_mem_full()`/`is_reset()`/
+  `has_eof()` in place of matching on a variant.
 
 ## [0.46.2] - 2026-03-10
 
