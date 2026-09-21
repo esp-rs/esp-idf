@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
 
     // turn on the backlight
     backlight.set_high()?;
-    let raw_image_data = ImageRawLE::new(include_bytes!("../examples/assets/ferris.raw"), 86);
+    let raw_image_data = ImageRawLE::new(include_bytes!("assets/ferris.raw"), 86);
     let ferris = Image::new(&raw_image_data, Point::new(0, 0));
 
     // draw image on black background

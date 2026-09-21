@@ -10,10 +10,10 @@ The Rust crates that build on top of Espressif's [ESP-IDF](https://docs.espressi
 | [`esp-idf-hal`](esp-idf-hal) [![crates.io](https://img.shields.io/crates/v/esp-idf-hal.svg)](https://crates.io/crates/esp-idf-hal) | Safe Rust wrappers for the ESP-IDF drivers, implementing the [`embedded-hal`](https://github.com/rust-embedded/embedded-hal) traits | [![CI](https://github.com/esp-rs/esp-idf/actions/workflows/ci.yml/badge.svg)](https://github.com/esp-rs/esp-idf/actions/workflows/ci.yml) |
 | [`esp-idf-svc`](esp-idf-svc) [![crates.io](https://img.shields.io/crates/v/esp-idf-svc.svg)](https://crates.io/crates/esp-idf-svc) | Safe Rust wrappers for the ESP-IDF services, implementing the [`embedded-svc`](https://github.com/esp-rs/embedded-svc) traits | [![CI](https://github.com/esp-rs/esp-idf/actions/workflows/ci.yml/badge.svg)](https://github.com/esp-rs/esp-idf/actions/workflows/ci.yml) |
 
-The crates form a single Cargo workspace. Each crate keeps its own `README.md` and `CHANGELOG.md` in its directory, while the build configuration (`.cargo/config.toml`, `sdkconfig.defaults`, the partition table) and the [examples](examples/examples) of all crates (in the `examples` crate) are shared at the repository root. Build and run the examples from the repository root:
+The crates form a single Cargo workspace. Each crate keeps its own `README.md` and `CHANGELOG.md` in its directory, while the build configuration (`.cargo/config.toml`, `sdkconfig.defaults`, the partition table) and the [examples](examples/src/bin) of all crates (in the `examples` crate) are shared at the repository root. Build and run the examples from the repository root:
 
 ```sh
-MCU=esp32c3 cargo espflash flash --target riscv32imc-esp-espidf --example wifi --monitor
+MCU=esp32c3 cargo espflash flash --target riscv32imc-esp-espidf --bin wifi --monitor
 ```
 
 ## Getting started

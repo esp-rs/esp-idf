@@ -97,10 +97,10 @@ jobs:
       # The examples package depends on the three crates with their full feature set, so a single
       # workspace-wide invocation lints/compiles every crate and every example with all features on
       - name: Build | Clippy, all crates and examples
-        run: cargo clippy --workspace --examples --no-deps --target ${{ matrix.target }} -Zbuild-std=std,panic_abort -- -Dwarnings
+        run: cargo clippy --workspace --lib --bins --no-deps --target ${{ matrix.target }} -Zbuild-std=std,panic_abort -- -Dwarnings
 
       - name: Build | Compile, all crates and examples
-        run: cargo build --workspace --examples --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
+        run: cargo build --workspace --lib --bins --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
 
       # Only the three crates are selected here: the examples need `std`
       - name: Build | Compile, no_std

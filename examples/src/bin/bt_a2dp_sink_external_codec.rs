@@ -23,7 +23,7 @@
 //! ```
 //!
 //! To run this example:
-//! MCU=esp32 ESP_IDF_SDKCONFIG_DEFAULTS=sdkconfig.defaults.a2dp_external_codec cargo +esp espflash flash --target xtensa-esp32-espidf --example bt_a2dp_sink_external_codec --monitor
+//! MCU=esp32 ESP_IDF_SDKCONFIG_DEFAULTS=sdkconfig.defaults.a2dp_external_codec cargo +esp espflash flash --target xtensa-esp32-espidf --bin bt_a2dp_sink_external_codec --monitor
 
 #![allow(unknown_lints)]
 #![allow(unexpected_cfgs)]
