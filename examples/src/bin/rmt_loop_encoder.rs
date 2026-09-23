@@ -30,6 +30,8 @@ fn main() -> anyhow::Result<()> {
     not(feature = "rmt-legacy")
 ))]
 mod example {
+    use enumset::EnumSet;
+
     use esp_idf_hal::peripherals::Peripherals;
     use esp_idf_hal::rmt::config::TxChannelConfig;
     use esp_idf_hal::rmt::encoder::{
@@ -66,7 +68,7 @@ mod example {
             &mut self,
             handle: &mut RmtChannelHandle,
             primary_data: &[Self::Item],
-        ) -> (usize, EncoderState) {
+        ) -> (usize, EnumSet<EncoderState>) {
             let mut written = 0;
             let mut state;
 
@@ -76,7 +78,7 @@ mod example {
                 state = current_state;
 
                 // If the inner encoder completed, one count has been completed.
-                if state.is_complete() {
+                if state.contains(EncoderState::Complete) {
                     // only increment the count if there is a target, otherwise it might crash in debug mode because of overflow
                     if self.target.is_some() {
                         self.count += 1;

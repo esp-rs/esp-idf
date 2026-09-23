@@ -10,6 +10,8 @@ pub mod simple_encoder;
 use alloc::boxed::Box;
 use core::mem;
 
+use enumset::{EnumSet, EnumSetType};
+
 use esp_idf_sys::*;
 
 /// This trait represents an RMT encoder that is used to encode data for transmission.
@@ -45,91 +47,24 @@ impl<E: RawEncoder> RawEncoder for &mut E {
     }
 }
 
-/// RMT encoding state.
+/// RMT encoding state flags.
 ///
-/// `rmt_encode_state_t` (see `rmt_encoder.h`) is a genuine C bitmask, not a plain enum:
-/// `RMT_ENCODING_RESET = 0`, `RMT_ENCODING_COMPLETE = (1 << 0)`,
-/// `RMT_ENCODING_MEM_FULL = (1 << 1)`, `RMT_ENCODING_WITH_EOF = (1 << 2)`, and the real driver is
-/// free to OR any of these together in one return value. This used to be modeled as a set of
-/// mutually-exclusive enum variants, which is fundamentally the wrong shape for a bitmask type:
-/// converting a real, valid combined value back from C hit an unreachable-in-theory wildcard arm
-/// and panicked - and because this conversion runs inside the RMT ISR (see [`Encoder::encode`]'s
-/// own "ISR Safety" note), a Rust panic can't safely lock/print there, so ESP-IDF's own newlib
-/// lock code detects the invalid ISR-context lock attempt and calls `abort()` instead of printing
-/// a readable panic message - a real, live-hardware-reproduced crash, not a theoretical concern.
-/// Confirmed (via a temporary ISR-safe `esp_rom_printf` probe, since normal panic output is what
-/// breaks in this exact ISR-context scenario) that combined values are not an edge case: a small
-/// WS2812-strip transmission that finishes encoding at the same time it exactly fills the
-/// remaining RMT memory block reports `RMT_ENCODING_COMPLETE | RMT_ENCODING_MEM_FULL` (value `3`)
-/// on real hardware - a different combination than the also-valid `COMPLETE | WITH_EOF`, and not
-/// necessarily the only one either. A plain enum cannot represent an unbounded set of flag
-/// combinations without either growing a variant per combination forever or panicking on whichever
-/// one it hasn't special-cased yet, which is exactly the bug this type had. Modeled as a thin
-/// bitmask wrapper instead, matching the C type it mirrors.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct EncoderState(rmt_encode_state_t);
-
-impl EncoderState {
-    /// The encoding session is in reset state.
-    pub const RESET: Self = Self(rmt_encode_state_t_RMT_ENCODING_RESET);
+/// Mirrors `rmt_encode_state_t` (`rmt_encoder.h`), a C bitmask - a single result can combine
+/// [`Complete`](Self::Complete) with [`MemFull`](Self::MemFull) and/or [`WithEof`](Self::WithEof)
+/// at once. The reset state is the empty set (`EnumSet::empty()`).
+///
+/// Discriminants match the `RMT_ENCODING_*` raw values directly (`#[enumset(map = "mask")]`).
+#[derive(Debug, EnumSetType)]
+#[enumset(repr = "u32", map = "mask")]
+pub enum EncoderState {
     /// The encoding session is finished, the caller can continue with subsequent encoding.
-    pub const COMPLETE: Self = Self(rmt_encode_state_t_RMT_ENCODING_COMPLETE);
-    /// The encoding artifact memory is full, the caller should return from current encoding session.
-    pub const MEM_FULL: Self = Self(rmt_encode_state_t_RMT_ENCODING_MEM_FULL);
-    /// The encoding session has inserted the EOF marker to the symbol stream.
+    Complete = 1,
+    /// The encoding artifact memory is full, the caller should return from the current encoding session.
+    MemFull = 2,
+    /// The encoding session has inserted the EOF marker into the symbol stream.
     #[cfg(esp_idf_version_at_least_5_5_0)]
     #[cfg_attr(feature = "nightly", doc(cfg(esp_idf_version_at_least_5_5_0)))]
-    pub const WITH_EOF: Self = Self(rmt_encode_state_t_RMT_ENCODING_WITH_EOF);
-
-    /// Whether this is the reset state (no other flag can be combined with it - `RESET` is `0`).
-    #[must_use]
-    pub const fn is_reset(&self) -> bool {
-        self.0 == rmt_encode_state_t_RMT_ENCODING_RESET
-    }
-
-    /// Whether the [`COMPLETE`](Self::COMPLETE) flag is set - may also have
-    /// [`MEM_FULL`](Self::MEM_FULL) and/or [`WITH_EOF`](Self::WITH_EOF) set at the same time.
-    #[must_use]
-    pub const fn is_complete(&self) -> bool {
-        self.0 & rmt_encode_state_t_RMT_ENCODING_COMPLETE != 0
-    }
-
-    /// Whether the [`MEM_FULL`](Self::MEM_FULL) flag is set - may also have
-    /// [`COMPLETE`](Self::COMPLETE) set at the same time (the last chunk of a session can both
-    /// finish encoding and exactly fill the remaining memory block in the same call).
-    #[must_use]
-    pub const fn is_mem_full(&self) -> bool {
-        self.0 & rmt_encode_state_t_RMT_ENCODING_MEM_FULL != 0
-    }
-
-    /// Whether the [`WITH_EOF`](Self::WITH_EOF) flag is set.
-    #[cfg(esp_idf_version_at_least_5_5_0)]
-    #[cfg_attr(feature = "nightly", doc(cfg(esp_idf_version_at_least_5_5_0)))]
-    #[must_use]
-    pub const fn has_eof(&self) -> bool {
-        self.0 & rmt_encode_state_t_RMT_ENCODING_WITH_EOF != 0
-    }
-}
-
-impl core::ops::BitOr for EncoderState {
-    type Output = Self;
-
-    /// Combines two encoding-state flags, e.g. `EncoderState::COMPLETE | EncoderState::WITH_EOF`.
-    fn bitor(self, rhs: Self) -> Self {
-        Self(self.0 | rhs.0)
-    }
-}
-
-impl From<EncoderState> for rmt_encode_state_t {
-    fn from(value: EncoderState) -> Self {
-        value.0
-    }
-}
-
-impl From<rmt_encode_state_t> for EncoderState {
-    fn from(value: rmt_encode_state_t) -> Self {
-        Self(value)
-    }
+    WithEof = 4,
 }
 
 /// A handle to an RMT channel.
@@ -186,12 +121,12 @@ pub trait Encoder {
     /// This function might be called multiple times within a single transaction.
     /// The encode function should return the state of the current encoding session.
     ///
-    /// The supported states are listed in [`EncoderState`]. If the result has
-    /// [`EncoderState::is_complete`] true, it means the current encoder has finished work (this
-    /// may be combined with either of the flags below in the same result - see [`EncoderState`]'s
-    /// own doc comment).
+    /// The supported states are listed in [`EncoderState`]. If the result contains
+    /// [`EncoderState::Complete`], the current encoder has finished work (this may be combined
+    /// with either of the flags below in the same result - see [`EncoderState`]'s own doc
+    /// comment).
     ///
-    /// If the result has [`EncoderState::is_mem_full`] true, the program needs to yield from the
+    /// If the result contains [`EncoderState::MemFull`], the program needs to yield from the
     /// current session, as there is no space to save more encoding artifacts.
     ///
     /// # Note
@@ -207,7 +142,7 @@ pub trait Encoder {
         &mut self,
         handle: &mut RmtChannelHandle,
         primary_data: &[Self::Item],
-    ) -> (usize, EncoderState);
+    ) -> (usize, EnumSet<EncoderState>);
 
     /// Reset encoding state.
     ///
@@ -224,10 +159,10 @@ impl<E: RawEncoder> Encoder for E {
         &mut self,
         handle: &mut RmtChannelHandle,
         primary_data: &[Self::Item],
-    ) -> (usize, EncoderState) {
+    ) -> (usize, EnumSet<EncoderState>) {
         let encoder_handle = self.handle();
         let Some(encode) = encoder_handle.encode else {
-            return (0, EncoderState::RESET);
+            return (0, EnumSet::empty());
         };
 
         let mut ret_state: rmt_encode_state_t = rmt_encode_state_t_RMT_ENCODING_RESET;
@@ -243,7 +178,7 @@ impl<E: RawEncoder> Encoder for E {
             )
         };
 
-        (written, ret_state.into())
+        (written, EnumSet::from_repr_truncated(ret_state))
     }
 
     fn reset(&mut self) -> Result<(), EspError> {
@@ -345,7 +280,7 @@ impl<E: Encoder> InternalEncoderWrapper<E> {
 
         let (written, state) = this.encoder().encode(&mut channel_handle, primary_data);
 
-        *ret_state = state.into();
+        *ret_state = state.as_repr();
 
         written
     }
