@@ -48,6 +48,7 @@ $ MCU=esp32c3 cargo espflash flash --target riscv32imc-esp-espidf --bin wifi --m
 | esp32c6| riscv32imac-esp-espidf |
 | esp32h2 | riscv32imac-esp-espidf |
 | esp32p4 | riscv32imafc-esp-espidf |
+| esp32s31 | riscv32imafc-esp-espidf |
 | esp32 | xtensa-esp32-espidf |
 | esp32s2 | xtensa-esp32s2-espidf |
 | esp32s3 | xtensa-esp32s3-espidf |

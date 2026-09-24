@@ -104,11 +104,12 @@ pub mod config {
         #[cfg(any(esp32, esp32s2, esp32s3, esp32c3))]
         APB,
         /// Select `RC_FAST` as the source clock
-        #[cfg(any(esp32c5, esp32c6, esp32c61, esp32h2, esp32p4))]
+        #[cfg(any(esp32c5, esp32c6, esp32c61, esp32h2, esp32p4, esp32s31))]
         RcFast,
         /// Select `XTAL` as the source clock
         #[cfg(any(
-            esp32s2, esp32s3, esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32p4
+            esp32s2, esp32s3, esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32p4,
+            esp32s31
         ))]
         XTAL,
         /// Select `PLL_F40M` as the source clock
@@ -118,7 +119,7 @@ pub mod config {
         #[cfg(esp32h2)]
         PLLF48M,
         /// Select `PLL_F80M` as the source clock
-        #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4))]
+        #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31))]
         PLLF80M,
     }
 
@@ -128,18 +129,18 @@ pub mod config {
                 ClockSource::Default => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_DEFAULT,
                 #[cfg(any(esp32, esp32s2, esp32s3, esp32c3))]
                 ClockSource::APB => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_APB,
-                #[cfg(any(esp32c5, esp32c6, esp32c61, esp32h2, esp32p4))]
+                #[cfg(any(esp32c5, esp32c6, esp32c61, esp32h2, esp32p4, esp32s31))]
                 ClockSource::RcFast => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_RC_FAST,
                 #[cfg(any(
                     esp32s2, esp32s3, esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2,
-                    esp32p4
+                    esp32p4, esp32s31
                 ))]
                 ClockSource::XTAL => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_XTAL,
                 #[cfg(esp32c2)]
                 ClockSource::PLLF40M => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_PLL_F40M,
                 #[cfg(esp32h2)]
                 ClockSource::PLLF48M => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_PLL_F48M,
-                #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4))]
+                #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31))]
                 ClockSource::PLLF80M => soc_periph_gptimer_clk_src_t_GPTIMER_CLK_SRC_PLL_F80M,
             }
         }

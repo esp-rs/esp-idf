@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Basic support for the esp32s31 (ESP-IDF v6.1+): GPIO, dual-core, UART0-3, SPI2/3, I2C0/1, I2S0/1, timers, RMT, temperature sensor, USB Serial/JTAG and sleep
+
+### Fixed
+- ADC channel drivers no longer call `rtc_gpio_init` on pins that are not RTC (LP) pins, which fails with `ESP_ERR_INVALID_ARG` ("RTCIO number error") on chips whose ADC pins are plain GPIOs
+
 ## [0.47.0] - 2026-09-15
 
 ### Fixed

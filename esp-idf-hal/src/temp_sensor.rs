@@ -5,7 +5,7 @@ use esp_idf_sys::{
     temperature_sensor_install, temperature_sensor_uninstall, EspError,
 };
 
-#[cfg(esp32p4)]
+#[cfg(any(esp32p4, esp32s31))]
 use esp_idf_sys::soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_LP_PERI;
 #[cfg(any(
     esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32s2, esp32s3
@@ -28,7 +28,7 @@ pub enum TempSensorClockSource {
     RcFast,
     #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2))]
     XTAL,
-    #[cfg(esp32p4)]
+    #[cfg(any(esp32p4, esp32s31))]
     LpPeri,
 }
 
@@ -45,7 +45,7 @@ impl From<TempSensorClockSource> for temperature_sensor_clk_src_t {
             TempSensorClockSource::XTAL => {
                 soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_XTAL
             }
-            #[cfg(esp32p4)]
+            #[cfg(any(esp32p4, esp32s31))]
             TempSensorClockSource::LpPeri => {
                 soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_LP_PERI
             }
@@ -69,7 +69,7 @@ impl From<temperature_sensor_clk_src_t> for TempSensorClockSource {
             #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2))]
             #[allow(non_upper_case_globals)]
             soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_XTAL => Self::XTAL,
-            #[cfg(esp32p4)]
+            #[cfg(any(esp32p4, esp32s31))]
             #[allow(non_upper_case_globals)]
             soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_LP_PERI => {
                 Self::LpPeri

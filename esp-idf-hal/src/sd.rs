@@ -212,7 +212,7 @@ mod sdcard {
     ///
     /// This driver is used to interface with an SD-Card by wrapping one of the two SD Host drivers:
     /// - SD-SPI Host driver (`SdSpiHostDriver`)
-    /// - SD-MMC Host driver (`SdMmcHostDriver`) - on MCUs that do have an SD-MMC peripheral (ESP32, ESP32S3 and ESP32P4)
+    /// - SD-MMC Host driver (`SdMmcHostDriver`) - on MCUs that do have an SD-MMC peripheral (ESP32, ESP32S3, ESP32P4 and ESP32S31)
     ///
     /// The interface allows reading, writing and erasing sectors, as well as reading and writing arbitrary-length bytes.
     ///

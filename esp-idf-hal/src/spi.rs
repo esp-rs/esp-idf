@@ -2279,9 +2279,9 @@ macro_rules! impl_spi_any_pins {
 
 impl_spi!(SPI1: spi_host_device_t_SPI1_HOST);
 impl_spi!(SPI2: spi_host_device_t_SPI2_HOST);
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
 impl_spi!(SPI3: spi_host_device_t_SPI3_HOST);
 
 impl_spi_any_pins!(SPI2);
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
 impl_spi_any_pins!(SPI3);

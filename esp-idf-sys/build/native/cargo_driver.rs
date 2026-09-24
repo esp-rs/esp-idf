@@ -324,6 +324,12 @@ pub fn build() -> Result<EspIdfBuildOutput> {
                  Please consider upgrading to ESP-IDF V5.3.0 or newer, because support for older ESP-IDF versions will be removed in newer releases."
             ));
         }
+
+        if chip == Chip::ESP32S31 && (major < 6 || major == 6 && minor < 1) {
+            bail!(
+                "MCU '{chip}' is only supported by ESP-IDF V6.1.0 or newer, but the build is against ESP-IDF version {major}.{minor}.{patch}"
+            );
+        }
     } else {
         cargo::print_warning(format_args!(
             "Could not extract ESP-IDF version from {:?}",

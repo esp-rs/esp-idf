@@ -7,7 +7,7 @@
 use std::thread;
 use std::time::Duration;
 
-#[cfg(not(any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4")))]
+#[cfg(not(any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4", esp32s31)))]
 fn main() -> anyhow::Result<()> {
     use esp_idf_hal::adc::attenuation::DB_12;
     use esp_idf_hal::adc::oneshot::config::AdcChannelConfig;
@@ -45,10 +45,10 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-#[cfg(any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4"))]
+#[cfg(any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4", esp32s31))]
 fn main() -> anyhow::Result<()> {
     println!(
-        "This example requires ESP-IDF v5.X or newer and feature `adc-oneshot-legacy` disabled"
+        "This example requires ESP-IDF v5.X or newer, feature `adc-oneshot-legacy` disabled and a chip other than the esp32s31"
     );
 
     loop {

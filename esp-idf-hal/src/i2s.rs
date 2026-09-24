@@ -123,7 +123,9 @@ pub mod config {
         /// Not the default on `esp32p4`: ESP-IDF only compiles the `I2S_CLK_SRC_PLL_160M` arm
         /// of `i2s_ll_get_clk_src` under `CONFIG_ESP_REV_MIN_FULL >= 300`, so selecting it from
         /// a build targeting an earlier minimum revision aborts in `HAL_ASSERT`.
-        #[cfg(not(any(esp32h2, esp32c2)))]
+        ///
+        /// Not available on `esp32s31`, whose I2S clock sources are XTAL, APLL and RC_FAST.
+        #[cfg(not(any(esp32h2, esp32c2, esp32s31)))]
         #[cfg_attr(not(esp32p4), default)]
         Pll160M,
 
@@ -138,7 +140,7 @@ pub mod config {
         Pll64M,
 
         /// Use XTAL as the source clock
-        #[cfg(esp32p4)]
+        #[cfg(any(esp32p4, esp32s31))]
         #[default]
         Xtal,
 
@@ -155,7 +157,7 @@ pub mod config {
         #[allow(clippy::unnecessary_cast)]
         pub(super) fn as_sdk(&self) -> i2s_clock_src_t {
             match self {
-                #[cfg(not(any(esp32h2, esp32c2)))]
+                #[cfg(not(any(esp32h2, esp32c2, esp32s31)))]
                 Self::Pll160M => core::convert::TryInto::try_into(
                     esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_PLL_F160M,
                 )
@@ -170,7 +172,7 @@ pub mod config {
                     esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_PLL_F64M,
                 )
                 .unwrap(),
-                #[cfg(esp32p4)]
+                #[cfg(any(esp32p4, esp32s31))]
                 Self::Xtal => {
                     core::convert::TryInto::try_into(esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_XTAL)
                         .unwrap()
@@ -550,7 +552,7 @@ mod sealed {
     pub trait Sealed {}
 
     impl Sealed for super::I2S0<'_> {}
-    #[cfg(any(esp32, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
     impl Sealed for super::I2S1<'_> {}
     #[cfg(esp32p4)]
     impl Sealed for super::I2S2<'_> {}
@@ -727,6 +729,8 @@ impl<Dir> I2sDriver<'_, Dir> {
                 on_recv_q_ovf: Some(dispatch_recv),
                 on_sent: Some(dispatch_send),
                 on_send_q_ovf: Some(dispatch_send),
+                #[cfg(esp_idf_soc_i2s_supports_tx_fifo_sync)]
+                on_tx_sync_evt: None,
             };
 
             // Safety: chan_handle is a valid pointer to an i2s_chan_handle_t and callbacks is initialized.
@@ -745,12 +749,7 @@ impl<Dir> I2sDriver<'_, Dir> {
     #[cfg(not(esp_idf_version_major = "4"))]
     fn unsubscribe_channel(&mut self, handle: i2s_chan_handle_t) -> Result<(), EspError> {
         if !handle.is_null() {
-            let callbacks = i2s_event_callbacks_t {
-                on_recv: None,
-                on_recv_q_ovf: None,
-                on_sent: None,
-                on_send_q_ovf: None,
-            };
+            let callbacks = i2s_event_callbacks_t::default();
 
             // Safety: chan_handle is a valid pointer to an i2s_chan_handle_t and callbacks is initialized.
             esp!(unsafe {
@@ -768,12 +767,7 @@ impl<Dir> I2sDriver<'_, Dir> {
     #[cfg(not(esp_idf_version_major = "4"))]
     fn del_channel(&mut self, handle: i2s_chan_handle_t) -> Result<(), EspError> {
         if !handle.is_null() {
-            let callbacks = i2s_event_callbacks_t {
-                on_recv: None,
-                on_recv_q_ovf: None,
-                on_sent: None,
-                on_send_q_ovf: None,
-            };
+            let callbacks = i2s_event_callbacks_t::default();
 
             // Safety: chan_handle is a valid pointer to an i2s_chan_handle_t and callbacks is initialized.
             esp!(unsafe {
@@ -1403,24 +1397,24 @@ macro_rules! impl_i2s {
 }
 
 impl_i2s!(I2S0: 0);
-#[cfg(any(esp32, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
 impl_i2s!(I2S1: 1);
 #[cfg(esp32p4)]
 impl_i2s!(I2S2: 2);
 
 #[cfg(not(esp_idf_version_major = "4"))]
-#[cfg(not(any(esp32, esp32s3, esp32p4)))]
+#[cfg(not(any(esp32, esp32s3, esp32p4, esp32s31)))]
 static SEND_NOTIFIER: [HalIsrNotification; 1] = [HalIsrNotification::new()];
 #[cfg(not(esp_idf_version_major = "4"))]
-#[cfg(not(any(esp32, esp32s3, esp32p4)))]
+#[cfg(not(any(esp32, esp32s3, esp32p4, esp32s31)))]
 static RECV_NOTIFIER: [HalIsrNotification; 1] = [HalIsrNotification::new()];
 
 #[cfg(not(esp_idf_version_major = "4"))]
-#[cfg(any(esp32, esp32s3))]
+#[cfg(any(esp32, esp32s3, esp32s31))]
 static SEND_NOTIFIER: [HalIsrNotification; 2] =
     [HalIsrNotification::new(), HalIsrNotification::new()];
 #[cfg(not(esp_idf_version_major = "4"))]
-#[cfg(any(esp32, esp32s3))]
+#[cfg(any(esp32, esp32s3, esp32s31))]
 static RECV_NOTIFIER: [HalIsrNotification; 2] =
     [HalIsrNotification::new(), HalIsrNotification::new()];
 

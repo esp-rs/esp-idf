@@ -91,17 +91,19 @@ pub fn do_yield() {
             if let Some((yielder, arg)) = interrupt::get_isr_yielder() {
                 yielder(arg);
             } else {
-                #[cfg(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32p4))]
+                #[cfg(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32p4, esp32s31))]
                 vPortYieldFromISR();
 
                 #[cfg(all(
-                    not(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32p4)),
+                    not(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32p4, esp32s31)),
                     esp_idf_version_major = "4"
                 ))]
                 vPortEvaluateYieldFromISR(0);
 
                 #[cfg(all(
-                    not(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32c61, esp32p4)),
+                    not(any(
+                        esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32c61, esp32p4, esp32s31
+                    )),
                     not(esp_idf_version_major = "4")
                 ))]
                 _frxt_setup_switch();

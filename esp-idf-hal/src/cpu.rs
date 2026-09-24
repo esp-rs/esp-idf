@@ -1,4 +1,4 @@
-#[cfg(any(esp32, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
 use core::arch::asm;
 
 use esp_idf_sys::*;
@@ -12,7 +12,7 @@ pub const CORES: u32 = SOC_CPU_CORES_NUM;
 #[repr(C)]
 pub enum Core {
     Core0 = 0, // PRO on dual-core systems, the one and only CPU on single-core systems
-    #[cfg(any(esp32, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
     Core1 = 1, // APP on dual-core systems
 }
 
@@ -33,7 +33,7 @@ impl From<i32> for Core {
     fn from(core: i32) -> Self {
         match core {
             0 => Core::Core0,
-            #[cfg(any(esp32, esp32s3, esp32p4))]
+            #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
             1 => Core::Core1,
             _ => panic!(),
         }
@@ -55,7 +55,7 @@ pub fn core() -> Core {
     let core = 0;
 
     #[allow(unused_assignments)]
-    #[cfg(any(esp32, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
     let mut core = 0;
 
     #[cfg(any(esp32, esp32s3))]
@@ -63,14 +63,14 @@ pub fn core() -> Core {
         asm!("rsr.prid {0}", "extui {0},{0},13,1", out(reg) core);
     }
 
-    #[cfg(esp32p4)]
+    #[cfg(any(esp32p4, esp32s31))]
     unsafe {
         asm!("csrr {0}, mhartid", out(reg) core);
     }
 
     match core {
         0 => Core::Core0,
-        #[cfg(any(esp32, esp32s3, esp32p4))]
+        #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
         1 => Core::Core1,
         other => panic!("Unknown core: {other}"),
     }

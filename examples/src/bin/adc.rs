@@ -9,7 +9,10 @@ use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, alway
 use std::thread;
 use std::time::Duration;
 
-#[cfg(any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4"))]
+#[cfg(all(
+    any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4"),
+    not(esp32s31)
+))]
 fn main() -> anyhow::Result<()> {
     use esp_idf_hal::adc::config::Config;
     use esp_idf_hal::adc::*;
@@ -43,9 +46,12 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-#[cfg(not(any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4")))]
+#[cfg(not(all(
+    any(feature = "adc-oneshot-legacy", esp_idf_version_major = "4"),
+    not(esp32s31)
+)))]
 fn main() -> anyhow::Result<()> {
-    println!("This example requires feature `adc-oneshot-legacy` enabled or using ESP-IDF v4.4.X");
+    println!("This example requires feature `adc-oneshot-legacy` enabled or using ESP-IDF v4.4.X, and a chip other than the esp32s31");
 
     loop {
         thread::sleep(Duration::from_millis(1000));

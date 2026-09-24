@@ -254,7 +254,7 @@ pub mod config {
             esp_idf_soc_uart_support_pll_f80m_clk,
             all(
                 esp_idf_version_at_least_6_0_0,
-                any(esp32c5, esp32c6, esp32c61, esp32p4)
+                any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31)
             )
         ))]
         PLL_F80M,
@@ -303,7 +303,7 @@ pub mod config {
                     esp_idf_soc_uart_support_pll_f80m_clk,
                     all(
                         esp_idf_version_at_least_6_0_0,
-                        any(esp32c5, esp32c6, esp32c61, esp32p4)
+                        any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31)
                     )
                 ))]
                 PLL_F80M_SCLK => SourceClock::PLL_F80M,
@@ -364,7 +364,7 @@ pub mod config {
             esp_idf_soc_uart_support_pll_f80m_clk,
             all(
                 esp_idf_version_at_least_6_0_0,
-                any(esp32c5, esp32c6, esp32c61, esp32p4)
+                any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31)
             )
         )
     ))]
@@ -415,7 +415,7 @@ pub mod config {
                     esp_idf_soc_uart_support_pll_f80m_clk,
                     all(
                         esp_idf_version_at_least_6_0_0,
-                        any(esp32c5, esp32c6, esp32c61, esp32p4)
+                        any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31)
                     )
                 ))]
                 SourceClock::PLL_F80M => PLL_F80M_SCLK,
@@ -2268,9 +2268,9 @@ fn check_nb_timeout(result: Result<(), EspError>) -> nb::Result<(), SerialError>
 
 impl_uart!(UART0: 0);
 impl_uart!(UART1: 1);
-#[cfg(any(esp32, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
 impl_uart!(UART2: 2);
-#[cfg(esp32p4)]
+#[cfg(any(esp32p4, esp32s31))]
 impl_uart!(UART3: 3);
 #[cfg(esp32p4)]
 impl_uart!(UART4: 4);

@@ -340,7 +340,7 @@ The following configuration options are available:
 
 - ### *`mcu`*, `$MCU`
 
-   The MCU name (i.e. `esp32`, `esp32s2`, `esp32s3` `esp32c3`, `esp32c2`, `esp32h2`, `esp32c5`, `esp32c6`, `esp32c61`, `esp32p4`). 
+   The MCU name (i.e. `esp32`, `esp32s2`, `esp32s3` `esp32c3`, `esp32c2`, `esp32h2`, `esp32c5`, `esp32c6`, `esp32c61`, `esp32p4`, `esp32s31`). 
    
    If not set this will be automatically detected from the cargo target.
 

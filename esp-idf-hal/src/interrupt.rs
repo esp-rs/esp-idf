@@ -163,13 +163,13 @@ pub unsafe fn set_isr_yielder(
 }
 
 /// A critical section allows the user to disable interrupts
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
 pub struct IsrCriticalSection(core::cell::UnsafeCell<portMUX_TYPE>);
 
-#[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4)))]
+#[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31)))]
 pub struct IsrCriticalSection(core::marker::PhantomData<*const ()>);
 
-#[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4)))]
+#[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31)))]
 #[inline(always)]
 #[link_section = ".iram1.interrupt_enter"]
 fn enter(_cs: &IsrCriticalSection) {
@@ -178,7 +178,7 @@ fn enter(_cs: &IsrCriticalSection) {
     }
 }
 
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
 #[inline(always)]
 #[link_section = ".iram1.interrupt_enter"]
 fn enter(cs: &IsrCriticalSection) {
@@ -187,7 +187,7 @@ fn enter(cs: &IsrCriticalSection) {
     }
 }
 
-#[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4)))]
+#[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31)))]
 #[inline(always)]
 #[link_section = ".iram1.interrupt_exit"]
 fn exit(_cs: &IsrCriticalSection) {
@@ -205,7 +205,7 @@ fn exit(cs: &IsrCriticalSection) {
     }
 }
 
-#[cfg(esp32p4)]
+#[cfg(any(esp32p4, esp32s31))]
 #[inline(always)]
 #[link_section = ".iram1.interrupt_exit"]
 fn exit(cs: &IsrCriticalSection) {
@@ -218,7 +218,7 @@ impl IsrCriticalSection {
     /// Constructs a new `IsrCriticalSection` instance
     #[inline(always)]
     pub const fn new() -> Self {
-        #[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+        #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
         let mux = core::cell::UnsafeCell::new(portMUX_TYPE {
             owner: portMUX_FREE_VAL,
             count: 0,
@@ -228,7 +228,7 @@ impl IsrCriticalSection {
             lastLockedLine: -1,
         });
 
-        #[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4)))]
+        #[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31)))]
         let mux = core::marker::PhantomData;
 
         Self(mux)

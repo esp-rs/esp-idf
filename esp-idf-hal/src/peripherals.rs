@@ -1,3 +1,4 @@
+#[cfg(not(esp32s31))]
 use crate::adc;
 use crate::can;
 use crate::gpio;
@@ -49,9 +50,9 @@ pub struct Peripherals {
     pub pins: gpio::Pins,
     pub uart0: uart::UART0<'static>,
     pub uart1: uart::UART1<'static>,
-    #[cfg(any(esp32, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
     pub uart2: uart::UART2<'static>,
-    #[cfg(esp32p4)]
+    #[cfg(any(esp32p4, esp32s31))]
     pub uart3: uart::UART3<'static>,
     #[cfg(esp32p4)]
     pub uart4: uart::UART4<'static>,
@@ -60,14 +61,15 @@ pub struct Peripherals {
     pub i2c1: i2c::I2C1<'static>,
     #[cfg(esp_idf_soc_i2s_supported)]
     pub i2s0: i2s::I2S0<'static>,
-    #[cfg(all(esp_idf_soc_i2s_supported, any(esp32, esp32s3, esp32p4)))]
+    #[cfg(all(esp_idf_soc_i2s_supported, any(esp32, esp32s3, esp32p4, esp32s31)))]
     pub i2s1: i2s::I2S1<'static>,
     #[cfg(all(esp_idf_soc_i2s_supported, esp32p4))]
     pub i2s2: i2s::I2S2<'static>,
     pub spi1: spi::SPI1<'static>,
     pub spi2: spi::SPI2<'static>,
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
     pub spi3: spi::SPI3<'static>,
+    #[cfg(not(esp32s31))]
     pub adc1: adc::ADC1<'static>,
     #[cfg(any(esp32, esp32s2, esp32s3, esp32c3))]
     pub adc2: adc::ADC2<'static>,
@@ -195,9 +197,9 @@ impl Peripherals {
             pins: gpio::Pins::new(),
             uart0: uart::UART0::steal(),
             uart1: uart::UART1::steal(),
-            #[cfg(any(esp32, esp32s3, esp32p4))]
+            #[cfg(any(esp32, esp32s3, esp32p4, esp32s31))]
             uart2: uart::UART2::steal(),
-            #[cfg(esp32p4)]
+            #[cfg(any(esp32p4, esp32s31))]
             uart3: uart::UART3::steal(),
             #[cfg(esp32p4)]
             uart4: uart::UART4::steal(),
@@ -206,14 +208,15 @@ impl Peripherals {
             i2c1: i2c::I2C1::steal(),
             #[cfg(esp_idf_soc_i2s_supported)]
             i2s0: i2s::I2S0::steal(),
-            #[cfg(all(esp_idf_soc_i2s_supported, any(esp32, esp32s3, esp32p4)))]
+            #[cfg(all(esp_idf_soc_i2s_supported, any(esp32, esp32s3, esp32p4, esp32s31)))]
             i2s1: i2s::I2S1::steal(),
             #[cfg(all(esp_idf_soc_i2s_supported, esp32p4))]
             i2s2: i2s::I2S2::steal(),
             spi1: spi::SPI1::steal(),
             spi2: spi::SPI2::steal(),
-            #[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+            #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
             spi3: spi::SPI3::steal(),
+            #[cfg(not(esp32s31))]
             adc1: adc::ADC1::steal(),
             #[cfg(any(esp32, esp32s2, esp32s3, esp32c3))]
             adc2: adc::ADC2::steal(),

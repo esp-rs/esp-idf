@@ -462,13 +462,17 @@ pub enum ClockSource {
     Default,
     #[cfg(any(esp32, esp32c3, esp32s2, esp32s3))]
     APB,
-    #[cfg(any(esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3))]
+    #[cfg(any(
+        esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3, esp32s31
+    ))]
     RcFast,
     #[cfg(any(esp32, esp32s2))]
     RefTick,
-    #[cfg(any(esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3))]
+    #[cfg(any(
+        esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3, esp32s31
+    ))]
     XTAL,
-    #[cfg(any(esp32c5, esp32c6, esp32p4))]
+    #[cfg(any(esp32c5, esp32c6, esp32p4, esp32s31))]
     PLLF80M,
 }
 
@@ -478,13 +482,17 @@ impl From<ClockSource> for rmt_clock_source_t {
             ClockSource::Default => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_DEFAULT,
             #[cfg(any(esp32, esp32c3, esp32s2, esp32s3))]
             ClockSource::APB => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_APB,
-            #[cfg(any(esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3))]
+            #[cfg(any(
+                esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3, esp32s31
+            ))]
             ClockSource::RcFast => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_RC_FAST,
             #[cfg(any(esp32, esp32s2))]
             ClockSource::RefTick => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_REF_TICK,
-            #[cfg(any(esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3))]
+            #[cfg(any(
+                esp32c3, esp32c5, esp32c6, esp32h2, esp32h4, esp32p4, esp32s3, esp32s31
+            ))]
             ClockSource::XTAL => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_XTAL,
-            #[cfg(any(esp32c5, esp32c6, esp32p4))]
+            #[cfg(any(esp32c5, esp32c6, esp32p4, esp32s31))]
             ClockSource::PLLF80M => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_PLL_F80M,
         }
     }

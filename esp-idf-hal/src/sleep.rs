@@ -161,7 +161,7 @@ pub mod uart {
     }
 }
 
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
 pub mod touch {
     use esp_idf_sys::*;
     pub fn configure() -> Result<(), EspError> {
@@ -169,7 +169,7 @@ pub mod touch {
     }
 }
 
-#[cfg(any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32p4))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32p4, esp32s31))]
 pub mod ulp {
     use esp_idf_sys::*;
     pub fn configure() -> Result<(), EspError> {
@@ -221,13 +221,13 @@ impl LightSleep {
         Ok(self)
     }
 
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
     pub fn wakeup_on_touch(self) -> Result<Self, EspError> {
         touch::configure()?;
         Ok(self)
     }
 
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32p4))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32p4, esp32s31))]
     pub fn wakeup_on_ulp(self) -> Result<Self, EspError> {
         ulp::configure()?;
         Ok(self)
@@ -270,13 +270,13 @@ impl DeepSleep {
         Ok(self)
     }
 
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
     pub fn wakeup_on_touch(self) -> Result<Self, EspError> {
         touch::configure()?;
         Ok(self)
     }
 
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32p4))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32p4, esp32s31))]
     pub fn wakeup_on_ulp(self) -> Result<Self, EspError> {
         ulp::configure()?;
         Ok(self)

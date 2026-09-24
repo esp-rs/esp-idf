@@ -19,12 +19,16 @@ impl_peripheral!(Modem);
 
 #[allow(clippy::needless_lifetimes)]
 impl<'d> Modem<'d> {
-    #[cfg(not(any(esp32s2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4)))]
+    #[cfg(not(any(
+        esp32s2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4, esp32s31
+    )))]
     pub fn split(self) -> (WifiModem<'d>, BluetoothModem<'d>) {
         unsafe { (WifiModem::steal(), BluetoothModem::steal()) }
     }
 
-    #[cfg(not(any(esp32s2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4)))]
+    #[cfg(not(any(
+        esp32s2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4, esp32s31
+    )))]
     pub fn split_reborrow(&mut self) -> (WifiModem<'_>, BluetoothModem<'_>) {
         unsafe { (WifiModem::steal(), BluetoothModem::steal()) }
     }

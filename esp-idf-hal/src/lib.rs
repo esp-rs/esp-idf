@@ -26,6 +26,9 @@ extern crate std;
 #[macro_use]
 extern crate alloc;
 
+// NOTE: the esp32s31 ADC (ESP-IDF v6.1) has no attenuation, no calibration scheme and 17-bit
+// weighted-sum raw codes; it is left out until ESP-IDF's support for it settles
+#[cfg(not(esp32s31))]
 pub mod adc;
 pub mod can;
 pub mod cpu;
