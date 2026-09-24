@@ -10,6 +10,8 @@ pub mod simple_encoder;
 use alloc::boxed::Box;
 use core::mem;
 
+use enumset::{EnumSet, EnumSetType};
+
 use esp_idf_sys::*;
 
 /// This trait represents an RMT encoder that is used to encode data for transmission.
@@ -45,46 +47,24 @@ impl<E: RawEncoder> RawEncoder for &mut E {
     }
 }
 
-/// RMT encoding state
-#[derive(Debug, Clone)]
-#[non_exhaustive]
+/// RMT encoding state flags.
+///
+/// Mirrors `rmt_encode_state_t` (`rmt_encoder.h`), a C bitmask - a single result can combine
+/// [`Complete`](Self::Complete) with [`MemFull`](Self::MemFull) and/or [`WithEof`](Self::WithEof)
+/// at once. The reset state is the empty set (`EnumSet::empty()`).
+///
+/// Discriminants match the `RMT_ENCODING_*` raw values directly (`#[enumset(map = "mask")]`).
+#[derive(Debug, EnumSetType)]
+#[enumset(repr = "u32", map = "mask")]
 pub enum EncoderState {
-    /// The encoding session is in reset state
-    EncodingReset,
-    /// The encoding session is finished, the caller can continue with subsequent encoding
-    EncodingComplete,
-    /// The encoding artifact memory is full, the caller should return from current encoding session.
-    EncodingMemoryFull,
-    /// The encoding session has inserted the EOF marker to the symbol stream
+    /// The encoding session is finished, the caller can continue with subsequent encoding.
+    Complete = 1,
+    /// The encoding artifact memory is full, the caller should return from the current encoding session.
+    MemFull = 2,
+    /// The encoding session has inserted the EOF marker into the symbol stream.
     #[cfg(esp_idf_version_at_least_5_5_0)]
     #[cfg_attr(feature = "nightly", doc(cfg(esp_idf_version_at_least_5_5_0)))]
-    EncodingWithEof,
-}
-
-impl From<EncoderState> for rmt_encode_state_t {
-    fn from(value: EncoderState) -> Self {
-        match value {
-            EncoderState::EncodingReset => rmt_encode_state_t_RMT_ENCODING_RESET,
-            EncoderState::EncodingComplete => rmt_encode_state_t_RMT_ENCODING_COMPLETE,
-            EncoderState::EncodingMemoryFull => rmt_encode_state_t_RMT_ENCODING_MEM_FULL,
-            #[cfg(esp_idf_version_at_least_5_5_0)]
-            EncoderState::EncodingWithEof => rmt_encode_state_t_RMT_ENCODING_WITH_EOF,
-        }
-    }
-}
-
-impl From<rmt_encode_state_t> for EncoderState {
-    fn from(value: rmt_encode_state_t) -> Self {
-        #[allow(non_upper_case_globals)]
-        match value {
-            rmt_encode_state_t_RMT_ENCODING_RESET => Self::EncodingReset,
-            rmt_encode_state_t_RMT_ENCODING_COMPLETE => Self::EncodingComplete,
-            rmt_encode_state_t_RMT_ENCODING_MEM_FULL => Self::EncodingMemoryFull,
-            #[cfg(esp_idf_version_at_least_5_5_0)]
-            rmt_encode_state_t_RMT_ENCODING_WITH_EOF => Self::EncodingWithEof,
-            _ => panic!("Unknown rmt_encode_state_t value: {value}"),
-        }
-    }
+    WithEof = 4,
 }
 
 /// A handle to an RMT channel.
@@ -142,12 +122,12 @@ pub trait Encoder {
     /// The encode function should return the state of the current encoding session.
     ///
     /// The supported states are listed in [`EncoderState`]. If the result contains
-    /// [`EncoderState::EncodingComplete`], it means the current encoder has finished
-    /// work.
+    /// [`EncoderState::Complete`], the current encoder has finished work (this may be combined
+    /// with either of the flags below in the same result - see [`EncoderState`]'s own doc
+    /// comment).
     ///
-    /// If the result contains [`EncoderState::EncodingMemoryFull`], the program needs
-    /// to yield from the current session, as there is no space to save more encoding
-    /// artifacts.
+    /// If the result contains [`EncoderState::MemFull`], the program needs to yield from the
+    /// current session, as there is no space to save more encoding artifacts.
     ///
     /// # Note
     ///
@@ -162,7 +142,7 @@ pub trait Encoder {
         &mut self,
         handle: &mut RmtChannelHandle,
         primary_data: &[Self::Item],
-    ) -> (usize, EncoderState);
+    ) -> (usize, EnumSet<EncoderState>);
 
     /// Reset encoding state.
     ///
@@ -179,10 +159,10 @@ impl<E: RawEncoder> Encoder for E {
         &mut self,
         handle: &mut RmtChannelHandle,
         primary_data: &[Self::Item],
-    ) -> (usize, EncoderState) {
+    ) -> (usize, EnumSet<EncoderState>) {
         let encoder_handle = self.handle();
         let Some(encode) = encoder_handle.encode else {
-            return (0, EncoderState::EncodingReset);
+            return (0, EnumSet::empty());
         };
 
         let mut ret_state: rmt_encode_state_t = rmt_encode_state_t_RMT_ENCODING_RESET;
@@ -198,7 +178,7 @@ impl<E: RawEncoder> Encoder for E {
             )
         };
 
-        (written, ret_state.into())
+        (written, EnumSet::from_repr_truncated(ret_state))
     }
 
     fn reset(&mut self) -> Result<(), EspError> {
@@ -300,7 +280,7 @@ impl<E: Encoder> InternalEncoderWrapper<E> {
 
         let (written, state) = this.encoder().encode(&mut channel_handle, primary_data);
 
-        *ret_state = state.into();
+        *ret_state = state.as_repr();
 
         written
     }

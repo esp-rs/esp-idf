@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - ADC channel drivers no longer call `rtc_gpio_init` on pins that are not RTC (LP) pins, which fails with `ESP_ERR_INVALID_ARG` ("RTCIO number error") on chips whose ADC pins are plain GPIOs
 
+### Breaking
+- `rmt::encoder::EncoderState` is now `EnumSet<EncoderState>` instead of a standalone enum, fixing a panic/ISR-abort on real hardware when the RMT driver returned a combined state (e.g. `COMPLETE | MEM_FULL`).
+
 ## [0.47.0] - 2026-09-15
 
 ### Fixed
