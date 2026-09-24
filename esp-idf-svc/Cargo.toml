@@ -54,6 +54,8 @@ esp-idf-hal = { workspace = true }
 embassy-time-driver = { workspace = true, optional = true }
 embassy-time-queue-utils = { workspace = true, optional = true }
 embassy-futures = { workspace = true }
+embassy-sync = { workspace = true }
+embedded-io-async = { workspace = true }
 embedded-storage = { workspace = true, optional = true }
 futures-io = { workspace = true, optional = true }
 
