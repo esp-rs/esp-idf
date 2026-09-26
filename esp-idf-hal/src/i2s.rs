@@ -126,7 +126,7 @@ pub mod config {
         ///
         /// Not available on `esp32s31`, whose I2S clock sources are XTAL, APLL and RC_FAST.
         #[cfg(not(any(esp32h2, esp32c2, esp32s31)))]
-        #[cfg_attr(not(esp32p4), default)]
+        #[cfg_attr(not(any(esp32p4, esp32s31)), default)]
         Pll160M,
 
         /// Use PLL_F60M as the source clock

@@ -3,7 +3,7 @@
 //! The example just starts Thread and logs the events, without doing anything else useful.
 //! However, in 99% of the case this is exactly what you want to do.
 //!
-//! NOTE: This example only works on MCUs that has Thread capabilities, like the ESP32-C6 or ESP32-H2.
+//! NOTE: This example only works on MCUs that has Thread capabilities, like the ESP32-C6, ESP32-H2 or ESP32-S31.
 //!
 //! It is however possible to run this example on other MCUs, using the UART or SPI protocols, but then
 //! you anyway would need _another_, Thread-capable MCU that runs Thread in RCP mode (see the `thread_rcp`) example.
@@ -15,16 +15,16 @@ fn main() -> anyhow::Result<()> {
     esp_idf_svc::sys::link_patches();
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    #[cfg(any(esp32h2, esp32c6))]
+    #[cfg(any(esp32h2, esp32c6, esp32s31))]
     example::main()?;
 
-    #[cfg(not(any(esp32h2, esp32c6)))]
-    log::error!("This example only works on MCUs that have Thread capabilities, like the ESP32-C6 or ESP32-H2.");
+    #[cfg(not(any(esp32h2, esp32c6, esp32s31)))]
+    log::error!("This example only works on MCUs that have Thread capabilities, like the ESP32-C6, ESP32-H2 or ESP32-S31.");
 
     Ok(())
 }
 
-#[cfg(any(esp32h2, esp32c6))]
+#[cfg(any(esp32h2, esp32c6, esp32s31))]
 mod example {
     use std::sync::Arc;
 

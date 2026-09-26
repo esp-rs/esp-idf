@@ -272,7 +272,7 @@ pub enum Ipv6Incoming<'a> {
 /// The driver can work in two modes:
 /// - RCP (Radio Co-Processor) mode: The driver operates as a co-processor to the host,
 ///   which is expected to be another chip connected to ours via SPI or UART. This is
-///   of course only supported with MCUs that do have a Thread radio, like esp32c2 and esp32c6
+///   of course only supported with MCUs that do have a Thread radio, like the esp32c6, esp32h2 and esp32s31
 /// - Host mode: The driver operates as a host, and if the chip does not have a Thread radio
 ///   it has to be connected via SPI or USB to a chip which runs the Thread stack in RCP mode
 pub struct ThreadDriver<'d, T>

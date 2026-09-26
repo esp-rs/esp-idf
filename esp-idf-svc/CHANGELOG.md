@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- esp32s31: Wi-Fi, netif and the other non-Bluetooth/Thread services compile for the new chip (ESP-IDF v6.1+); `bt` and `thread` are not ported yet
+- esp32s31: Wi-Fi, netif and the other non-Bluetooth services compile for the new chip (ESP-IDF v6.1+); `bt` is not ported yet
+- thread: esp32s31 support (native IEEE 802.15.4 radio, host mode; ESP-IDF v6.1+)
 
 ### Fixed
 - Netif: align the default PPP client with ESP-IDF's PPP configuration, correctly deserialize `IP_EVENT_PPP_LOST_IP`, and keep custom driver lifecycle state in sync across start/stop calls.

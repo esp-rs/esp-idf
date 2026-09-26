@@ -1,7 +1,5 @@
-# The esp32s31 does have Wi-Fi, Bluetooth (BLE + Classic) and IEEE 802.15.4 radios, but the
-# `esp_idf_svc::bt` and `esp_idf_svc::thread` modules have not been ported to it yet, so
-# the Bluetooth host/controller and OpenThread are kept out of the build for now.
+# The esp32s31 does have Bluetooth (BLE + Classic), but `esp_idf_svc::bt` has not been
+# ported to it yet, so the Bluetooth host/controller are kept out of the build for now.
 CONFIG_BT_ENABLED=n
 CONFIG_BT_BLUEDROID_ENABLED=n
 CONFIG_BT_CLASSIC_ENABLED=n
-CONFIG_OPENTHREAD_ENABLED=n
