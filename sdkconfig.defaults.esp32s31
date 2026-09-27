@@ -1,5 +1,0 @@
-# The esp32s31 does have Bluetooth (BLE + Classic), but `esp_idf_svc::bt` has not been
-# ported to it yet, so the Bluetooth host/controller are kept out of the build for now.
-CONFIG_BT_ENABLED=n
-CONFIG_BT_BLUEDROID_ENABLED=n
-CONFIG_BT_CLASSIC_ENABLED=n

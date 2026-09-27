@@ -20,17 +20,33 @@ use crate::nvs::EspDefaultNvsPartition;
 
 extern crate alloc;
 
-#[cfg(all(esp32, esp_idf_bt_classic_enabled, esp_idf_bt_a2dp_enable))]
+#[cfg(all(
+    any(esp32, esp32s31),
+    esp_idf_bt_classic_enabled,
+    esp_idf_bt_a2dp_enable
+))]
 pub mod a2dp;
-#[cfg(all(esp32, esp_idf_bt_classic_enabled, esp_idf_bt_a2dp_enable))]
+#[cfg(all(
+    any(esp32, esp32s31),
+    esp_idf_bt_classic_enabled,
+    esp_idf_bt_a2dp_enable
+))]
 pub mod avrc;
 #[cfg(esp_idf_bt_ble_enabled)]
 pub mod ble;
-#[cfg(all(esp32, esp_idf_bt_classic_enabled))]
+#[cfg(all(any(esp32, esp32s31), esp_idf_bt_classic_enabled))]
 pub mod gap;
-#[cfg(all(esp32, esp_idf_bt_classic_enabled, esp_idf_bt_hfp_enable))]
+#[cfg(all(
+    any(esp32, esp32s31),
+    esp_idf_bt_classic_enabled,
+    esp_idf_bt_hfp_enable
+))]
 pub mod hfp;
-#[cfg(all(esp32, esp_idf_bt_classic_enabled, esp_idf_bt_spp_enabled))]
+#[cfg(all(
+    any(esp32, esp32s31),
+    esp_idf_bt_classic_enabled,
+    esp_idf_bt_spp_enabled
+))]
 pub mod spp;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -237,15 +253,15 @@ pub trait BtMode: Send {
 pub trait BleEnabled: BtMode {}
 pub trait BtClassicEnabled: BtMode {}
 
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(not(esp_idf_btdm_ctrl_mode_ble_only))]
 #[derive(Clone)]
 pub struct BtClassic(());
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(not(esp_idf_btdm_ctrl_mode_ble_only))]
 impl BtClassicEnabled for BtClassic {}
 
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(not(esp_idf_btdm_ctrl_mode_ble_only))]
 impl BtMode for BtClassic {
     fn mode() -> esp_bt_mode_t {
@@ -278,24 +294,37 @@ impl BtMode for Ble {
     }
 }
 
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(esp_idf_btdm_ctrl_mode_btdm)]
 #[derive(Clone)]
 pub struct BtDual(());
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(esp_idf_btdm_ctrl_mode_btdm)]
 impl BtClassicEnabled for BtDual {}
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(esp_idf_btdm_ctrl_mode_btdm)]
 impl BleEnabled for BtDual {}
 
-#[cfg(esp32)]
+#[cfg(any(esp32, esp32s31))]
 #[cfg(esp_idf_btdm_ctrl_mode_btdm)]
 impl BtMode for BtDual {
     fn mode() -> esp_bt_mode_t {
         esp_bt_mode_t_ESP_BT_MODE_BTDM
     }
 }
+
+// The esp32s31 controller has no PCM/I2S SCO data path (ESP-IDF v6.1 comments it out in Kconfig)
+// and Bluedroid does not set the data path on non-esp32 chips, so the Kconfig default (PCM)
+// compiles but never carries audio.
+#[cfg(all(
+    esp32s31,
+    esp_idf_bt_hfp_enable,
+    not(esp_idf_bt_hfp_audio_data_path_hci)
+))]
+compile_error!(
+    "esp32s31: HFP needs CONFIG_BT_HFP_AUDIO_DATA_PATH_HCI=y (the controller has no PCM SCO \
+     data path)"
+);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive)]
 #[repr(u32)]
@@ -508,6 +537,155 @@ where
             ..Default::default()
         };
 
+        // esp32s31: dual-mode "BTDM" controller port with a nested config.
+        #[cfg(esp32s31)]
+        let mut bt_cfg = esp_bt_controller_config_t {
+            #[cfg(not(esp_idf_btdm_ctrl_mode_br_edr_only))]
+            ble: esp_bt_controller_config_t__bindgen_ty_1 {
+                config_version: crate::sys::BLE_CONFIG_VERSION as _,
+                ble_ll_resolv_list_size: crate::sys::CONFIG_BT_LE_LL_RESOLV_LIST_SIZE as _,
+                ble_hci_evt_hi_buf_count: crate::sys::DEFAULT_BT_LE_HCI_EVT_HI_BUF_COUNT as _,
+                ble_hci_evt_lo_buf_count: crate::sys::DEFAULT_BT_LE_HCI_EVT_LO_BUF_COUNT as _,
+                ble_ll_sync_list_cnt: crate::sys::DEFAULT_BT_LE_MAX_PERIODIC_ADVERTISER_LIST as _,
+                ble_ll_sync_cnt: crate::sys::DEFAULT_BT_LE_MAX_PERIODIC_SYNCS as _,
+                ble_ll_rsp_dup_list_count: crate::sys::CONFIG_BT_LE_LL_DUP_SCAN_LIST_COUNT as _,
+                ble_ll_adv_dup_list_count: crate::sys::CONFIG_BT_LE_LL_DUP_SCAN_LIST_COUNT as _,
+                ble_ll_tx_pwr_dbm: 0,
+                rtc_freq: 32000,
+                ble_ll_sca: crate::sys::CONFIG_BT_LE_LL_SCA as _,
+                ble_ll_scan_phy_number: crate::sys::BLE_LL_SCAN_PHY_NUMBER_N as _,
+                ble_ll_conn_def_auth_pyld_tmo: crate::sys::BLE_LL_CONN_DEF_AUTH_PYLD_TMO_N as _,
+                ble_ll_jitter_usecs: crate::sys::BLE_LL_JITTER_USECS_N as _,
+                ble_ll_sched_max_adv_pdu_usecs: crate::sys::BLE_LL_SCHED_MAX_ADV_PDU_USECS_N as _,
+                ble_ll_sched_direct_adv_max_usecs: crate::sys::BLE_LL_SCHED_DIRECT_ADV_MAX_USECS_N
+                    as _,
+                ble_ll_sched_adv_max_usecs: crate::sys::BLE_LL_SCHED_ADV_MAX_USECS_N as _,
+                ble_scan_rsp_data_max_len: crate::sys::DEFAULT_BT_LE_SCAN_RSP_DATA_MAX_LEN_N as _,
+                ble_ll_cfg_num_hci_cmd_pkts: crate::sys::BLE_LL_CFG_NUM_HCI_CMD_PKTS_N as _,
+                ble_ll_ctrl_proc_timeout_ms: crate::sys::BLE_LL_CTRL_PROC_TIMEOUT_MS_N as _,
+                nimble_max_connections: crate::sys::DEFAULT_BT_LE_MAX_CONNECTIONS as _,
+                ble_whitelist_size: crate::sys::DEFAULT_BT_NIMBLE_WHITELIST_SIZE as _,
+                ble_acl_buf_size: crate::sys::DEFAULT_BT_LE_ACL_BUF_SIZE as _,
+                ble_acl_buf_count: crate::sys::DEFAULT_BT_LE_ACL_BUF_COUNT as _,
+                ble_hci_evt_buf_size: crate::sys::DEFAULT_BT_LE_HCI_EVT_BUF_SIZE as _,
+                ble_multi_adv_instances: crate::sys::DEFAULT_BT_LE_MAX_EXT_ADV_INSTANCES as _,
+                ble_ext_adv_max_size: crate::sys::DEFAULT_BT_LE_EXT_ADV_MAX_SIZE as _,
+                controller_task_stack_size: crate::sys::UC_BT_CTRL_TASK_STACK_SIZE as _,
+                controller_task_prio: crate::sys::ESP_TASK_BT_CONTROLLER_PRIO as _,
+                controller_run_cpu: 0,
+                enable_qa_test: crate::sys::RUN_QA_TEST as _,
+                enable_bqb_test: crate::sys::RUN_BQB_TEST as _,
+                enable_tx_cca: crate::sys::DEFAULT_BT_LE_TX_CCA_ENABLED as _,
+                cca_rssi_thresh: (256 - crate::sys::DEFAULT_BT_LE_CCA_RSSI_THRESH) as _,
+                sleep_en: crate::sys::UC_BT_CTRL_SLEEP_ENABLE as _,
+                coex_phy_coded_tx_rx_time_limit:
+                    crate::sys::DEFAULT_BT_LE_COEX_PHY_CODED_TX_RX_TLIM_EFF as _,
+                dis_scan_backoff: crate::sys::NIMBLE_DISABLE_SCAN_BACKOFF as _,
+                ble_scan_classify_filter_enable: 1,
+                // `cca_drop_mode` and `cca_low_tx_pwr` are not set by the macro
+                main_xtal_freq: crate::sys::CONFIG_XTAL_FREQ as _,
+                ignore_wl_for_direct_adv: 0,
+                enable_pcl: 0,
+                csa2_select: 1,
+                enable_csr: 0,
+                backoff_rssi: -100,
+                iso_enabled: crate::sys::DEFAULT_BT_LE_ISO_ENABLED != 0,
+                iso_bqb_test: false,
+                iso_fra_unseg: crate::sys::DEFAULT_BT_LE_ISO_FRA_UNSEG != 0,
+                iso_nsfc_en: crate::sys::DEFAULT_BT_LE_ISO_NSFC_EN != 0,
+                iso_nsfc_num: crate::sys::DEFAULT_BT_LE_ISO_NSFC_NUM as _,
+                iso_buf_count: crate::sys::DEFAULT_BT_LE_ISO_BUF_COUNT as _,
+                iso_buf_size: crate::sys::DEFAULT_BT_LE_ISO_BUF_SIZE as _,
+                iso_big_count: crate::sys::DEFAULT_BT_LE_ISO_BIG as _,
+                iso_bis_count: crate::sys::DEFAULT_BT_LE_ISO_BIS as _,
+                iso_bis_per_big: crate::sys::DEFAULT_BT_LE_ISO_BIS_PER_BIG as _,
+                iso_cig_count: crate::sys::DEFAULT_BT_LE_ISO_CIG as _,
+                iso_cis_count: crate::sys::DEFAULT_BT_LE_ISO_CIS as _,
+                iso_cis_per_cig: crate::sys::DEFAULT_BT_LE_ISO_CIS_PER_CIG as _,
+                config_magic: crate::sys::BLE_CONFIG_MAGIC as _,
+                ..Default::default()
+            },
+            #[cfg(esp_idf_btdm_ctrl_mode_br_edr_only)]
+            ble: Default::default(),
+            #[cfg(not(esp_idf_btdm_ctrl_mode_ble_only))]
+            bredr: esp_bredr_controller_config_t {
+                bredr_version: crate::sys::ESP_BREDR_CTRL_CONFIG_VERSION as _,
+                sleep_mode: 0,
+                bt_test_mode_en: crate::sys::UC_BR_EDR_TEST_MODE_EN as _,
+                acl_cca_en: crate::sys::UC_BR_EDR_TX_CCA_EN as _,
+                cca_rssi_thr: -(crate::sys::UC_BR_EDR_CCA_RSSI_THRESH as i8),
+                max_acl_conn: crate::sys::UC_BR_EDR_MAX_ACL_CONN as _,
+                max_sync_conn: crate::sys::UC_BR_EDR_CTRL_MAX_SYNC_CONN as _,
+                cpb_tx_link_num: crate::sys::UC_BR_EDR_CPB_TX_LINK_NB as _,
+                cpb_rx_link_num: crate::sys::UC_BR_EDR_CPB_RX_LINK_NB as _,
+                bt_sco_datapath: crate::sys::UC_BR_EDR_SCO_DATA_PATH as _,
+                hci_tl_type: 0,
+                hci_tl_funcs: core::ptr::null_mut(),
+                cfg_mask: 0,
+                hw_target_code: 0,
+                // The macro uses the `CONFIG_` names (not `UC_`) for these five
+                acl_min_tx_pwr: crate::sys::CONFIG_BT_CTRL_BR_EDR_TX_PWR_ACL_MIN as _,
+                acl_max_tx_pwr: crate::sys::CONFIG_BT_CTRL_BR_EDR_TX_PWR_ACL_MAX as _,
+                apb_tx_pwr: crate::sys::UC_BR_EDR_TX_PWR_APB as _,
+                page_tx_pwr: crate::sys::CONFIG_BT_CTRL_BR_EDR_TX_PWR_PAGE as _,
+                pscan_tx_pwr: crate::sys::CONFIG_BT_CTRL_BR_EDR_TX_PWR_PSCAN as _,
+                iscan_tx_pwr: crate::sys::CONFIG_BT_CTRL_BR_EDR_TX_PWR_ISCAN as _,
+                cpb_tx_pwr: crate::sys::UC_BR_EDR_TX_PWR_CPB as _,
+                strain_tx_pwr: crate::sys::UC_BR_EDR_TX_PWR_STRAIN as _,
+                rf_hw_type: 0,
+                static_aclu_tx_buf_nb: (crate::sys::UC_BR_EDR_ACLU_TX_BUF_NB
+                    - crate::sys::UC_BR_EDR_DYNAMIC_ACLU_TX_BUF_NB)
+                    as _,
+                dynamic_aclu_tx_buf_nb: crate::sys::UC_BR_EDR_DYNAMIC_ACLU_TX_BUF_NB as _,
+                aclu_rx_buf_nb: crate::sys::UC_BR_EDR_ACLU_RX_BUF_NB as _,
+                sync_tx_buf_nb: crate::sys::UC_BR_EDR_SYNC_TX_BUF_NB as _,
+                sync_rx_buf_nb: crate::sys::UC_BR_EDR_SYNC_RX_BUF_NB as _,
+                _bitfield_1: esp_bredr_controller_config_t::new_bitfield_1(
+                    crate::sys::UC_BR_EDR_ESCO_EV4_SUPP as _,
+                    crate::sys::UC_BR_EDR_ESCO_EV5_SUPP as _,
+                    crate::sys::UC_BR_EDR_ESCO_EV3_2_SUPP as _,
+                    crate::sys::UC_BR_EDR_ESCO_EV3_3_SUPP as _,
+                    crate::sys::UC_BR_EDR_ESCO_3_SLOTS_SUPP as _,
+                    crate::sys::UC_BR_EDR_LEGACY_AUTH_VENDOR_EVT as _,
+                    0, // inq_filter_en
+                    0, // dtm_en
+                ),
+                // `mempool_size` and `mempool_ops` are not set by the macro
+                bredr_magic: crate::sys::ESP_BREDR_CTRL_CONFIG_MAGIC_VAL as _,
+                ..Default::default()
+            },
+            #[cfg(esp_idf_btdm_ctrl_mode_ble_only)]
+            bredr: Default::default(),
+            btdm: esp_btdm_controller_config_t {
+                version: crate::sys::BTDM_CONFIG_VERSION as _,
+                task_stack_size: crate::sys::UC_BT_CTRL_TASK_STACK_SIZE as _,
+                task_prio: crate::sys::ESP_TASK_BT_CONTROLLER_PRIO as _,
+                task_run_cpu: crate::sys::CONFIG_BT_CTRL_PINNED_TO_CORE as _,
+                hci_cmd_num: crate::sys::CONFIG_BT_CTRL_HCI_CMD_NUM as _,
+                // The macro sums the connection counts of the enabled halves
+                #[allow(clippy::unnecessary_cast)]
+                hci_conn_num: {
+                    let mut n = 0u32;
+                    #[cfg(not(esp_idf_btdm_ctrl_mode_br_edr_only))]
+                    {
+                        n += crate::sys::DEFAULT_BT_LE_MAX_CONNECTIONS as u32
+                            + crate::sys::DEFAULT_BT_LE_ISO_CIS as u32
+                            + crate::sys::DEFAULT_BT_LE_ISO_BIS as u32;
+                    }
+                    #[cfg(not(esp_idf_btdm_ctrl_mode_ble_only))]
+                    {
+                        n += crate::sys::UC_BR_EDR_MAX_ACL_CONN as u32
+                            + crate::sys::UC_BR_EDR_CTRL_MAX_SYNC_CONN as u32;
+                    }
+                    n as _
+                },
+                sleep_en: crate::sys::UC_BT_CTRL_SLEEP_ENABLE as _,
+                version_num: 0,
+                bluetooth_mode: M::mode() as _,
+                magic: crate::sys::BTDM_CONFIG_MAGIC_VALUE as _,
+            },
+        };
+
         #[cfg(any(esp32c3, esp32s3))]
         let mut bt_cfg = esp_bt_controller_config_t {
             magic: crate::sys::ESP_BT_CTRL_CONFIG_MAGIC_VAL,
@@ -612,7 +790,7 @@ where
             ..Default::default()
         };
 
-        #[cfg(not(any(esp32, esp32s3, esp32c3)))]
+        #[cfg(not(any(esp32, esp32s3, esp32c3, esp32s31)))]
         let mut bt_cfg = esp_bt_controller_config_t {
             config_version: CONFIG_VERSION as _,
             ble_ll_resolv_list_size: crate::sys::CONFIG_BT_LE_LL_RESOLV_LIST_SIZE as _,

@@ -766,7 +766,7 @@
 #include "esp_bt_main.h"
 
 // Classic BT
-#ifdef CONFIG_IDF_TARGET_ESP32 // Only the original ESP32 MCU supports Classic BT
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S31) // Chips with BT Classic
 #ifdef CONFIG_BT_CLASSIC_ENABLED
 #ifdef CONFIG_BT_A2DP_ENABLE
 #include "esp_a2dp_api.h"
@@ -788,7 +788,7 @@
 #include "esp_spp_api.h"
 #endif
 #endif // CONFIG_BT_CLASSIC_ENABLED
-#endif // CONFIG_IDF_TARGET_ESP32
+#endif // CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S31
 
 // BLE
 #ifdef CONFIG_BT_BLE_ENABLED

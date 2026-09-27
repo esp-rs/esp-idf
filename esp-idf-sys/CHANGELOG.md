@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for the esp32s31 (ESP-IDF v6.1+; select it with `MCU=esp32s31` on the `riscv32imafc-esp-espidf` target)
 
+### Changed
+- bindings: the Bluedroid Classic BT headers are included for the esp32s31 as well as the esp32
+
 ### Fixed
 - Sort the extra components' dirs so that we get a predictable build hash by the ESP-IDF Component Manager
 
