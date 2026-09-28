@@ -28,7 +28,7 @@ env:
 
 jobs:
   compile:
-    name: "${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.extra-components-label != '' && format(' (+{0})', matrix.extra-components-label) || '' }}"
+    name: "${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}${{ matrix.extra-components-label != '' && format(' (+{0})', matrix.extra-components-label) || '' }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -50,6 +50,8 @@ jobs:
           - ""
         extra-components-files:
           - ""
+        mcu:
+          - ""
         include:
           # Also test v6.0 with remote components that were moved out of the main tree
           # mqtt and eth SPI drivers work on all targets; eth PHY drivers only support esp32 and esp32p4
@@ -62,6 +64,10 @@ jobs:
             idf-version: v6.0
             extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
             extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
+          # The esp32s31 shares the riscv32imafc target with the esp32p4, which is the MCU picked by default
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32s31
           # esp32p4 also supports eth, but examples are esp32-only for now
           #- target: riscv32imafc-esp-espidf
           #  idf-version: v6.0
@@ -74,6 +80,10 @@ jobs:
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v3
+
+      - name: Setup | MCU
+        if: matrix.mcu != ''
+        run: echo "MCU=${{ matrix.mcu }}" >> "$GITHUB_ENV"
 
       # A CI cell builds ESP-IDF twice (the std and no_std variants of esp-idf-sys differ in
       # features, hence in build-script output directory) and links all examples, which
@@ -139,11 +149,12 @@ jobs:
   # examples are NimBLE-only (gated behind `esp_idf_bt_nimble_enabled`), so that job never compiles
   # them - the two hosts are a mutually-exclusive Kconfig `choice` and cannot coexist in one build.
   # This job builds the workspace and the examples against `sdkconfig.defaults.nimble` to
-  # compile-check the NimBLE paths too. Both riscv targets are intentional: riscv32imc (esp32c3)
-  # exposes the plain `os_mbuf_append`, while riscv32imac (esp32c6/h2) keeps the BLE controller in
-  # ROM and exposes `r_os_mbuf_append` - so both mbuf bindings get exercised.
+  # compile-check the NimBLE paths too. The targets cover the three ways the NimBLE headers expose
+  # the low-level mbuf functions (see `esp_idf_svc::ble::mbuf`): riscv32imc (esp32c3) has the
+  # plain `os_mbuf_append`, riscv32imac (esp32c6/h2) keeps the BLE controller in ROM and aliases it to
+  # `r_os_mbuf_append`, and the esp32s31 wraps that same `r_` symbol in a `static inline` function.
   compile-nimble:
-    name: "NimBLE / ${{ matrix.target }} / ${{ matrix.idf-version }}"
+    name: "NimBLE / ${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -155,6 +166,10 @@ jobs:
           - v5.3.4
           - v5.4.3
           - v5.5.3
+        include:
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32s31
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       ESP_IDF_SDKCONFIG_DEFAULTS: "${{ github.workspace }}/sdkconfig.defaults.nimble"
@@ -162,6 +177,10 @@ jobs:
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v3
+
+      - name: Setup | MCU
+        if: matrix.mcu != ''
+        run: echo "MCU=${{ matrix.mcu }}" >> "$GITHUB_ENV"
 
       # A CI cell builds ESP-IDF twice (the std and no_std variants of esp-idf-sys differ in
       # features, hence in build-script output directory) and links all examples, which

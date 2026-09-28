@@ -19,13 +19,20 @@ use crate::sys::*;
 use super::mbuf::Mbuf;
 use super::{BleDriver, BleError, ConnHandle};
 
-// See `mbuf.rs`: on chips whose BLE controller lives in ROM (`SOC_ESP_NIMBLE_CONTROLLER`: the
-// c2/c5/c6/c61/h2), the low-level os_mbuf / os_msys primitives are ROM-aliased, so `r_<name>` is the
-// only name bindgen emits there. (`ble_hs_mbuf_*` are host functions and are *not* aliased.)
-#[cfg(all(esp_idf_soc_esp_nimble_controller, esp_idf_bt_controller_enabled))]
-use crate::sys::r_os_mbuf_free_chain as os_mbuf_free_chain;
-#[cfg(all(esp_idf_soc_esp_nimble_controller, esp_idf_bt_controller_enabled))]
-use crate::sys::r_os_msys_get_pkthdr as os_msys_get_pkthdr;
+// Declared by hand as the NimBLE headers do not expose them uniformly.
+extern "C" {
+    #[cfg_attr(
+        all(esp_idf_soc_esp_nimble_controller, esp_idf_bt_controller_enabled),
+        link_name = "r_os_mbuf_free_chain"
+    )]
+    fn os_mbuf_free_chain(om: *mut os_mbuf) -> c_int;
+
+    #[cfg_attr(
+        all(esp_idf_soc_esp_nimble_controller, esp_idf_bt_controller_enabled),
+        link_name = "r_os_msys_get_pkthdr"
+    )]
+    fn os_msys_get_pkthdr(dsize: u16, user_hdr_len: u16) -> *mut os_mbuf;
+}
 
 /// An opaque handle to an open L2CAP channel (wraps `*mut ble_l2cap_chan`).
 ///

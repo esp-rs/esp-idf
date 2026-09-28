@@ -1,19 +1,25 @@
 //! Safe interaction with the NimBLE os_mbuf buffer system
 
-#[cfg(esp_idf_bt_nimble_gatt_server)]
-use core::ffi::c_int;
-use core::ffi::c_void;
+use core::ffi::{c_int, c_void};
 use core::marker::PhantomData;
 
 use crate::sys::*;
 
 use super::BleError;
 
-// On chips whose BLE controller lives in ROM (`SOC_ESP_NIMBLE_CONTROLLER`), the NimBLE headers
-// alias `os_mbuf_append` to the ROM symbol `r_os_mbuf_append`, so that is the only name bindgen
-// emits there; on the other chips it is an ordinary function pulled in by the glob import above.
-#[cfg(all(esp_idf_soc_esp_nimble_controller, esp_idf_bt_controller_enabled))]
-use crate::sys::r_os_mbuf_append as os_mbuf_append;
+// On chips whose BLE controller lives in ROM (`SOC_ESP_NIMBLE_CONTROLLER`) they are the controller's
+// `r_<name>` symbols: either `#define`d to them (c2/c5/c6/c61/h2) or, with the dual-mode controller
+// architecture (`BT_DUAL_MODE_ARCH`, the esp32s31), wrapped by `static inline` functions that bindgen
+// does not emit at all. The latter take a `struct ble_mbuf`, which has the same layout as
+// `struct os_mbuf` (as `static_assert`ed in `os_mbuf.h`). On the other chips they are ordinary
+// functions.
+extern "C" {
+    #[cfg_attr(
+        all(esp_idf_soc_esp_nimble_controller, esp_idf_bt_controller_enabled),
+        link_name = "r_os_mbuf_append"
+    )]
+    fn os_mbuf_append(m: *mut os_mbuf, data: *const c_void, len: u16) -> c_int;
+}
 
 /// View of an os_mbuf, the data buffers used by NimBLE
 pub struct Mbuf<'a> {
