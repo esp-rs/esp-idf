@@ -626,6 +626,7 @@ impl<'d> WifiDriver<'d> {
                 ),
             ))]
             dump_hesigb_enable: WIFI_DUMP_HESIGB_ENABLED != 0,
+            wifi_task_stack_size: WIFI_TASK_STACK_SIZE as _,
             ..Default::default()
         };
         esp!(unsafe { esp_wifi_init(&cfg) })?;
