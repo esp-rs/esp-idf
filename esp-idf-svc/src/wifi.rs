@@ -626,6 +626,16 @@ impl<'d> WifiDriver<'d> {
                 ),
             ))]
             dump_hesigb_enable: WIFI_DUMP_HESIGB_ENABLED != 0,
+            // Available since ESP IDF V5.5.0 and V6.1.0
+            #[cfg(any(
+                esp_idf_version = "5.5",
+                all(
+                    not(esp_idf_version_major = "4"),
+                    not(esp_idf_version_major = "5"),
+                    not(esp_idf_version_major = "6")
+                ),
+                all(esp_idf_version_major = "6", not(esp_idf_version = "6.0"),),
+            ))]
             wifi_task_stack_size: WIFI_TASK_STACK_SIZE as _,
             ..Default::default()
         };
