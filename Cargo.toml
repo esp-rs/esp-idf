@@ -28,7 +28,7 @@ toml = "0.8"
 which = "4.4"
 
 # esp-idf-sys
-libc = "0.2"
+libc = "0.2.183"
 compile-fmt = "0.1"
 build-time = "0.1"
 const_format = "0.2"
@@ -49,7 +49,7 @@ embedded-graphics-core = { version = "0.4", default-features = false }
 # Utilities
 critical-section = { version = "1.2", features = ["restore-state-none"] }
 heapless = { version = "0.9", default-features = false }
-enumset = { version = "1.1.4", default-features = false }
+enumset = { version = "1.1.8", default-features = false }
 log = { version = "0.4", default-features = false }
 atomic-waker = { version = "1.1.1", default-features = false }
 num_enum = { version = "0.7", default-features = false }

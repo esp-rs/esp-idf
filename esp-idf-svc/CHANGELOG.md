@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - thread: esp32s31 support (native IEEE 802.15.4 radio, host mode; ESP-IDF v6.1+)
 - bt: esp32s31 support in all three controller modes
 - ble: esp32s31 support (NimBLE, BLE-only controller mode)
+- Netif: add an asynchronous PPP byte-stream bridge for `EspNetifDriver`.
 
 ### Fixed
 - Netif: align the default PPP client with ESP-IDF's PPP configuration, correctly deserialize `IP_EVENT_PPP_LOST_IP`, and keep custom driver lifecycle state in sync across start/stop calls.

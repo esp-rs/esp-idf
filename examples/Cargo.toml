@@ -20,7 +20,7 @@ timer-legacy = ["esp-idf-hal/timer-legacy"]
 [dependencies]
 esp-idf-sys = { workspace = true, features = ["std", "binstart"] }
 esp-idf-hal = { workspace = true, features = ["std", "binstart", "nightly", "experimental", "critical-section", "embassy-sync"] }
-esp-idf-svc = { workspace = true, features = ["std", "binstart", "nightly", "experimental"] }
+esp-idf-svc = { workspace = true, features = ["std", "binstart", "nightly", "experimental", "embassy-time-driver"] }
 embedded-hal = { workspace = true }
 embedded-hal-0-2 = { workspace = true }
 embedded-svc = { workspace = true }
@@ -37,6 +37,9 @@ async-io = { workspace = true }
 mipidsi = { workspace = true }
 display-interface-spi = { workspace = true }
 embedded-graphics = { workspace = true }
+a76xx = { git = "https://github.com/DaneSlattery/a76xx.git", branch = "main" }
+embassy-time = { version = "0.5", features = ["generic-queue-32"] }
+static_cell = "2"
 
 [build-dependencies]
 embuild = { workspace = true }

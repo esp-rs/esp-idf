@@ -1024,7 +1024,12 @@ mod driver {
     use core::borrow::BorrowMut;
 
     use ::log::debug;
+    use alloc::{sync::Arc, vec::Vec};
+    use embassy_futures::select::{select, Either};
+    use embassy_sync::channel::Channel;
+    use embedded_io_async::{Read, Write};
 
+    use crate::hal::task::embassy_sync::EspRawMutex;
     use crate::handle::RawHandle;
     use crate::sys::*;
 
@@ -1041,6 +1046,175 @@ mod driver {
     // The C driver retains a pointer to `inner`, whose allocation remains stable
     // when this outer value moves. Both callbacks are Send and `T` owns the netif.
     unsafe impl<T> Send for EspNetifDriver<'_, T> where T: BorrowMut<EspNetif> + Send {}
+
+    /// The default number of outbound packets buffered by [`AsyncEspNetifChannel`].
+    pub const ASYNC_NETIF_TX_QUEUE_SIZE: usize = 8;
+
+    /// An error produced while forwarding bytes from an asynchronous transport
+    /// into an [`EspNetifDriver`].
+    #[derive(Debug)]
+    pub enum AsyncEspNetifChannelError<E> {
+        /// Reading from the transport failed.
+        Read(E),
+        /// Writing to the transport failed.
+        Write(E),
+        /// Passing the received bytes to ESP-NETIF failed.
+        Netif(EspError),
+    }
+
+    impl<E> core::fmt::Display for AsyncEspNetifChannelError<E>
+    where
+        E: core::fmt::Display,
+    {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            match self {
+                Self::Read(error) => write!(f, "transport read failed: {error}"),
+                Self::Write(error) => write!(f, "transport write failed: {error}"),
+                Self::Netif(error) => write!(f, "ESP-NETIF receive failed: {error}"),
+            }
+        }
+    }
+
+    #[cfg(feature = "std")]
+    impl<E> std::error::Error for AsyncEspNetifChannelError<E> where
+        E: core::fmt::Debug + core::fmt::Display
+    {
+    }
+
+    /// Bridges an [`EspNetifDriver`] to asynchronous byte streams.
+    ///
+    /// This adapter is intended for PPP byte streams. A modem driver must
+    /// complete command negotiation and enter PPP data mode before calling
+    /// [`Self::run`]. ESP-IDF's PPP input deframes the byte stream, so reads may
+    /// contain partial frames, multiple frames, or splits within an escape
+    /// sequence. Use a reasonably large receive buffer to avoid a heap
+    /// allocation and TCP/IP mailbox message for every small read.
+    ///
+    /// Other netif types may require exactly one complete L2 frame per receive
+    /// call and different buffer ownership. Do not use this adapter for them
+    /// without checking their ESP-IDF input contract.
+    ///
+    /// ESP-NETIF invokes its transmit callback synchronously, while
+    /// [`Write`] is asynchronous. Outbound packets are therefore
+    /// copied into a bounded queue. If that queue is full, ESP-NETIF is notified
+    /// with `ESP_ERR_NO_MEM` instead of blocking its TCP/IP task.
+    ///
+    /// A modem-specific driver remains responsible for entering PPP data mode. For
+    /// example, after obtaining an `a76xx::PppIo` stream from `connect_ppp`:
+    ///
+    /// ```ignore
+    /// let mut bridge = AsyncEspNetifChannel::<_, 8>::new(
+    ///     EspNetif::new(NetifStack::Ppp)?,
+    ///     |netif| netif.set_ppp_conf(&PppConfiguration::default()),
+    /// )?;
+    /// bridge.driver_mut().start()?;
+    ///
+    /// let mut rx_buffer = [0; 1536];
+    /// bridge.run(&mut ppp_io, &mut rx_buffer).await?;
+    /// ```
+    pub struct AsyncEspNetifChannel<'d, T, const TX_QUEUE_SIZE: usize = ASYNC_NETIF_TX_QUEUE_SIZE>
+    where
+        T: BorrowMut<EspNetif>,
+    {
+        driver: EspNetifDriver<'d, T>,
+        tx_queue: Arc<Channel<EspRawMutex, Vec<u8>, TX_QUEUE_SIZE>>,
+    }
+
+    impl<T, const TX_QUEUE_SIZE: usize> AsyncEspNetifChannel<'static, T, TX_QUEUE_SIZE>
+    where
+        T: BorrowMut<EspNetif>,
+    {
+        /// Creates an asynchronous adapter around the provided ESP-NETIF instance.
+        pub fn new<P>(netif: T, post_attach_cfg: P) -> Result<Self, EspError>
+        where
+            P: FnMut(&mut EspNetif) -> Result<(), EspError> + Send + 'static,
+        {
+            Self::new_nonstatic(netif, post_attach_cfg)
+        }
+    }
+
+    impl<'d, T, const TX_QUEUE_SIZE: usize> AsyncEspNetifChannel<'d, T, TX_QUEUE_SIZE>
+    where
+        T: BorrowMut<EspNetif>,
+    {
+        /// Creates an asynchronous adapter which may borrow non-static data from
+        /// `post_attach_cfg`.
+        ///
+        /// # Safety
+        ///
+        /// This has the same leak-safety requirements as
+        /// [`EspNetifDriver::new_nonstatic`]. The adapter must not be forgotten.
+        pub fn new_nonstatic<P>(netif: T, post_attach_cfg: P) -> Result<Self, EspError>
+        where
+            P: FnMut(&mut EspNetif) -> Result<(), EspError> + Send + 'd,
+        {
+            if TX_QUEUE_SIZE == 0 {
+                return Err(EspError::from_infallible::<ESP_ERR_INVALID_ARG>());
+            }
+
+            let tx_queue = Arc::new(Channel::new());
+            let callback_queue = tx_queue.clone();
+            let driver = EspNetifDriver::new_nonstatic(netif, post_attach_cfg, move |data| {
+                callback_queue
+                    .try_send(Vec::from(data))
+                    .map_err(|_| EspError::from_infallible::<ESP_ERR_NO_MEM>())
+            })?;
+
+            Ok(Self { driver, tx_queue })
+        }
+
+        /// Runs both directions of the bridge over one bidirectional PPP stream.
+        ///
+        /// This is convenient for transports such as `a76xx::PppIo` which implement
+        /// both [`embedded_io_async::Read`] and [`embedded_io_async::Write`] but do
+        /// not expose separate halves. The transport's read operation must be
+        /// cancellation-safe: it is cancelled whenever ESP-NETIF has an outbound
+        /// packet ready to write.
+        ///
+        /// The method returns successfully if the transport reports end-of-stream
+        /// by returning zero bytes.
+        pub async fn run<IO>(
+            &self,
+            mut io: IO,
+            rx_buffer: &mut [u8],
+        ) -> Result<(), AsyncEspNetifChannelError<IO::Error>>
+        where
+            IO: Read + Write,
+        {
+            loop {
+                match select(io.read(rx_buffer), self.tx_queue.receive()).await {
+                    Either::First(result) => {
+                        let len = result.map_err(AsyncEspNetifChannelError::Read)?;
+                        if len == 0 {
+                            return Ok(());
+                        }
+                        self.driver
+                            .rx(&rx_buffer[..len])
+                            .map_err(AsyncEspNetifChannelError::Netif)?;
+                    }
+                    Either::Second(packet) => io
+                        .write_all(&packet)
+                        .await
+                        .map_err(AsyncEspNetifChannelError::Write)?,
+                }
+            }
+        }
+
+        /// Returns the underlying ESP-NETIF driver.
+        pub fn driver(&self) -> &EspNetifDriver<'d, T> {
+            &self.driver
+        }
+
+        /// Returns the underlying ESP-NETIF driver mutably.
+        pub fn driver_mut(&mut self) -> &mut EspNetifDriver<'d, T> {
+            &mut self.driver
+        }
+
+        /// Unwraps the adapter and returns the underlying ESP-NETIF driver.
+        pub fn into_driver(self) -> EspNetifDriver<'d, T> {
+            self.driver
+        }
+    }
 
     impl<T> EspNetifDriver<'static, T>
     where
