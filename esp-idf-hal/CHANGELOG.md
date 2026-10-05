@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Basic support for the esp32s31 (ESP-IDF v6.1+): GPIO, dual-core, UART0-3, SPI2/3, I2C0/1, I2S0/1, timers, RMT, temperature sensor, USB Serial/JTAG and sleep
+- Support for esp32h4 (ESP-IDF v6.1+)
+- Support for the esp32s31 (ESP-IDF v6.1+): GPIO, dual-core, UART0-3, SPI2/3, I2C0/1, I2S0/1, timers, RMT, temperature sensor, USB Serial/JTAG and sleep
 - modem: `Modem::split()` / `split_reborrow()` into Wi-Fi, Thread and Bluetooth modems on the esp32s31
 
 ### Fixed

@@ -1,7 +1,7 @@
 use core::time::Duration;
 use esp_idf_sys::*;
 
-#[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
 pub use self::rtc::{ChainedRtcWakeupPins, RtcWakeLevel, RtcWakeupPins};
 
 pub mod timer {
@@ -13,7 +13,7 @@ pub mod timer {
     }
 }
 
-#[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
 pub mod rtc {
     use crate::gpio::{PinDriver, PinId, RTCMode};
     use esp_idf_sys::*;
@@ -161,7 +161,7 @@ pub mod uart {
     }
 }
 
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
+#[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31, esp32h4))]
 pub mod touch {
     use esp_idf_sys::*;
     pub fn configure() -> Result<(), EspError> {
@@ -212,7 +212,7 @@ impl LightSleep {
         Ok(self)
     }
 
-    #[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
     pub fn wakeup_on_rtc<P>(self, pins: P, level: rtc::RtcWakeLevel) -> Result<Self, EspError>
     where
         P: rtc::RtcWakeupPins,
@@ -221,7 +221,7 @@ impl LightSleep {
         Ok(self)
     }
 
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31, esp32h4))]
     pub fn wakeup_on_touch(self) -> Result<Self, EspError> {
         touch::configure()?;
         Ok(self)
@@ -251,7 +251,7 @@ impl DeepSleep {
         Ok(self)
     }
 
-    #[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
     pub fn wakeup_on_rtc<P>(self, pins: P, level: rtc::RtcWakeLevel) -> Result<Self, EspError>
     where
         P: rtc::RtcWakeupPins,
@@ -270,7 +270,7 @@ impl DeepSleep {
         Ok(self)
     }
 
-    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
+    #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31, esp32h4))]
     pub fn wakeup_on_touch(self) -> Result<Self, EspError> {
         touch::configure()?;
         Ok(self)

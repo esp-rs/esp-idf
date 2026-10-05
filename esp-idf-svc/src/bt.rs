@@ -686,6 +686,198 @@ where
             },
         };
 
+        // esp32h4: LE-only "BTDM" controller port with a nested config.
+        // ESP-IDF 6.2 moved the LE half to a shared `esp_bt_ctrl_le_config_t` with the ISO
+        // options behind a pointer; ESP-IDF 6.1 still has them inline, as on the esp32s31.
+        #[cfg(all(esp32h4, esp_idf_version_at_least_6_2_0, esp_idf_bt_le_iso_support))]
+        static ISO_CONFIG: esp_bt_ctrl_le_iso_config_t = esp_bt_ctrl_le_iso_config_t {
+            iso_enabled: crate::sys::DEFAULT_BT_LE_ISO_ENABLED != 0,
+            iso_fra_unseg: crate::sys::DEFAULT_BT_LE_ISO_FRA_UNSEG != 0,
+            iso_nsfc_en: crate::sys::DEFAULT_BT_LE_ISO_NSFC_EN != 0,
+            iso_nsfc_num: crate::sys::DEFAULT_BT_LE_ISO_NSFC_NUM as _,
+            iso_buf_count: crate::sys::DEFAULT_BT_LE_ISO_BUF_COUNT as _,
+            iso_buf_size: crate::sys::DEFAULT_BT_LE_ISO_BUF_SIZE as _,
+            iso_big_count: crate::sys::DEFAULT_BT_LE_ISO_BIG as _,
+            iso_bis_count: crate::sys::DEFAULT_BT_LE_ISO_BIS as _,
+            iso_bis_per_big: crate::sys::DEFAULT_BT_LE_ISO_BIS_PER_BIG as _,
+            iso_cig_count: crate::sys::DEFAULT_BT_LE_ISO_CIG as _,
+            iso_cis_count: crate::sys::DEFAULT_BT_LE_ISO_CIS as _,
+            iso_cis_per_cig: crate::sys::DEFAULT_BT_LE_ISO_CIS_PER_CIG as _,
+        };
+
+        #[cfg(all(esp32h4, esp_idf_version_at_least_6_2_0))]
+        let mut bt_cfg = esp_bt_controller_config_t {
+            ble: esp_bt_ctrl_le_config_t {
+                config_version: crate::sys::BLE_CONFIG_VERSION as _,
+                ble_ll_resolv_list_size: crate::sys::CONFIG_BT_LE_LL_RESOLV_LIST_SIZE as _,
+                ble_hci_evt_hi_buf_count: crate::sys::DEFAULT_BT_LE_HCI_EVT_HI_BUF_COUNT as _,
+                ble_hci_evt_lo_buf_count: crate::sys::DEFAULT_BT_LE_HCI_EVT_LO_BUF_COUNT as _,
+                ble_ll_sync_list_cnt: crate::sys::DEFAULT_BT_LE_MAX_PERIODIC_ADVERTISER_LIST as _,
+                ble_ll_sync_cnt: crate::sys::DEFAULT_BT_LE_MAX_PERIODIC_SYNCS as _,
+                ble_ll_rsp_dup_list_count: crate::sys::CONFIG_BT_LE_LL_DUP_SCAN_LIST_COUNT as _,
+                ble_ll_adv_dup_list_count: crate::sys::CONFIG_BT_LE_LL_DUP_SCAN_LIST_COUNT as _,
+                ble_ll_tx_pwr_dbm: crate::sys::UC_BT_CTRL_LE_DFT_TX_POWER_LEVEL_DBM_EFF as _,
+                rtc_freq: 32000,
+                ble_ll_sca: crate::sys::CONFIG_BT_LE_LL_SCA as _,
+                ble_ll_scan_phy_number: crate::sys::BLE_LL_SCAN_PHY_NUMBER_N as _,
+                ble_ll_conn_def_auth_pyld_tmo: crate::sys::BLE_LL_CONN_DEF_AUTH_PYLD_TMO_N as _,
+                ble_ll_jitter_usecs: crate::sys::BLE_LL_JITTER_USECS_N as _,
+                ble_ll_sched_max_adv_pdu_usecs: crate::sys::BLE_LL_SCHED_MAX_ADV_PDU_USECS_N as _,
+                ble_ll_sched_direct_adv_max_usecs: crate::sys::BLE_LL_SCHED_DIRECT_ADV_MAX_USECS_N
+                    as _,
+                ble_ll_sched_adv_max_usecs: crate::sys::BLE_LL_SCHED_ADV_MAX_USECS_N as _,
+                ble_scan_rsp_data_max_len: crate::sys::DEFAULT_BT_LE_SCAN_RSP_DATA_MAX_LEN_N as _,
+                ble_ll_cfg_num_hci_cmd_pkts: crate::sys::BLE_LL_CFG_NUM_HCI_CMD_PKTS_N as _,
+                ble_ll_ctrl_proc_timeout_ms: crate::sys::BLE_LL_CTRL_PROC_TIMEOUT_MS_N as _,
+                nimble_max_connections: crate::sys::DEFAULT_BT_LE_MAX_CONNECTIONS as _,
+                ble_whitelist_size: crate::sys::DEFAULT_BT_NIMBLE_WHITELIST_SIZE as _,
+                ble_acl_buf_size: crate::sys::DEFAULT_BT_LE_ACL_BUF_SIZE as _,
+                ble_acl_buf_count: crate::sys::DEFAULT_BT_LE_ACL_BUF_COUNT as _,
+                ble_hci_evt_buf_size: crate::sys::DEFAULT_BT_LE_HCI_EVT_BUF_SIZE as _,
+                ble_multi_adv_instances: crate::sys::DEFAULT_BT_LE_MAX_EXT_ADV_INSTANCES as _,
+                ble_ext_adv_max_size: crate::sys::DEFAULT_BT_LE_EXT_ADV_MAX_SIZE as _,
+                controller_task_stack_size: crate::sys::UC_BT_CTRL_TASK_STACK_SIZE as _,
+                controller_task_prio: crate::sys::ESP_TASK_BT_CONTROLLER_PRIO as _,
+                controller_run_cpu: 0,
+                enable_qa_test: crate::sys::RUN_QA_TEST as _,
+                enable_bqb_test: crate::sys::RUN_BQB_TEST as _,
+                enable_tx_cca: crate::sys::DEFAULT_BT_LE_TX_CCA_ENABLED as _,
+                cca_rssi_thresh: (256 - crate::sys::DEFAULT_BT_LE_CCA_RSSI_THRESH) as _,
+                sleep_en: crate::sys::UC_BT_CTRL_SLEEP_ENABLE as _,
+                coex_phy_coded_tx_rx_time_limit:
+                    crate::sys::DEFAULT_BT_LE_COEX_PHY_CODED_TX_RX_TLIM_EFF as _,
+                dis_scan_backoff: crate::sys::NIMBLE_DISABLE_SCAN_BACKOFF as _,
+                ble_scan_classify_filter_enable: 1,
+                // `cca_drop_mode` and `cca_low_tx_pwr` are not set by the macro
+                main_xtal_freq: crate::sys::CONFIG_XTAL_FREQ as _,
+                ignore_wl_for_direct_adv: 0,
+                enable_pcl: crate::sys::UC_BT_CTRL_LE_POWER_CONTROL_ENABLED as _,
+                csa2_select: crate::sys::UC_BT_CTRL_LE_50_FEATURE_SUPPORT as _,
+                enable_csr: crate::sys::UC_BT_CTRL_LE_SUBRATE_ENABLED as _,
+                ble_aa_check: crate::sys::UC_BT_CTRL_LE_CHECK_CONNECT_IND_ACCESS_ADDRESS as _,
+                ble_llcp_disc_flag: crate::sys::UC_BT_CTRL_LLCP_INSTANT_PASSED_DISC_FLAGS as _,
+                scan_backoff_upperlimitmax: crate::sys::UC_BT_CTRL_LE_SCAN_BACKOFF_UPPERLIMITMAX
+                    as _,
+                ble_chan_ass_en: crate::sys::UC_BT_CTRL_LE_CHAN_ASS_ENABLED as _,
+                ble_data_lenth_zero_aux: crate::sys::UC_BT_CTRL_LE_ADV_DATA_LENGTH_ZERO_AUX as _,
+                vhci_enabled: crate::sys::UC_BT_CTRL_HCI_INTERFACE_USE_RAM as _,
+                ptr_check_enabled: crate::sys::UC_BT_CTRL_LE_PTR_CHECK_ENABLED as _,
+                ble_adv_tx_options: crate::sys::UC_BT_CTRL_LE_ADV_TX_OPTIONS as _,
+                skip_unnecessary_checks_en: 0,
+                fast_conn_data_tx_en: crate::sys::UC_BT_CTRL_LE_FAST_CONN_DATA_TX_EN as _,
+                ch39_txpwr: crate::sys::UC_BT_CTRL_LE_CH39_TX_PWR_DBM as _,
+                adv_rsv_cnt: crate::sys::UC_BT_CTRL_LE_ADV_SM_RESERVE_CNT as _,
+                conn_rsv_cnt: crate::sys::UC_BT_CTRL_LE_CONN_SM_RESERVE_CNT as _,
+                priority_level_cfg: crate::sys::UC_BT_CTRL_LE_SCHED_PRIO_LVL_CFG as _,
+                slv_fst_rx_lat_en: crate::sys::UC_BT_CTRL_LE_SLV_FAST_RX_CONN_DATA_EN as _,
+                dl_itvl_phy_sync_en: crate::sys::UC_BT_CTRL_LE_DL_ITVL_PHY_SYNC_EN as _,
+                scan_allow_adi_filter: crate::sys::UC_BT_CTRL_LE_SCAN_ENH_ADI_FILTER as _,
+                // `enhanced_mem_resv` and `rxbuf_reserved` (if present) are zero in the macro
+                #[cfg(esp_idf_bt_le_iso_support)]
+                iso_config: core::ptr::addr_of!(ISO_CONFIG) as *mut _,
+                #[cfg(not(esp_idf_bt_le_iso_support))]
+                iso_config: core::ptr::null_mut(),
+                config_magic: crate::sys::BLE_CONFIG_MAGIC as _,
+                ..Default::default()
+            },
+            btdm: esp_bt_ctrl_btdm_config_t {
+                version: crate::sys::BTDM_CONFIG_VERSION as _,
+                task_stack_size: crate::sys::UC_BT_CTRL_TASK_STACK_SIZE as _,
+                task_prio: crate::sys::ESP_TASK_BT_CONTROLLER_PRIO as _,
+                task_run_cpu: crate::sys::CONFIG_BT_CTRL_PINNED_TO_CORE as _,
+                hci_cmd_num: crate::sys::CONFIG_BT_CTRL_HCI_CMD_NUM as _,
+                nonblocking_cmd_buf: crate::sys::UC_BT_CTRL_NONBLOCK_CMD_BUF as _,
+                sleep_en: crate::sys::UC_BT_CTRL_SLEEP_ENABLE as _,
+                version_num: 0,
+                bluetooth_mode: M::mode() as _,
+                etm_triggered_rf: crate::sys::UC_BT_CTRL_SLEEP_ETM_TRIGGERED_RF as _,
+                magic: crate::sys::BTDM_CONFIG_MAGIC_VALUE as _,
+            },
+        };
+
+        #[cfg(all(esp32h4, not(esp_idf_version_at_least_6_2_0)))]
+        let mut bt_cfg = esp_bt_controller_config_t {
+            ble: esp_bt_controller_config_t__bindgen_ty_1 {
+                config_version: crate::sys::BLE_CONFIG_VERSION as _,
+                ble_ll_resolv_list_size: crate::sys::CONFIG_BT_LE_LL_RESOLV_LIST_SIZE as _,
+                ble_hci_evt_hi_buf_count: crate::sys::DEFAULT_BT_LE_HCI_EVT_HI_BUF_COUNT as _,
+                ble_hci_evt_lo_buf_count: crate::sys::DEFAULT_BT_LE_HCI_EVT_LO_BUF_COUNT as _,
+                ble_ll_sync_list_cnt: crate::sys::DEFAULT_BT_LE_MAX_PERIODIC_ADVERTISER_LIST as _,
+                ble_ll_sync_cnt: crate::sys::DEFAULT_BT_LE_MAX_PERIODIC_SYNCS as _,
+                ble_ll_rsp_dup_list_count: crate::sys::CONFIG_BT_LE_LL_DUP_SCAN_LIST_COUNT as _,
+                ble_ll_adv_dup_list_count: crate::sys::CONFIG_BT_LE_LL_DUP_SCAN_LIST_COUNT as _,
+                ble_ll_tx_pwr_dbm: 0,
+                rtc_freq: 32000,
+                ble_ll_sca: crate::sys::CONFIG_BT_LE_LL_SCA as _,
+                ble_ll_scan_phy_number: crate::sys::BLE_LL_SCAN_PHY_NUMBER_N as _,
+                ble_ll_conn_def_auth_pyld_tmo: crate::sys::BLE_LL_CONN_DEF_AUTH_PYLD_TMO_N as _,
+                ble_ll_jitter_usecs: crate::sys::BLE_LL_JITTER_USECS_N as _,
+                ble_ll_sched_max_adv_pdu_usecs: crate::sys::BLE_LL_SCHED_MAX_ADV_PDU_USECS_N as _,
+                ble_ll_sched_direct_adv_max_usecs: crate::sys::BLE_LL_SCHED_DIRECT_ADV_MAX_USECS_N
+                    as _,
+                ble_ll_sched_adv_max_usecs: crate::sys::BLE_LL_SCHED_ADV_MAX_USECS_N as _,
+                ble_scan_rsp_data_max_len: crate::sys::DEFAULT_BT_LE_SCAN_RSP_DATA_MAX_LEN_N as _,
+                ble_ll_cfg_num_hci_cmd_pkts: crate::sys::BLE_LL_CFG_NUM_HCI_CMD_PKTS_N as _,
+                ble_ll_ctrl_proc_timeout_ms: crate::sys::BLE_LL_CTRL_PROC_TIMEOUT_MS_N as _,
+                nimble_max_connections: crate::sys::DEFAULT_BT_LE_MAX_CONNECTIONS as _,
+                ble_whitelist_size: crate::sys::DEFAULT_BT_NIMBLE_WHITELIST_SIZE as _,
+                ble_acl_buf_size: crate::sys::DEFAULT_BT_LE_ACL_BUF_SIZE as _,
+                ble_acl_buf_count: crate::sys::DEFAULT_BT_LE_ACL_BUF_COUNT as _,
+                ble_hci_evt_buf_size: crate::sys::DEFAULT_BT_LE_HCI_EVT_BUF_SIZE as _,
+                ble_multi_adv_instances: crate::sys::DEFAULT_BT_LE_MAX_EXT_ADV_INSTANCES as _,
+                ble_ext_adv_max_size: crate::sys::DEFAULT_BT_LE_EXT_ADV_MAX_SIZE as _,
+                controller_task_stack_size: crate::sys::UC_BT_CTRL_TASK_STACK_SIZE as _,
+                controller_task_prio: crate::sys::ESP_TASK_BT_CONTROLLER_PRIO as _,
+                controller_run_cpu: 0,
+                enable_qa_test: crate::sys::RUN_QA_TEST as _,
+                enable_bqb_test: crate::sys::RUN_BQB_TEST as _,
+                enable_tx_cca: crate::sys::DEFAULT_BT_LE_TX_CCA_ENABLED as _,
+                cca_rssi_thresh: (256 - crate::sys::DEFAULT_BT_LE_CCA_RSSI_THRESH) as _,
+                sleep_en: crate::sys::UC_BT_CTRL_SLEEP_ENABLE as _,
+                coex_phy_coded_tx_rx_time_limit:
+                    crate::sys::DEFAULT_BT_LE_COEX_PHY_CODED_TX_RX_TLIM_EFF as _,
+                dis_scan_backoff: crate::sys::NIMBLE_DISABLE_SCAN_BACKOFF as _,
+                ble_scan_classify_filter_enable: 1,
+                // `cca_drop_mode` and `cca_low_tx_pwr` are not set by the macro
+                main_xtal_freq: crate::sys::CONFIG_XTAL_FREQ as _,
+                ignore_wl_for_direct_adv: 0,
+                enable_pcl: 0,
+                csa2_select: 1,
+                enable_csr: 0,
+                backoff_rssi: -100,
+                iso_enabled: crate::sys::DEFAULT_BT_LE_ISO_ENABLED != 0,
+                iso_bqb_test: false,
+                iso_fra_unseg: crate::sys::DEFAULT_BT_LE_ISO_FRA_UNSEG != 0,
+                iso_nsfc_en: crate::sys::DEFAULT_BT_LE_ISO_NSFC_EN != 0,
+                iso_nsfc_num: crate::sys::DEFAULT_BT_LE_ISO_NSFC_NUM as _,
+                iso_buf_count: crate::sys::DEFAULT_BT_LE_ISO_BUF_COUNT as _,
+                iso_buf_size: crate::sys::DEFAULT_BT_LE_ISO_BUF_SIZE as _,
+                iso_big_count: crate::sys::DEFAULT_BT_LE_ISO_BIG as _,
+                iso_bis_count: crate::sys::DEFAULT_BT_LE_ISO_BIS as _,
+                iso_bis_per_big: crate::sys::DEFAULT_BT_LE_ISO_BIS_PER_BIG as _,
+                iso_cig_count: crate::sys::DEFAULT_BT_LE_ISO_CIG as _,
+                iso_cis_count: crate::sys::DEFAULT_BT_LE_ISO_CIS as _,
+                iso_cis_per_cig: crate::sys::DEFAULT_BT_LE_ISO_CIS_PER_CIG as _,
+                config_magic: crate::sys::BLE_CONFIG_MAGIC as _,
+                ..Default::default()
+            },
+            btdm: esp_btdm_controller_config_t {
+                version: crate::sys::BTDM_CONFIG_VERSION as _,
+                task_stack_size: crate::sys::UC_BT_CTRL_TASK_STACK_SIZE as _,
+                task_prio: crate::sys::ESP_TASK_BT_CONTROLLER_PRIO as _,
+                task_run_cpu: crate::sys::CONFIG_BT_CTRL_PINNED_TO_CORE as _,
+                hci_cmd_num: crate::sys::CONFIG_BT_CTRL_HCI_CMD_NUM as _,
+                #[allow(clippy::unnecessary_cast)]
+                hci_conn_num: (crate::sys::DEFAULT_BT_LE_MAX_CONNECTIONS as u32
+                    + crate::sys::DEFAULT_BT_LE_ISO_CIS as u32
+                    + crate::sys::DEFAULT_BT_LE_ISO_BIS as u32) as _,
+                sleep_en: crate::sys::UC_BT_CTRL_SLEEP_ENABLE as _,
+                version_num: 0,
+                bluetooth_mode: M::mode() as _,
+                magic: crate::sys::BTDM_CONFIG_MAGIC_VALUE as _,
+            },
+        };
+
         #[cfg(any(esp32c3, esp32s3))]
         let mut bt_cfg = esp_bt_controller_config_t {
             magic: crate::sys::ESP_BT_CTRL_CONFIG_MAGIC_VAL,
@@ -790,7 +982,7 @@ where
             ..Default::default()
         };
 
-        #[cfg(not(any(esp32, esp32s3, esp32c3, esp32s31)))]
+        #[cfg(not(any(esp32, esp32s3, esp32c3, esp32s31, esp32h4)))]
         let mut bt_cfg = esp_bt_controller_config_t {
             config_version: CONFIG_VERSION as _,
             ble_ll_resolv_list_size: crate::sys::CONFIG_BT_LE_LL_RESOLV_LIST_SIZE as _,

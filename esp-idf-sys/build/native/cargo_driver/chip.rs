@@ -41,6 +41,9 @@ pub enum Chip {
     /// RISC-V based dual core
     #[strum(serialize = "esp32s31")]
     ESP32S31,
+    /// RISC-V based dual core
+    #[strum(serialize = "esp32h4")]
+    ESP32H4,
 }
 
 impl Chip {
@@ -55,7 +58,7 @@ impl Chip {
             "riscv32imac-esp-espidf" => {
                 &[Chip::ESP32C6, Chip::ESP32C61, Chip::ESP32C5, Chip::ESP32H2]
             }
-            "riscv32imafc-esp-espidf" => &[Chip::ESP32P4, Chip::ESP32S31],
+            "riscv32imafc-esp-espidf" => &[Chip::ESP32P4, Chip::ESP32S31, Chip::ESP32H4],
             _ => bail!("Unsupported target '{}'", rust_target_triple),
         };
 
@@ -101,7 +104,8 @@ impl Chip {
             | Self::ESP32C6
             | Self::ESP32C61
             | Self::ESP32P4
-            | Self::ESP32S31 => "riscv32-esp-elf",
+            | Self::ESP32S31
+            | Self::ESP32H4 => "riscv32-esp-elf",
         }
     }
 

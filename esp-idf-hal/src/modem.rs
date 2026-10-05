@@ -66,10 +66,10 @@ impl<'d> Modem<'d> {
     }
 }
 
-#[cfg(not(esp32h2))]
+#[cfg(not(any(esp32h2, esp32h4)))]
 impl WifiModemPeripheral for Modem<'_> {}
 
-#[cfg(any(esp32h2, esp32c5, esp32c6, esp32c61, esp32s31))]
+#[cfg(any(esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32s31))]
 impl ThreadModemPeripheral for Modem<'_> {}
 
 #[cfg(not(any(esp32s2, esp32p4)))]
@@ -77,16 +77,16 @@ impl BluetoothModemPeripheral for Modem<'_> {}
 
 #[cfg(not(esp32s2))]
 mod split {
-    #[cfg(not(esp32h2))]
+    #[cfg(not(any(esp32h2, esp32h4)))]
     crate::impl_peripheral!(WifiModem);
 
-    #[cfg(not(esp32h2))]
+    #[cfg(not(any(esp32h2, esp32h4)))]
     impl super::WifiModemPeripheral for WifiModem<'_> {}
 
-    #[cfg(any(esp32h2, esp32c5, esp32c6, esp32c61, esp32s31))]
+    #[cfg(any(esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32s31))]
     crate::impl_peripheral!(ThreadModem);
 
-    #[cfg(any(esp32h2, esp32c5, esp32c6, esp32c61, esp32s31))]
+    #[cfg(any(esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32s31))]
     impl super::ThreadModemPeripheral for ThreadModem<'_> {}
 
     crate::impl_peripheral!(BluetoothModem);

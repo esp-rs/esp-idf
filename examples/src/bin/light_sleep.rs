@@ -31,9 +31,9 @@ fn main() -> anyhow::Result<()> {
     let gpio1 = PinDriver::input(peripherals.pins.gpio6, Pull::Down)?;
 
     // Sample RTC pins
-    #[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
     let rtc0 = PinDriver::rtc_input(peripherals.pins.gpio2, Pull::Down)?;
-    #[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
     let rtc1 = PinDriver::rtc_input(peripherals.pins.gpio4, Pull::Down)?;
 
     // Sample UART driver
@@ -55,7 +55,7 @@ fn main() -> anyhow::Result<()> {
         .wakeup_on_gpio(&gpio1, Level::High)?
         .wakeup_on_uart(&uart, 3)?;
 
-    #[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
     {
         let pins = rtc0.chain(&rtc1);
         sleep = sleep.wakeup_on_rtc(&pins, RtcWakeLevel::AnyHigh)?;

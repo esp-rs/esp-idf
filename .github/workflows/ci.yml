@@ -64,10 +64,13 @@ jobs:
             idf-version: v6.0
             extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
             extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
-          # The esp32s31 shares the riscv32imafc target with the esp32p4, which is the MCU picked by default
+          # The esp32s31 and esp32h4 share the riscv32imafc target with the esp32p4, which is the MCU picked by default
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32s31
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32h4
           # esp32p4 also supports eth, but examples are esp32-only for now
           #- target: riscv32imafc-esp-espidf
           #  idf-version: v6.0
@@ -170,6 +173,9 @@ jobs:
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32s31
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32h4
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       ESP_IDF_SDKCONFIG_DEFAULTS: "${{ github.workspace }}/sdkconfig.defaults.nimble"

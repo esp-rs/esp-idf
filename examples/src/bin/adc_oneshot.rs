@@ -29,7 +29,7 @@ fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
 
-    #[cfg(not(any(esp32, esp32p4)))]
+    #[cfg(not(any(esp32, esp32p4, esp32h4)))]
     let mut adc_pin = AdcChannelDriver::new(&adc, peripherals.pins.gpio2, &config)?;
 
     #[cfg(esp32)]
@@ -37,6 +37,9 @@ fn main() -> anyhow::Result<()> {
 
     #[cfg(esp32p4)]
     let mut adc_pin = AdcChannelDriver::new(&adc, peripherals.pins.gpio16, &config)?;
+
+    #[cfg(esp32h4)]
+    let mut adc_pin = AdcChannelDriver::new(&adc, peripherals.pins.gpio28, &config)?;
 
     loop {
         // you can change the sleep duration depending on how often you want to sample

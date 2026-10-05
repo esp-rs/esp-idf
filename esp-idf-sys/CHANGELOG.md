@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Support for esp32h4 (ESP-IDF v6.1+)
 - Support for the esp32s31 (ESP-IDF v6.1+; select it with `MCU=esp32s31` on the `riscv32imafc-esp-espidf` target)
 
 ### Changed

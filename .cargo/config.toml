@@ -18,3 +18,5 @@ ESP_IDF_VERSION = "v5.5.5"
 # The esp32s31 shares the riscv32imafc target with the esp32p4
 #MCU = "esp32s31"
 #ESP_IDF_VERSION = "v6.1"
+# The esp32h4 shares the riscv32imafc target with the esp32p4
+#MCU = "esp32h4"

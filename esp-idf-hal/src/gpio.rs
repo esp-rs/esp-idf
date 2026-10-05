@@ -333,7 +333,7 @@ impl From<Level> for embedded_hal::digital::PinState {
 
 pub trait GPIOMode {}
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 pub trait RTCMode {}
 
 pub trait InputMode {
@@ -348,13 +348,13 @@ pub struct Disabled;
 pub struct Input;
 pub struct Output;
 pub struct InputOutput;
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 pub struct RtcDisabled;
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 pub struct RtcInput;
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 pub struct RtcOutput;
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 pub struct RtcInputOutput;
 
 impl GPIOMode for Disabled {}
@@ -381,34 +381,34 @@ impl OutputMode for Output {
     const RTC: bool = false;
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl RTCMode for RtcDisabled {}
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl RTCMode for RtcInput {}
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl InputMode for RtcInput {
     const RTC: bool = true;
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl RTCMode for RtcInputOutput {}
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl InputMode for RtcInputOutput {
     const RTC: bool = true;
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl OutputMode for RtcInputOutput {
     const RTC: bool = true;
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl RTCMode for RtcOutput {}
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl OutputMode for RtcOutput {
     const RTC: bool = true;
 }
@@ -494,7 +494,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Try to convert the pin driver into an RTC disabled pin driver.
     ///
     /// Return an error if the pin cannot be disabled.
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     #[inline]
     pub fn try_into_rtc_disabled(self) -> Result<PinDriver<'d, RtcDisabled>, EspError> {
         PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_DISABLED)
@@ -503,7 +503,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Try to convert the pin driver into an RTC input pin driver.
     ///
     /// Return an error if the pin cannot be set as RTC input.
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     #[inline]
     pub fn try_into_rtc_input(self, pull: Pull) -> Result<PinDriver<'d, RtcInput>, EspError> {
         let mut pin = PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_ONLY)?;
@@ -516,7 +516,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Try to convert the pin driver into an RTC output pin driver.
     ///
     /// Return an error if the pin cannot be set as RTC output.
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     #[inline]
     pub fn try_into_rtc_output(self) -> Result<PinDriver<'d, RtcOutput>, EspError> {
         PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_OUTPUT_ONLY)
@@ -525,7 +525,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Try to convert the pin driver into an RTC output open-drain pin driver.
     ///
     /// Return an error if the pin cannot be set as RTC output open-drain.
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     #[inline]
     pub fn try_into_rtc_output_od(self) -> Result<PinDriver<'d, RtcOutput>, EspError> {
         PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_OUTPUT_OD)
@@ -534,7 +534,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Try to convert the pin driver into an RTC input-output pin driver.
     ///
     /// Return an error if the pin cannot be set as RTC input-output.
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     #[inline]
     pub fn try_into_rtc_input_output(
         self,
@@ -551,7 +551,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Try to convert the pin driver into an RTC input-output open-drain pin driver.
     ///
     /// Return an error if the pin cannot be set as RTC input-output open-drain.
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     #[inline]
     pub fn try_into_rtc_input_output_od(
         self,
@@ -628,7 +628,7 @@ impl<'d> PinDriver<'d, Output> {
     }
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl<'d> PinDriver<'d, RtcDisabled> {
     /// Creates the driver for a pin in disabled state.
     #[inline]
@@ -637,7 +637,7 @@ impl<'d> PinDriver<'d, RtcDisabled> {
     }
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl<'d> PinDriver<'d, RtcInput> {
     /// Creates the driver for a pin in RTC input state.
     #[inline]
@@ -650,7 +650,7 @@ impl<'d> PinDriver<'d, RtcInput> {
     }
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl<'d> PinDriver<'d, RtcInputOutput> {
     /// Creates the driver for a pin in RTC input-output state.
     #[inline]
@@ -679,7 +679,7 @@ impl<'d> PinDriver<'d, RtcInputOutput> {
     }
 }
 
-#[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+#[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
 impl<'d> PinDriver<'d, RtcOutput> {
     /// Creates the driver for a pin in RTC output state.
     #[inline]
@@ -708,10 +708,10 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         let mut cap: gpio_drive_cap_t = 0;
 
         if MODE::RTC {
-            #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+            #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
             esp!(unsafe { rtc_gpio_get_drive_capability(self.pin as _, &mut cap) })?;
 
-            #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h4))]
+            #[cfg(any(esp32c3, esp32c2, esp32h2))]
             unreachable!();
         } else {
             esp!(unsafe { gpio_get_drive_capability(self.pin as _, &mut cap) })?;
@@ -726,10 +726,10 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         MODE: OutputMode,
     {
         if MODE::RTC {
-            #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+            #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
             esp!(unsafe { rtc_gpio_set_drive_capability(self.pin as _, strength.into()) })?;
 
-            #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h4))]
+            #[cfg(any(esp32c3, esp32c2, esp32h2))]
             unreachable!();
         } else {
             esp!(unsafe { gpio_set_drive_capability(self.pin as _, strength.into()) })?;
@@ -763,7 +763,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         let res;
 
         if MODE::RTC {
-            #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+            #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
             {
                 res = if unsafe { rtc_gpio_get_level(self.pin as _) } != 0 {
                     Level::High
@@ -772,7 +772,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
                 };
             }
 
-            #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h4))]
+            #[cfg(any(esp32c3, esp32c2, esp32h2))]
             unreachable!();
         } else if unsafe { gpio_get_level(self.pin as _) } != 0 {
             res = Level::High;
@@ -810,9 +810,9 @@ impl<'d, MODE> PinDriver<'d, MODE> {
 
         let pin = self.pin as u32;
 
-        #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h4))]
+        #[cfg(any(esp32c3, esp32c2, esp32h2))]
         let is_set_high = unsafe { (*(GPIO_OUT_REG as *const u32) >> pin) & 0x01 != 0 };
-        #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+        #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
         let is_set_high = if pin <= 31 {
             // GPIO0 - GPIO31
             unsafe { (*(GPIO_OUT_REG as *const u32) >> pin) & 0x01 != 0 }
@@ -856,10 +856,10 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         };
 
         if MODE::RTC {
-            #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+            #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
             esp!(unsafe { rtc_gpio_set_level(self.pin as _, on) })?;
 
-            #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h4))]
+            #[cfg(any(esp32c3, esp32c2, esp32h2))]
             unreachable!();
         } else {
             esp!(unsafe { gpio_set_level(self.pin as _, on) })?;
@@ -886,7 +886,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         MODE: InputMode,
     {
         if MODE::RTC {
-            #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+            #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
             unsafe {
                 match pull {
                     Pull::Down => {
@@ -908,7 +908,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
                 }
             }
 
-            #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h4))]
+            #[cfg(any(esp32c3, esp32c2, esp32h2))]
             unreachable!();
         } else {
             esp!(unsafe { gpio_set_pull_mode(self.pin as _, pull.into()) })?;
@@ -1086,7 +1086,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     }
 
     #[inline]
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     fn new_rtc(pin: PinId, mode: rtc_gpio_mode_t) -> Result<Self, EspError>
     where
         MODE: RTCMode,
@@ -1384,7 +1384,7 @@ pub unsafe fn set_isr_service_flag_unchecked() {
 pub(crate) unsafe fn rtc_reset_pin(pin: i32) -> Result<(), EspError> {
     gpio_reset_without_pull(pin)?;
 
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2)))]
     if rtc_gpio_is_valid_gpio(pin) {
         esp!(rtc_gpio_init(pin))?;
     }
@@ -2103,7 +2103,7 @@ mod chip {
     }
 }
 
-#[cfg(any(esp32h2, esp32h4))]
+#[cfg(esp32h2)]
 mod chip {
     #[cfg(feature = "alloc")]
     extern crate alloc;
@@ -2222,6 +2222,170 @@ mod chip {
                 gpio25: Gpio25::steal(),
                 gpio26: Gpio26::steal(),
                 gpio27: Gpio27::steal(),
+            }
+        }
+    }
+}
+
+#[cfg(esp32h4)]
+mod chip {
+    #[cfg(feature = "alloc")]
+    extern crate alloc;
+
+    #[cfg(feature = "alloc")]
+    use alloc::boxed::Box;
+
+    use crate::interrupt::asynch::HalIsrNotification;
+
+    use super::*;
+
+    #[allow(clippy::type_complexity)]
+    #[cfg(feature = "alloc")]
+    pub(crate) static mut PIN_ISR_HANDLER: [Option<Box<dyn FnMut() + Send + 'static>>; 40] =
+        [PIN_ISR_INIT; 40];
+
+    #[allow(clippy::type_complexity)]
+    pub(crate) static PIN_NOTIF: [HalIsrNotification; 40] = [PIN_NOTIF_INIT; 40];
+
+    // NOTE: Following pins have special meaning and are not recommended for other uses. But one may use them with care.
+    //  - Gpio6 - Gpio12 are used by SPI0/SPI1 for external PSRAM/SPI Flash
+    //  - Gpio13 + Gpio14 are used by the USB Serial/JTAG interface
+    //  - Gpio21 + Gpio22 are used by the USB OTG interface
+    //  - Gpio23 + Gpio24 are used by the serial debug interface (UART0)
+    pin!(Gpio0:0, IO, RTC:0, NOADC:NOADC, NODAC:0, TOUCH:0);
+    pin!(Gpio1:1, IO, RTC:1, NOADC:NOADC, NODAC:0, TOUCH:1);
+    pin!(Gpio2:2, IO, RTC:2, NOADC:NOADC, NODAC:0, TOUCH:2);
+    pin!(Gpio3:3, IO, RTC:3, NOADC:NOADC, NODAC:0, TOUCH:3);
+    pin!(Gpio4:4, IO, RTC:4, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio5:5, IO, RTC:5, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio6:6, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio7:7, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio8:8, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio9:9, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+
+    pin!(Gpio10:10, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio11:11, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio12:12, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio13:13, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio14:14, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio15:15, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio16:16, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio17:17, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio18:18, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio19:19, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+
+    pin!(Gpio20:20, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio21:21, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio22:22, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio23:23, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio24:24, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio25:25, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio26:26, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio27:27, IO, NORTC:0, NOADC:NOADC, NODAC:0, NOTOUCH:0);
+    pin!(Gpio28:28, IO, NORTC:0, ADC1:ADCCH0, NODAC:0, NOTOUCH:0);
+    pin!(Gpio29:29, IO, NORTC:0, ADC1:ADCCH1, NODAC:0, TOUCH:4);
+
+    pin!(Gpio30:30, IO, NORTC:0, ADC1:ADCCH2, NODAC:0, TOUCH:5);
+    pin!(Gpio31:31, IO, NORTC:0, ADC1:ADCCH3, NODAC:0, TOUCH:6);
+    pin!(Gpio32:32, IO, NORTC:0, ADC1:ADCCH4, NODAC:0, TOUCH:7);
+    pin!(Gpio33:33, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:8);
+    pin!(Gpio34:34, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:9);
+    pin!(Gpio35:35, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:10);
+    pin!(Gpio36:36, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:11);
+    pin!(Gpio37:37, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:12);
+    pin!(Gpio38:38, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:13);
+    pin!(Gpio39:39, IO, NORTC:0, NOADC:NOADC, NODAC:0, TOUCH:14);
+
+    pub struct Pins {
+        pub gpio0: Gpio0<'static>,
+        pub gpio1: Gpio1<'static>,
+        pub gpio2: Gpio2<'static>,
+        pub gpio3: Gpio3<'static>,
+        pub gpio4: Gpio4<'static>,
+        pub gpio5: Gpio5<'static>,
+        pub gpio6: Gpio6<'static>,
+        pub gpio7: Gpio7<'static>,
+        pub gpio8: Gpio8<'static>,
+        pub gpio9: Gpio9<'static>,
+        pub gpio10: Gpio10<'static>,
+        pub gpio11: Gpio11<'static>,
+        pub gpio12: Gpio12<'static>,
+        pub gpio13: Gpio13<'static>,
+        pub gpio14: Gpio14<'static>,
+        pub gpio15: Gpio15<'static>,
+        pub gpio16: Gpio16<'static>,
+        pub gpio17: Gpio17<'static>,
+        pub gpio18: Gpio18<'static>,
+        pub gpio19: Gpio19<'static>,
+        pub gpio20: Gpio20<'static>,
+        pub gpio21: Gpio21<'static>,
+        pub gpio22: Gpio22<'static>,
+        pub gpio23: Gpio23<'static>,
+        pub gpio24: Gpio24<'static>,
+        pub gpio25: Gpio25<'static>,
+        pub gpio26: Gpio26<'static>,
+        pub gpio27: Gpio27<'static>,
+        pub gpio28: Gpio28<'static>,
+        pub gpio29: Gpio29<'static>,
+        pub gpio30: Gpio30<'static>,
+        pub gpio31: Gpio31<'static>,
+        pub gpio32: Gpio32<'static>,
+        pub gpio33: Gpio33<'static>,
+        pub gpio34: Gpio34<'static>,
+        pub gpio35: Gpio35<'static>,
+        pub gpio36: Gpio36<'static>,
+        pub gpio37: Gpio37<'static>,
+        pub gpio38: Gpio38<'static>,
+        pub gpio39: Gpio39<'static>,
+    }
+
+    impl Pins {
+        /// # Safety
+        ///
+        /// Care should be taken not to instantiate the Pins structure, if it is
+        /// already instantiated and used elsewhere
+        pub unsafe fn new() -> Self {
+            Self {
+                gpio0: Gpio0::steal(),
+                gpio1: Gpio1::steal(),
+                gpio2: Gpio2::steal(),
+                gpio3: Gpio3::steal(),
+                gpio4: Gpio4::steal(),
+                gpio5: Gpio5::steal(),
+                gpio6: Gpio6::steal(),
+                gpio7: Gpio7::steal(),
+                gpio8: Gpio8::steal(),
+                gpio9: Gpio9::steal(),
+                gpio10: Gpio10::steal(),
+                gpio11: Gpio11::steal(),
+                gpio12: Gpio12::steal(),
+                gpio13: Gpio13::steal(),
+                gpio14: Gpio14::steal(),
+                gpio15: Gpio15::steal(),
+                gpio16: Gpio16::steal(),
+                gpio17: Gpio17::steal(),
+                gpio18: Gpio18::steal(),
+                gpio19: Gpio19::steal(),
+                gpio20: Gpio20::steal(),
+                gpio21: Gpio21::steal(),
+                gpio22: Gpio22::steal(),
+                gpio23: Gpio23::steal(),
+                gpio24: Gpio24::steal(),
+                gpio25: Gpio25::steal(),
+                gpio26: Gpio26::steal(),
+                gpio27: Gpio27::steal(),
+                gpio28: Gpio28::steal(),
+                gpio29: Gpio29::steal(),
+                gpio30: Gpio30::steal(),
+                gpio31: Gpio31::steal(),
+                gpio32: Gpio32::steal(),
+                gpio33: Gpio33::steal(),
+                gpio34: Gpio34::steal(),
+                gpio35: Gpio35::steal(),
+                gpio36: Gpio36::steal(),
+                gpio37: Gpio37::steal(),
+                gpio38: Gpio38::steal(),
+                gpio39: Gpio39::steal(),
             }
         }
     }
