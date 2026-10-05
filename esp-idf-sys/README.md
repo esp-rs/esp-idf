@@ -61,6 +61,7 @@ $ MCU=esp32c3 cargo espflash flash --target riscv32imc-esp-espidf --bin std_basi
 | esp32c6| riscv32imac-esp-espidf |
 | esp32c61| riscv32imac-esp-espidf |
 | esp32h2 | riscv32imac-esp-espidf |
+| esp32h21 | riscv32imac-esp-espidf |
 | esp32p4 | riscv32imafc-esp-espidf |
 | esp32s31 | riscv32imafc-esp-espidf |
 | esp32h4 | riscv32imafc-esp-espidf |

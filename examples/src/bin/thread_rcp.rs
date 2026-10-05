@@ -5,7 +5,7 @@
 //! have a native Thread radio, but has other connectivity like Wifi. It is this other MCU which actually runs
 //! Thread as a real "Node", from the POV of the user.
 //!
-//! NOTE: This example only works on MCUs that has Thread capabilities, like the ESP32-C6, ESP32-H2 or ESP32-H4.
+//! NOTE: This example only works on MCUs that has Thread capabilities, like the ESP32-C6, ESP32-H2, ESP32-H21 or ESP32-H4.
 
 #![allow(unknown_lints)]
 #![allow(unexpected_cfgs)]
@@ -14,11 +14,11 @@ fn main() -> anyhow::Result<()> {
     esp_idf_svc::sys::link_patches();
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    #[cfg(all(any(esp32h2, esp32h4, esp32c6), esp_idf_openthread_radio))]
+    #[cfg(all(any(esp32h2, esp32h21, esp32h4, esp32c6), esp_idf_openthread_radio))]
     example::main()?;
 
-    #[cfg(not(any(esp32h2, esp32h4, esp32c6)))]
-    log::error!("This example only works on MCUs that have Thread capabilities, like the ESP32-C6, ESP32-H2 or ESP32-H4.");
+    #[cfg(not(any(esp32h2, esp32h21, esp32h4, esp32c6)))]
+    log::error!("This example only works on MCUs that have Thread capabilities, like the ESP32-C6, ESP32-H2, ESP32-H21 or ESP32-H4.");
 
     #[cfg(not(esp_idf_openthread_radio))]
     log::error!("Put `CONFIG_OPENTHREAD_RADIO=y` in your `sdkconfig.defaults`");
@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[cfg(all(any(esp32h2, esp32h4, esp32c6), esp_idf_openthread_radio))]
+#[cfg(all(any(esp32h2, esp32h21, esp32h4, esp32c6), esp_idf_openthread_radio))]
 mod example {
     use std::sync::Arc;
 

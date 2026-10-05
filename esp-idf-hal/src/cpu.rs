@@ -49,7 +49,9 @@ impl From<i32> for Core {
 #[inline(always)]
 #[link_section = ".iram1.cpu_core"]
 pub fn core() -> Core {
-    #[cfg(any(esp32c3, esp32s2, esp32c2, esp32h2, esp32c5, esp32c6, esp32c61))]
+    #[cfg(any(
+        esp32c3, esp32s2, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6, esp32c61
+    ))]
     let core = 0;
 
     #[allow(unused_assignments)]

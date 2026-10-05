@@ -71,6 +71,10 @@ jobs:
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32h4
+          # The esp32h21 shares the riscv32imac target with the esp32c6, which is the MCU picked by default
+          - target: riscv32imac-esp-espidf
+            idf-version: v6.1
+            mcu: esp32h21
           # esp32p4 also supports eth, but examples are esp32-only for now
           #- target: riscv32imafc-esp-espidf
           #  idf-version: v6.0
@@ -176,6 +180,9 @@ jobs:
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32h4
+          - target: riscv32imac-esp-espidf
+            idf-version: v6.1
+            mcu: esp32h21
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       ESP_IDF_SDKCONFIG_DEFAULTS: "${{ github.workspace }}/sdkconfig.defaults.nimble"

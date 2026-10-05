@@ -8,17 +8,17 @@
 #![allow(unknown_lints)]
 #![allow(unexpected_cfgs)]
 
-#[cfg(not(any(esp32h2, esp32h4, esp32p4)))]
+#[cfg(not(any(esp32h2, esp32h21, esp32h4, esp32p4)))]
 fn main() {
     example::main()
 }
 
-#[cfg(any(esp32h2, esp32h4, esp32p4))]
+#[cfg(any(esp32h2, esp32h21, esp32h4, esp32p4))]
 fn main() {
-    panic!("ESP32-H2, ESP32-H4 and ESP32-P4 do not have a Wifi radio (but you could enable the esp-wifi-remote component to use them with a WiFi co-processor)");
+    panic!("ESP32-H2, ESP32-H21, ESP32-H4 and ESP32-P4 do not have a Wifi radio (but you could enable the esp-wifi-remote component to use them with a WiFi co-processor)");
 }
 
-#[cfg(not(any(esp32h2, esp32h4, esp32p4)))]
+#[cfg(not(any(esp32h2, esp32h21, esp32h4, esp32p4)))]
 mod example {
     pub fn main() {
         #[cfg(esp_idf_version_major = "4")]

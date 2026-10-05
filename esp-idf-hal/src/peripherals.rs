@@ -1,4 +1,4 @@
-#[cfg(not(esp32s31))]
+#[cfg(not(any(esp32s31, all(esp32h21, not(esp_idf_soc_adc_supported)))))]
 use crate::adc;
 use crate::can;
 use crate::gpio;
@@ -69,7 +69,7 @@ pub struct Peripherals {
     pub spi2: spi::SPI2<'static>,
     #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
     pub spi3: spi::SPI3<'static>,
-    #[cfg(not(esp32s31))]
+    #[cfg(not(any(esp32s31, all(esp32h21, not(esp_idf_soc_adc_supported)))))]
     pub adc1: adc::ADC1<'static>,
     #[cfg(any(esp32, esp32s2, esp32s3, esp32c3))]
     pub adc2: adc::ADC2<'static>,
@@ -216,7 +216,7 @@ impl Peripherals {
             spi2: spi::SPI2::steal(),
             #[cfg(any(esp32, esp32s2, esp32s3, esp32p4, esp32s31))]
             spi3: spi::SPI3::steal(),
-            #[cfg(not(esp32s31))]
+            #[cfg(not(any(esp32s31, all(esp32h21, not(esp_idf_soc_adc_supported)))))]
             adc1: adc::ADC1::steal(),
             #[cfg(any(esp32, esp32s2, esp32s3, esp32c3))]
             adc2: adc::ADC2::steal(),

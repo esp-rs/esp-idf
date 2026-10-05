@@ -135,7 +135,8 @@ pub enum Resolution {
     #[cfg(esp32)]
     Resolution11Bit,
     #[cfg(any(
-        esp32, esp32c3, esp32s3, esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+        esp32, esp32c3, esp32s3, esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61,
+        esp32p4
     ))]
     Resolution12Bit,
     #[cfg(esp32s2)]
@@ -171,8 +172,8 @@ impl From<Resolution> for adc_bitwidth_t {
             #[cfg(esp32)]
             Resolution::Resolution11Bit => adc_bitwidth_t_ADC_BITWIDTH_11,
             #[cfg(any(
-                esp32, esp32s3, esp32c3, esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61,
-                esp32p4
+                esp32, esp32s3, esp32c3, esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6,
+                esp32c61, esp32p4
             ))]
             Resolution::Resolution12Bit => adc_bitwidth_t_ADC_BITWIDTH_12,
             #[cfg(esp32s2)]
@@ -192,8 +193,8 @@ impl From<Resolution> for adc_bits_width_t {
             #[cfg(esp32)]
             Resolution::Resolution11Bit => adc_bits_width_t_ADC_WIDTH_BIT_11,
             #[cfg(any(
-                esp32, esp32s3, esp32c3, esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61,
-                esp32p4
+                esp32, esp32s3, esp32c3, esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6,
+                esp32c61, esp32p4
             ))]
             Resolution::Resolution12Bit => adc_bits_width_t_ADC_WIDTH_BIT_12,
             #[cfg(esp32s2)]
@@ -268,10 +269,14 @@ mod oneshot_legacy {
             if C::unit() == adc_unit_t_ADC_UNIT_1 {
                 esp!(unsafe { adc1_config_channel_atten(C::channel(), A) })?;
             } else {
-                #[cfg(not(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4)))]
+                #[cfg(not(any(
+                    esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+                )))]
                 esp!(unsafe { adc2_config_channel_atten(C::channel(), A) })?;
 
-                #[cfg(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4))]
+                #[cfg(any(
+                    esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+                ))]
                 unreachable!();
             }
 
@@ -398,7 +403,9 @@ mod oneshot_legacy {
             if unit == adc_unit_t_ADC_UNIT_1 {
                 Ok(unsafe { adc1_get_raw(channel) } as _)
             } else {
-                #[cfg(not(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4)))]
+                #[cfg(not(any(
+                    esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+                )))]
                 {
                     let mut measurement = 0;
                     esp!(unsafe {
@@ -408,7 +415,9 @@ mod oneshot_legacy {
                     Ok(measurement as _)
                 }
 
-                #[cfg(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4))]
+                #[cfg(any(
+                    esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+                ))]
                 unreachable!();
             }
         }
@@ -507,7 +516,7 @@ macro_rules! impl_adc {
 }
 
 impl_adc!(ADC1: ADCU1);
-#[cfg(not(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61)))] // TODO: Check for esp32c5
+#[cfg(not(any(esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61)))] // TODO: Check for esp32c5
 impl_adc!(ADC2: ADCU2);
 
 /// Converts a raw reading to mV without using calibration
@@ -539,7 +548,8 @@ impl DirectConverter {
         };
 
         #[cfg(any(
-            esp32c3, esp32s2, esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+            esp32c3, esp32s2, esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61,
+            esp32p4
         ))]
         let mv = match attenuation {
             attenuation::NONE => 750,
@@ -1290,7 +1300,7 @@ pub mod continuous {
             unsafe { self.0.__bindgen_anon_1.type2.channel() as _ }
         }
 
-        #[cfg(not(any(esp32, esp32s2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61)))]
+        #[cfg(not(any(esp32, esp32s2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61)))]
         pub fn unit(&self) -> adc_unit_t {
             unsafe { self.0.__bindgen_anon_1.type2.unit() as _ }
         }
@@ -1663,11 +1673,15 @@ pub mod continuous {
     }
 
     #[cfg(not(esp_idf_adc_continuous_isr_iram_safe))]
-    #[cfg(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4))] // TODO: Check for esp32c5 and esp32p4
+    #[cfg(any(
+        esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+    ))] // TODO: Check for esp32c5 and esp32p4
     static NOTIFIER: [HalIsrNotification; 1] = [HalIsrNotification::new()];
 
     #[cfg(not(esp_idf_adc_continuous_isr_iram_safe))]
-    #[cfg(not(any(esp32c2, esp32h2, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4)))] // TODO: Check for esp32c5 and esp32p4
+    #[cfg(not(any(
+        esp32c2, esp32h2, esp32h21, esp32h4, esp32c5, esp32c6, esp32c61, esp32p4
+    )))] // TODO: Check for esp32c5 and esp32p4
     static NOTIFIER: [HalIsrNotification; 2] =
         [HalIsrNotification::new(), HalIsrNotification::new()];
 }

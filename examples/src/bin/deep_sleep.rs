@@ -14,13 +14,13 @@ use core::time::Duration;
 
 #[cfg(any(esp32c2, esp32c3))]
 use esp_idf_hal::gpio::Level;
-#[cfg(not(esp32h2))]
+#[cfg(not(any(esp32h2, esp32h21)))]
 use esp_idf_hal::gpio::{PinDriver, Pull};
 use esp_idf_hal::peripherals::Peripherals;
 use esp_idf_hal::reset::{ResetReason, WakeupReason};
 use esp_idf_hal::sleep::DeepSleep;
 
-#[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
+#[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h21)))]
 use esp_idf_hal::sleep::{RtcWakeLevel, RtcWakeupPins};
 
 fn main() -> anyhow::Result<()> {
@@ -48,7 +48,7 @@ fn main() -> anyhow::Result<()> {
             .wakeup_on_gpio(&gpio1, Level::Low)?;
     }
 
-    #[cfg(not(any(esp32c2, esp32c3, esp32h2)))]
+    #[cfg(not(any(esp32c2, esp32c3, esp32h2, esp32h21)))]
     {
         #[cfg(esp32)]
         let (pin0, pin1) = (peripherals.pins.gpio26, peripherals.pins.gpio27);

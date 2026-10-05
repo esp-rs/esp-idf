@@ -918,7 +918,7 @@ pub(super) mod config {
     /// The maximum number of data input pins that can be used in PDM mode.
     ///
     /// This is 1 on the ESP32, and 2 on the ESP32-S3, ESP32-C3, ESP32-C6, and ESP32-H2.
-    #[cfg(any(esp32s3, esp32c3, esp32c6, esp32h2))]
+    #[cfg(any(esp32s3, esp32c3, esp32c6, esp32h2, esp32h21))]
     pub const SOC_I2S_PDM_MAX_TX_LINES: usize = 2;
 
     impl PdmTxGpioConfig {
@@ -1221,7 +1221,7 @@ pub(super) mod config {
         #[cfg_attr(
             feature = "nightly",
             doc(cfg(all(
-                any(esp32s3, esp32c3, esp32c6, esp32h2),
+                any(esp32s3, esp32c3, esp32c6, esp32h2, esp32h21),
                 not(esp_idf_version_major = "4")
             )))
         )]
@@ -1236,7 +1236,7 @@ pub(super) mod config {
         #[cfg_attr(
             feature = "nightly",
             doc(cfg(all(
-                any(esp32s3, esp32c3, esp32c6, esp32h2),
+                any(esp32s3, esp32c3, esp32c6, esp32h2, esp32h21),
                 not(esp_idf_version_major = "4")
             )))
         )]
@@ -1251,7 +1251,7 @@ pub(super) mod config {
         #[cfg_attr(
             feature = "nightly",
             doc(cfg(all(
-                any(esp32s3, esp32c3, esp32c6, esp32h2),
+                any(esp32s3, esp32c3, esp32c6, esp32h2, esp32h21),
                 not(esp_idf_version_major = "4")
             )))
         )]
@@ -1266,7 +1266,7 @@ pub(super) mod config {
         #[cfg_attr(
             feature = "nightly",
             doc(cfg(all(
-                any(esp32s3, esp32c3, esp32c6, esp32h2),
+                any(esp32s3, esp32c3, esp32c6, esp32h2, esp32h21),
                 not(esp_idf_version_major = "4")
             )))
         )]
@@ -1430,7 +1430,7 @@ impl<'d> I2sDriver<'d, I2sRx> {
 #[cfg_attr(
     feature = "nightly",
     doc(cfg(all(
-        any(esp32, esp32s3, esp32c3, esp32c6, esp32h2),
+        any(esp32, esp32s3, esp32c3, esp32c6, esp32h2, esp32h21),
         not(esp_idf_version_major = "4")
     )))
 )]
@@ -1473,12 +1473,12 @@ impl<'d> I2sDriver<'d, I2sTx> {
 
 #[cfg(all(
     esp_idf_version_major = "4",
-    any(esp32, esp32s3, esp32c3, esp32c6, esp32h2)
+    any(esp32, esp32s3, esp32c3, esp32c6, esp32h2, esp32h21)
 ))]
 #[cfg_attr(
     feature = "nightly",
     doc(cfg(all(
-        any(esp32, esp32s3, esp32c3, esp32c6, esp32h2),
+        any(esp32, esp32s3, esp32c3, esp32c6, esp32h2, esp32h21),
         esp_idf_version_major = "4"
     )))
 )]

@@ -51,12 +51,12 @@ fn main() -> anyhow::Result<()> {
     esp_idf_svc::sys::link_patches();
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    #[cfg(any(esp32h2, esp32h4))]
+    #[cfg(any(esp32h2, esp32h21, esp32h4))]
     {
         log::error!("This example only works on MCUs which do have Wifi support.");
     }
 
-    #[cfg(not(any(esp32h2, esp32h4)))]
+    #[cfg(not(any(esp32h2, esp32h21, esp32h4)))]
     {
         // Remove this `cfg` when you have done all of the above for the example to compile
         #[cfg(i_have_done_all_configs_from_the_top_comment)]
@@ -73,7 +73,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 #[cfg(i_have_done_all_configs_from_the_top_comment)] // Remove this `cfg` when you have done all of the above for the example to compile
-#[cfg(not(any(esp32h2, esp32h4)))]
+#[cfg(not(any(esp32h2, esp32h21, esp32h4)))]
 mod example {
     use core::convert::TryInto;
     use core::net::Ipv6Addr;

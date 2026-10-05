@@ -16,7 +16,7 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(all(
-    not(any(esp32h2, esp32h4, esp32p4)),
+    not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
     esp_idf_esp_tls_using_mbedtls,
     esp_idf_version_at_least_5_5_0,
 ))]
@@ -24,13 +24,13 @@ fn main() -> anyhow::Result<()> {
     example::main()
 }
 
-#[cfg(any(esp32h2, esp32h4, esp32p4))]
+#[cfg(any(esp32h2, esp32h21, esp32h4, esp32p4))]
 fn main() -> anyhow::Result<()> {
-    panic!("ESP32-H2, ESP32-H4 and ESP32-P4 do not have a Wifi radio (but you could enable the esp-wifi-remote component to use them with a WiFi co-processor)");
+    panic!("ESP32-H2, ESP32-H21, ESP32-H4 and ESP32-P4 do not have a Wifi radio (but you could enable the esp-wifi-remote component to use them with a WiFi co-processor)");
 }
 
 #[cfg(all(
-    not(any(esp32h2, esp32h4, esp32p4)),
+    not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
     not(all(esp_idf_esp_tls_using_mbedtls, esp_idf_version_at_least_5_5_0)),
 ))]
 fn main() -> anyhow::Result<()> {
@@ -41,7 +41,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 #[cfg(all(
-    not(any(esp32h2, esp32h4, esp32p4)),
+    not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
     esp_idf_esp_tls_using_mbedtls,
     esp_idf_version_at_least_5_5_0,
 ))]

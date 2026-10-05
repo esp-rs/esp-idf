@@ -8,10 +8,12 @@ use esp_idf_sys::{
 #[cfg(any(esp32p4, esp32s31))]
 use esp_idf_sys::soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_LP_PERI;
 #[cfg(any(
-    esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4, esp32s2, esp32s3
+    esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4, esp32s2, esp32s3
 ))]
 use esp_idf_sys::soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_RC_FAST;
-#[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4))]
+#[cfg(any(
+    esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4
+))]
 use esp_idf_sys::soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_XTAL;
 
 use core::marker::PhantomData;
@@ -23,10 +25,12 @@ use core::marker::PhantomData;
 pub enum TempSensorClockSource {
     Default,
     #[cfg(any(
-        esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4, esp32s2, esp32s3
+        esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4, esp32s2, esp32s3
     ))]
     RcFast,
-    #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4))]
+    #[cfg(any(
+        esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4
+    ))]
     XTAL,
     #[cfg(any(esp32p4, esp32s31))]
     LpPeri,
@@ -36,12 +40,15 @@ impl From<TempSensorClockSource> for temperature_sensor_clk_src_t {
     fn from(value: TempSensorClockSource) -> Self {
         match value {
             #[cfg(any(
-                esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4, esp32s2, esp32s3
+                esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4, esp32s2,
+                esp32s3
             ))]
             TempSensorClockSource::RcFast => {
                 soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_RC_FAST
             }
-            #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4))]
+            #[cfg(any(
+                esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4
+            ))]
             TempSensorClockSource::XTAL => {
                 soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_XTAL
             }
@@ -60,13 +67,16 @@ impl From<temperature_sensor_clk_src_t> for TempSensorClockSource {
     fn from(value: temperature_sensor_clk_src_t) -> Self {
         match value {
             #[cfg(any(
-                esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4, esp32s2, esp32s3
+                esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4, esp32s2,
+                esp32s3
             ))]
             #[allow(non_upper_case_globals)]
             soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_RC_FAST => {
                 Self::RcFast
             }
-            #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h4))]
+            #[cfg(any(
+                esp32c2, esp32c3, esp32c5, esp32c6, esp32c61, esp32h2, esp32h21, esp32h4
+            ))]
             #[allow(non_upper_case_globals)]
             soc_periph_temperature_sensor_clk_src_t_TEMPERATURE_SENSOR_CLK_SRC_XTAL => Self::XTAL,
             #[cfg(any(esp32p4, esp32s31))]

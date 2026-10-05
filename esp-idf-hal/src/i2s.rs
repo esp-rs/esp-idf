@@ -125,7 +125,7 @@ pub mod config {
         /// a build targeting an earlier minimum revision aborts in `HAL_ASSERT`.
         ///
         /// Not available on `esp32s31`, whose I2S clock sources are XTAL, APLL and RC_FAST.
-        #[cfg(not(any(esp32h2, esp32h4, esp32c2, esp32s31)))]
+        #[cfg(not(any(esp32h2, esp32h21, esp32h4, esp32c2, esp32s31)))]
         #[cfg_attr(not(any(esp32p4, esp32s31)), default)]
         Pll160M,
 
@@ -140,16 +140,16 @@ pub mod config {
         Pll64M,
 
         /// Use PLL_F96M as the source clock
-        #[cfg(esp32h4)]
+        #[cfg(any(esp32h4, esp32h21))]
         #[default]
         Pll96M,
 
         /// Use XTAL_X2_F64M as the source clock
-        #[cfg(esp32h4)]
+        #[cfg(any(esp32h4, esp32h21))]
         XtalX2F64M,
 
         /// Use XTAL as the source clock
-        #[cfg(any(esp32p4, esp32s31, esp32h4))]
+        #[cfg(any(esp32p4, esp32s31, esp32h4, esp32h21))]
         #[cfg_attr(any(esp32p4, esp32s31), default)]
         Xtal,
 
@@ -166,7 +166,7 @@ pub mod config {
         #[allow(clippy::unnecessary_cast)]
         pub(super) fn as_sdk(&self) -> i2s_clock_src_t {
             match self {
-                #[cfg(not(any(esp32h2, esp32h4, esp32c2, esp32s31)))]
+                #[cfg(not(any(esp32h2, esp32h21, esp32h4, esp32c2, esp32s31)))]
                 Self::Pll160M => core::convert::TryInto::try_into(
                     esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_PLL_F160M,
                 )
@@ -181,17 +181,17 @@ pub mod config {
                     esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_PLL_F64M,
                 )
                 .unwrap(),
-                #[cfg(esp32h4)]
+                #[cfg(any(esp32h4, esp32h21))]
                 Self::Pll96M => core::convert::TryInto::try_into(
                     esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_PLL_F96M,
                 )
                 .unwrap(),
-                #[cfg(esp32h4)]
+                #[cfg(any(esp32h4, esp32h21))]
                 Self::XtalX2F64M => core::convert::TryInto::try_into(
                     esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_XTAL_X2_F64M,
                 )
                 .unwrap(),
-                #[cfg(any(esp32p4, esp32s31, esp32h4))]
+                #[cfg(any(esp32p4, esp32s31, esp32h4, esp32h21))]
                 Self::Xtal => {
                     core::convert::TryInto::try_into(esp_idf_sys::soc_module_clk_t_SOC_MOD_CLK_XTAL)
                         .unwrap()

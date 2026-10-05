@@ -12,20 +12,20 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(all(
-    not(any(esp32h2, esp32h4, esp32p4)),
+    not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
     any(esp_idf_comp_mqtt_enabled, esp_idf_comp_espressif__mqtt_enabled)
 ))]
 fn main() {
     example::main()
 }
 
-#[cfg(any(esp32h2, esp32h4, esp32p4))]
+#[cfg(any(esp32h2, esp32h21, esp32h4, esp32p4))]
 fn main() {
-    panic!("ESP32-H2, ESP32-H4 and ESP32-P4 do not have a Wifi radio (but you could enable the esp-wifi-remote component to use them with a WiFi co-processor)");
+    panic!("ESP32-H2, ESP32-H21, ESP32-H4 and ESP32-P4 do not have a Wifi radio (but you could enable the esp-wifi-remote component to use them with a WiFi co-processor)");
 }
 
 #[cfg(all(
-    not(any(esp32h2, esp32h4, esp32p4)),
+    not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
     not(any(esp_idf_comp_mqtt_enabled, esp_idf_comp_espressif__mqtt_enabled))
 ))]
 fn main() {
@@ -33,7 +33,7 @@ fn main() {
 }
 
 #[cfg(all(
-    not(any(esp32h2, esp32h4, esp32p4)),
+    not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
     any(esp_idf_comp_mqtt_enabled, esp_idf_comp_espressif__mqtt_enabled)
 ))]
 mod example {

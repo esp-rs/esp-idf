@@ -43,7 +43,10 @@ pub mod bt;
 #[cfg(all(
     feature = "alloc",
     any(
-        all(not(any(esp32h2, esp32h4, esp32p4)), esp_idf_comp_esp_wifi_enabled),
+        all(
+            not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
+            esp_idf_comp_esp_wifi_enabled
+        ),
         esp_idf_comp_espressif__esp_wifi_remote_enabled
     ),
     esp_idf_comp_esp_event_enabled,
@@ -125,7 +128,10 @@ pub mod tls;
 #[cfg(all(
     feature = "alloc",
     any(
-        all(not(any(esp32h2, esp32h4, esp32p4)), esp_idf_comp_esp_wifi_enabled),
+        all(
+            not(any(esp32h2, esp32h21, esp32h4, esp32p4)),
+            esp_idf_comp_esp_wifi_enabled
+        ),
         esp_idf_comp_espressif__esp_wifi_remote_enabled
     ),
     esp_idf_comp_esp_event_enabled,

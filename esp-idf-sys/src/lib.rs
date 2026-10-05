@@ -21,7 +21,7 @@ pub use error::*;
 // pcnt_unit_t and friends are only needed for the legacy PCNT API (removed in v6.0).
 #[cfg(all(
     not(esp_idf_version_at_least_6_0_0),
-    any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32h2, esp32p4)
+    any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32h2, esp32h21, esp32p4)
 ))]
 pub use pcnt::*;
 
@@ -50,7 +50,7 @@ mod panic;
 mod patches;
 #[cfg(all(
     not(esp_idf_version_at_least_6_0_0),
-    any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32h2, esp32p4)
+    any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32h2, esp32h21, esp32p4)
 ))]
 mod pcnt;
 
@@ -83,7 +83,7 @@ pub fn link_patches() -> PatchesRef {
 mod bindings {
     #[cfg(all(
         not(esp_idf_version_at_least_6_0_0),
-        any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32h2, esp32p4)
+        any(esp32, esp32s2, esp32s3, esp32c5, esp32c6, esp32h2, esp32h21, esp32p4)
     ))]
     use crate::pcnt::*;
 

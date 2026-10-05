@@ -325,7 +325,8 @@ pub fn build() -> Result<EspIdfBuildOutput> {
             ));
         }
 
-        if matches!(chip, Chip::ESP32S31 | Chip::ESP32H4) && (major < 6 || major == 6 && minor < 1)
+        if matches!(chip, Chip::ESP32S31 | Chip::ESP32H4 | Chip::ESP32H21)
+            && (major < 6 || major == 6 && minor < 1)
         {
             bail!(
                 "MCU '{chip}' is only supported by ESP-IDF V6.1.0 or newer, but the build is against ESP-IDF version {major}.{minor}.{patch}"

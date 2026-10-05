@@ -28,7 +28,8 @@ extern crate alloc;
 
 // NOTE: the esp32s31 ADC (ESP-IDF v6.1) has no attenuation, no calibration scheme and 17-bit
 // weighted-sum raw codes; it is left out until ESP-IDF's support for it settles
-#[cfg(not(esp32s31))]
+// NOTE: ESP-IDF v6.1 has no ADC driver for the esp32h21 (`SOC_ADC_SUPPORTED` is only set from v6.2)
+#[cfg(not(any(esp32s31, all(esp32h21, not(esp_idf_soc_adc_supported)))))]
 pub mod adc;
 pub mod can;
 pub mod cpu;

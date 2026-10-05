@@ -92,13 +92,15 @@ pub fn do_yield() {
                 yielder(arg);
             } else {
                 #[cfg(any(
-                    esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32p4, esp32s31, esp32h4
+                    esp32c3, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6, esp32p4, esp32s31,
+                    esp32h4
                 ))]
                 vPortYieldFromISR();
 
                 #[cfg(all(
                     not(any(
-                        esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32p4, esp32s31, esp32h4
+                        esp32c3, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6, esp32p4, esp32s31,
+                        esp32h4
                     )),
                     esp_idf_version_major = "4"
                 ))]
@@ -106,8 +108,8 @@ pub fn do_yield() {
 
                 #[cfg(all(
                     not(any(
-                        esp32c3, esp32c2, esp32h2, esp32c5, esp32c6, esp32c61, esp32p4, esp32s31,
-                        esp32h4
+                        esp32c3, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6, esp32c61, esp32p4,
+                        esp32s31, esp32h4
                     )),
                     not(esp_idf_version_major = "4")
                 ))]
@@ -194,7 +196,7 @@ pub unsafe fn notify(task: TaskHandle_t, notification: NonZeroU32) -> (bool, boo
 }
 
 pub fn get_idle_task(core: crate::cpu::Core) -> TaskHandle_t {
-    #[cfg(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6))]
+    #[cfg(any(esp32c3, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6))]
     {
         if matches!(core, crate::cpu::Core::Core0) {
             unsafe { xTaskGetIdleTaskHandle() }
@@ -203,7 +205,7 @@ pub fn get_idle_task(core: crate::cpu::Core) -> TaskHandle_t {
         }
     }
 
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6)))]
     #[cfg(any(
         esp_idf_version_major = "4",
         esp_idf_version = "5.0",
@@ -213,7 +215,7 @@ pub fn get_idle_task(core: crate::cpu::Core) -> TaskHandle_t {
         xTaskGetIdleTaskHandleForCPU(core as u32)
     }
 
-    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32c5, esp32c6)))]
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21, esp32c5, esp32c6)))]
     #[cfg(not(any(
         esp_idf_version_major = "4",
         esp_idf_version = "5.0",

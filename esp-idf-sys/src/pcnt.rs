@@ -44,9 +44,9 @@ pub const pcnt_unit_t_PCNT_UNIT_7: pcnt_unit_t = 7;
 // For some reason, this isn't defined in soc_caps.h for ESP32-H2 on ESP-IDF v4.x
 
 /// Maximum number of PCNT units
-#[cfg(not(all(esp32h2, esp_idf_version_major = "4")))]
+#[cfg(not(all(any(esp32h2, esp32h21), esp_idf_version_major = "4")))]
 pub const pcnt_unit_t_PCNT_UNIT_MAX: pcnt_unit_t = crate::SOC_PCNT_UNITS_PER_GROUP as pcnt_unit_t;
 
 /// Maximum number of PCNT units
-#[cfg(all(esp32h2, esp_idf_version_major = "4"))]
+#[cfg(all(any(esp32h2, esp32h21), esp_idf_version_major = "4"))]
 pub const pcnt_unit_t_PCNT_UNIT_MAX: pcnt_unit_t = 4;
