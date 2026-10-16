@@ -433,7 +433,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Return an error if the pin cannot be disabled.
     #[inline]
     pub fn try_into_disabled(self) -> Result<PinDriver<'d, Disabled>, EspError> {
-        PinDriver::new_gpio(self.pin as _, gpio_mode_t_GPIO_MODE_DISABLE)
+        PinDriver::new_gpio(self.release()?, gpio_mode_t_GPIO_MODE_DISABLE)
     }
 
     /// Try to convert the pin driver into an input pin driver.
@@ -441,7 +441,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Return an error if the pin cannot be set as input.
     #[inline]
     pub fn try_into_input(self, pull: Pull) -> Result<PinDriver<'d, Input>, EspError> {
-        let mut pin = PinDriver::new_gpio(self.pin as _, gpio_mode_t_GPIO_MODE_INPUT)?;
+        let mut pin = PinDriver::new_gpio(self.release()?, gpio_mode_t_GPIO_MODE_INPUT)?;
 
         pin.set_pull(pull)?;
 
@@ -453,7 +453,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Return an error if the pin cannot be set as output.
     #[inline]
     pub fn try_into_output(self) -> Result<PinDriver<'d, Output>, EspError> {
-        PinDriver::new_gpio(self.pin as _, gpio_mode_t_GPIO_MODE_OUTPUT)
+        PinDriver::new_gpio(self.release()?, gpio_mode_t_GPIO_MODE_OUTPUT)
     }
 
     /// Try to convert the pin driver into an input-output pin driver.
@@ -461,7 +461,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Return an error if the pin cannot be set as input-output.
     #[inline]
     pub fn try_into_input_output(self, pull: Pull) -> Result<PinDriver<'d, InputOutput>, EspError> {
-        let mut pin = PinDriver::new_gpio(self.pin as _, gpio_mode_t_GPIO_MODE_INPUT_OUTPUT)?;
+        let mut pin = PinDriver::new_gpio(self.release()?, gpio_mode_t_GPIO_MODE_INPUT_OUTPUT)?;
 
         pin.set_pull(pull)?;
 
@@ -473,7 +473,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     /// Return an error if the pin cannot be set as output open-drain.
     #[inline]
     pub fn try_into_output_od(self) -> Result<PinDriver<'d, Output>, EspError> {
-        PinDriver::new_gpio(self.pin as _, gpio_mode_t_GPIO_MODE_OUTPUT_OD)
+        PinDriver::new_gpio(self.release()?, gpio_mode_t_GPIO_MODE_OUTPUT_OD)
     }
 
     /// Try to convert the pin driver into an input-output open-drain pin driver.
@@ -484,7 +484,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         self,
         pull: Pull,
     ) -> Result<PinDriver<'d, InputOutput>, EspError> {
-        let mut pin = PinDriver::new_gpio(self.pin as _, gpio_mode_t_GPIO_MODE_INPUT_OUTPUT_OD)?;
+        let mut pin = PinDriver::new_gpio(self.release()?, gpio_mode_t_GPIO_MODE_INPUT_OUTPUT_OD)?;
 
         pin.set_pull(pull)?;
 
@@ -497,7 +497,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21)))]
     #[inline]
     pub fn try_into_rtc_disabled(self) -> Result<PinDriver<'d, RtcDisabled>, EspError> {
-        PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_DISABLED)
+        PinDriver::new_rtc(self.release()?, rtc_gpio_mode_t_RTC_GPIO_MODE_DISABLED)
     }
 
     /// Try to convert the pin driver into an RTC input pin driver.
@@ -506,7 +506,8 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21)))]
     #[inline]
     pub fn try_into_rtc_input(self, pull: Pull) -> Result<PinDriver<'d, RtcInput>, EspError> {
-        let mut pin = PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_ONLY)?;
+        let mut pin =
+            PinDriver::new_rtc(self.release()?, rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_ONLY)?;
 
         pin.set_pull(pull)?;
 
@@ -519,7 +520,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21)))]
     #[inline]
     pub fn try_into_rtc_output(self) -> Result<PinDriver<'d, RtcOutput>, EspError> {
-        PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_OUTPUT_ONLY)
+        PinDriver::new_rtc(self.release()?, rtc_gpio_mode_t_RTC_GPIO_MODE_OUTPUT_ONLY)
     }
 
     /// Try to convert the pin driver into an RTC output open-drain pin driver.
@@ -528,7 +529,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
     #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21)))]
     #[inline]
     pub fn try_into_rtc_output_od(self) -> Result<PinDriver<'d, RtcOutput>, EspError> {
-        PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_OUTPUT_OD)
+        PinDriver::new_rtc(self.release()?, rtc_gpio_mode_t_RTC_GPIO_MODE_OUTPUT_OD)
     }
 
     /// Try to convert the pin driver into an RTC input-output pin driver.
@@ -541,7 +542,7 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         pull: Pull,
     ) -> Result<PinDriver<'d, RtcInputOutput>, EspError> {
         let mut pin =
-            PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_OUTPUT)?;
+            PinDriver::new_rtc(self.release()?, rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_OUTPUT)?;
 
         pin.set_pull(pull)?;
 
@@ -557,8 +558,10 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         self,
         pull: Pull,
     ) -> Result<PinDriver<'d, RtcInputOutput>, EspError> {
-        let mut pin =
-            PinDriver::new_rtc(self.pin as _, rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_OUTPUT_OD)?;
+        let mut pin = PinDriver::new_rtc(
+            self.release()?,
+            rtc_gpio_mode_t_RTC_GPIO_MODE_INPUT_OUTPUT_OD,
+        )?;
 
         pin.set_pull(pull)?;
 
@@ -1061,22 +1064,36 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         Ok(())
     }
 
+    /// Release the pin of this driver so that it can be re-configured in another mode.
+    ///
+    /// Unlike dropping the driver, this does not reset the pin, so its level, pulls
+    /// and drive strength carry over to the new mode. Only the ISR subscription is
+    /// removed and the pin interrupt is disabled.
+    fn release(self) -> Result<PinId, EspError> {
+        let pin = self.pin;
+
+        unsafe {
+            unsubscribe_pin(pin as _)?;
+            esp!(gpio_set_intr_type(
+                pin as _,
+                gpio_int_type_t_GPIO_INTR_DISABLE
+            ))?;
+            esp!(gpio_intr_disable(pin as _))?;
+        }
+
+        core::mem::forget(self);
+
+        Ok(pin)
+    }
+
     #[inline]
     fn new_gpio(pin: PinId, mode: gpio_mode_t) -> Result<Self, EspError>
     where
         MODE: GPIOMode,
     {
-        if mode != gpio_mode_t_GPIO_MODE_DISABLE {
-            // `gpio_set_direction` wires up the GPIO matrix and the output
-            // enable, but it never touches `IO_MUX.MCU_SEL`. A pad that boots
-            // on an alternate function - JTAG, SPI flash, UART - therefore
-            // stays on that function and never sees what the driver writes.
-            // Route it to the GPIO function first, which is what `gpio_config`
-            // does for every pin it is handed.
-            unsafe { esp_rom_gpio_pad_select_gpio(pin as _) };
+        select_gpio_function(pin as _)?;
 
-            esp!(unsafe { gpio_set_direction(pin as _, mode) })?;
-        }
+        esp!(unsafe { gpio_set_direction(pin as _, mode) })?;
 
         Ok(Self {
             pin,
@@ -1413,6 +1430,31 @@ fn gpio_reset_without_pull(pin: gpio_num_t) -> Result<(), EspError> {
         unsubscribe_pin(pin)?;
         esp!(gpio_config(&cfg))?;
     }
+    Ok(())
+}
+
+/// Route the pad of `pin` to the GPIO function.
+///
+/// The pad is taken away from the RTC (LP) IO MUX and from any alternate IO MUX
+/// function it boots on (JTAG, SPI flash, UART, and - on chips with an internal
+/// USB PHY - the USB Serial/JTAG D-/D+ pads).
+///
+/// Unlike `gpio_config`, this leaves the pulls, the drive strength and the
+/// interrupt configuration of the pin alone, so a pin that is already being
+/// driven does not glitch.
+fn select_gpio_function(pin: gpio_num_t) -> Result<(), EspError> {
+    #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21)))]
+    if unsafe { rtc_gpio_is_valid_gpio(pin) } {
+        esp!(unsafe { rtc_gpio_deinit(pin) })?;
+    }
+
+    // ESP-IDF v6 selects the GPIO function (and releases the USB pads) in
+    // `gpio_set_direction` already, and no longer has `gpio_iomux_out`
+    #[cfg(any(esp_idf_version_major = "4", esp_idf_version_major = "5"))]
+    unsafe {
+        gpio_iomux_out(pin as _, PIN_FUNC_GPIO as _, false)
+    };
+
     Ok(())
 }
 

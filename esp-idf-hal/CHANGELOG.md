@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ULP: `UlpDriver` supports the LP core (`CONFIG_ULP_COPROC_TYPE_LP_CORE`) of the esp32c5, esp32c6, esp32p4 and esp32s31
 
 ### Fixed
+- GPIO: `PinDriver` now releases the USB Serial/JTAG D-/D+ pads (e.g. GPIO19/20 on the esp32s3, GPIO18/19 on the esp32c3) and the RTC IO MUX when routing a pad to GPIO, without resetting the pulls, drive strength or level of the pin (#614)
+- GPIO: the `PinDriver::try_into_*` mode conversions no longer reset the pin right after configuring it in the new mode. The converted driver used to end up disabled, with its pulls cleared
+- GPIO: `PinDriver::disabled` and `PinDriver::try_into_disabled` now actually disable the input and output of the pin
 - ULP: `UlpDriver` did not compile with the ULP enabled (`CONFIG_ULP_COPROC_ENABLED`) on any chip, as `PhantomData` was not imported and `impl ULP` lacked its lifetime. The workspace `sdkconfig.defaults` now enables the ULP, so CI builds the driver
 - ADC channel drivers no longer call `rtc_gpio_init` on pins that are not RTC (LP) pins, which fails with `ESP_ERR_INVALID_ARG` ("RTCIO number error") on chips whose ADC pins are plain GPIOs
 - RMT (new and legacy): `Pulse::new_with_duration` / `duration_to_ticks` now return `ESP_ERR_INVALID_ARG` instead of silently rounding a non-zero duration shorter than one tick to 0 ticks (the RMT end-of-transmission marker, so nothing was sent)
