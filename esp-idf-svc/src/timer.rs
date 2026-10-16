@@ -406,8 +406,15 @@ pub mod embassy_time_driver {
         }
 
         fn schedule_next_expiration(&mut self) {
-            /// End of epoch minus one day
-            const MAX_SAFE_TIMEOUT_US: u64 = u64::MAX - 24 * 60 * 60 * 1000 * 1000;
+            /// The longest the ESP-IDF timer is ever armed for.
+            ///
+            /// `esp_timer` adds the timeout to its own "now", and its HW backends convert
+            /// the resulting deadline to ticks and compare it as a signed 64-bit value
+            /// (and the systimer counter is only 52 bits wide). Far-away deadlines thus
+            /// overflow there and fire immediately, so instead the timer is armed for at
+            /// most this long, and later deadlines are reached in several steps: each
+            /// premature expiry just re-arms the timer via `schedule_next_expiration`.
+            const MAX_ARM_US: u64 = 24 * 60 * 60 * 1000 * 1000;
 
             let timer = self.timer.as_mut().unwrap();
 
@@ -416,27 +423,10 @@ pub mod embassy_time_driver {
                 let next_at = self.queue.next_expiration(now);
 
                 if now < next_at {
-                    let after = next_at - now;
+                    // `u64::MAX` means that the queue is empty
+                    if next_at != u64::MAX {
+                        let after = (next_at - now).min(MAX_ARM_US);
 
-                    if after <= MAX_SAFE_TIMEOUT_US {
-                        // Why?
-                        // The ESP-IDF Timer API does not have a `Timer::at` method so we have to call it with
-                        // `Timer::after(next_at - now)` instead. The problem is - even though the ESP IDF
-                        // Timer API does not have a `Timer::at` method - _internally_ it takes our `next_at - now`,
-                        // adds to it a **newer** "now" and sets this as the moment in time when the timer should trigger.
-                        //
-                        // Consider what would happen if we call `Timer::after(u64::MAX - now)`:
-                        // The result would be something like `u64::MAX - now + (now + 1)` which would silently overflow and
-                        // trigger the timer after 1us:
-                        // https://github.com/espressif/esp-idf/blob/b5ac4fbdf9e9fb320bb0a98ee4fbaa18f8566f37/components/esp_timer/src/esp_timer.c#L188
-                        //
-                        // To workaround this problem, we make sure to never call `Timer::after(ms)` with `ms` greater than `MAX_SAFE_TIMEOUT_US`
-                        // (i.e. the end of epoch - one day).
-                        //
-                        // Thus, even if we are un-scheduled between the calculation of our own `now` and the driver's newer `now`,
-                        // there is one extra **day** of millis to accomodate for the potential overflow. If the overflow does happen still
-                        // (which is kinda unthinkable given the time scales we are working with), the timer will re-trigger immediately,
-                        // but hopefully on the next (or next after next and so on) re-trigger, we won't have the overflow anymore.
                         timer.after(Duration::from_micros(after)).unwrap();
                     }
 
