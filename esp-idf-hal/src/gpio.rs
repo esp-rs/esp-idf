@@ -1067,15 +1067,24 @@ impl<'d, MODE> PinDriver<'d, MODE> {
         MODE: GPIOMode,
     {
         if mode != gpio_mode_t_GPIO_MODE_DISABLE {
-            // `gpio_set_direction` wires up the GPIO matrix and the output
-            // enable, but it never touches `IO_MUX.MCU_SEL`. A pad that boots
-            // on an alternate function - JTAG, SPI flash, UART - therefore
-            // stays on that function and never sees what the driver writes.
-            // Route it to the GPIO function first, which is what `gpio_config`
-            // does for every pin it is handed.
-            unsafe { esp_rom_gpio_pad_select_gpio(pin as _) };
+            // Selecting the GPIO function through the ROM is insufficient for
+            // USB pads such as GPIO19/20 on ESP32-S3: it leaves USB pad ownership
+            // enabled. Use IDF's full configuration path to release peripheral
+            // ownership as well as select the GPIO function and direction.
+            let config = gpio_config_t {
+                pin_bit_mask: 1u64 << pin,
+                mode,
+                pull_up_en: gpio_pullup_t_GPIO_PULLUP_DISABLE,
+                pull_down_en: gpio_pulldown_t_GPIO_PULLDOWN_DISABLE,
+                intr_type: gpio_int_type_t_GPIO_INTR_DISABLE,
+                #[cfg(all(
+                    esp_idf_soc_gpio_support_pin_hys_filter,
+                    not(esp_idf_version_major = "4")
+                ))]
+                hys_ctrl_mode: gpio_hys_ctrl_mode_t_GPIO_HYS_SOFT_DISABLE,
+            };
 
-            esp!(unsafe { gpio_set_direction(pin as _, mode) })?;
+            esp!(unsafe { gpio_config(&config) })?;
         }
 
         Ok(Self {
