@@ -165,6 +165,15 @@ pub enum GapEvent {
         conn_handle: ConnHandle,
         value: u16,
     },
+    EncChange {
+        conn_handle: ConnHandle,
+        status: Result<(), BleError>,
+    },
+    /// A bonded peer asks to pair again. The callback returns `BLE_GAP_REPEAT_PAIRING_RETRY` after
+    /// deleting the old bond to let the pairing continue, or `BLE_GAP_REPEAT_PAIRING_IGNORE`.
+    RepeatPairing {
+        conn_handle: ConnHandle,
+    },
     Other,
 }
 
@@ -192,6 +201,19 @@ impl From<&ble_gap_event> for GapEvent {
                 Self::Mtu {
                     conn_handle: mtu.conn_handle,
                     value: mtu.value,
+                }
+            }
+            BLE_GAP_EVENT_ENC_CHANGE => {
+                let enc_change = unsafe { &anon.enc_change };
+                Self::EncChange {
+                    conn_handle: enc_change.conn_handle,
+                    status: BleError::from_raw(enc_change.status),
+                }
+            }
+            BLE_GAP_EVENT_REPEAT_PAIRING => {
+                let repeat_pairing = unsafe { &anon.repeat_pairing };
+                Self::RepeatPairing {
+                    conn_handle: repeat_pairing.conn_handle,
                 }
             }
             _ => Self::Other,
