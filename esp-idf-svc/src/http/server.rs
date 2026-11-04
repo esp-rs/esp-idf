@@ -1393,7 +1393,7 @@ pub mod ws {
         pub fn recv(&mut self, frame_data_buf: &mut [u8]) -> Result<(FrameType, usize), EspError> {
             match self {
                 Self::New(_, _) => Err(EspError::from_infallible::<ESP_FAIL>()),
-                Self::Receiving(_, raw_req, ref mut raw_frame_mut) => {
+                Self::Receiving(sd, raw_req, ref mut raw_frame_mut) => {
                     let raw_frame = loop {
                         if let Some(raw_frame) = raw_frame_mut.as_mut() {
                             break raw_frame;
@@ -1404,6 +1404,13 @@ pub mod ws {
                         esp!(unsafe {
                             httpd_ws_recv_frame(*raw_req, &mut raw_frame as *mut _, 0)
                         })?;
+
+                        if Self::create_frame_type(&raw_frame).is_none() {
+                            // RFC 6455 5.2: a reserved opcode fails the connection. ESP-IDF
+                            // passes the opcode through unchecked; answer with a Close frame
+                            // (1002, protocol error) and close the session.
+                            Self::fail_connection(*sd, *raw_req);
+                        }
 
                         // This is necessary because the ESP IDF WS API requires us to
                         // call it exactly once with a frame that has a zero-sized buffer,
@@ -1416,7 +1423,11 @@ pub mod ws {
                         *raw_frame_mut = Some(raw_frame);
                     };
 
-                    let (frame_type, len) = Self::create_frame_type(raw_frame);
+                    // A frame with a reserved opcode stays pending, so every later call
+                    // fails too, instead of reading its payload as the next frame header
+                    let Some((frame_type, len)) = Self::create_frame_type(raw_frame) else {
+                        return Err(EspError::from_infallible::<ESP_ERR_INVALID_RESPONSE>());
+                    };
 
                     if frame_data_buf.len() >= len {
                         raw_frame.payload = frame_data_buf.as_mut_ptr() as *mut _;
@@ -1451,9 +1462,10 @@ pub mod ws {
             }
         }
 
+        /// Returns `None` for a reserved opcode, which the peer controls
         #[allow(non_upper_case_globals)]
-        fn create_frame_type(raw_frame: &httpd_ws_frame_t) -> (FrameType, usize) {
-            match raw_frame.type_ {
+        fn create_frame_type(raw_frame: &httpd_ws_frame_t) -> Option<(FrameType, usize)> {
+            Some(match raw_frame.type_ {
                 httpd_ws_type_t_HTTPD_WS_TYPE_TEXT => {
                     (FrameType::Text(raw_frame.fragmented), raw_frame.len + 1)
                 }
@@ -1466,7 +1478,19 @@ pub mod ws {
                 httpd_ws_type_t_HTTPD_WS_TYPE_PING => (FrameType::Ping, 0),
                 httpd_ws_type_t_HTTPD_WS_TYPE_PONG => (FrameType::Pong, 0),
                 httpd_ws_type_t_HTTPD_WS_TYPE_CLOSE => (FrameType::Close, 0),
-                _ => panic!("Unknown frame type: {}", raw_frame.type_),
+                _ => return None,
+            })
+        }
+
+        /// Sends a Close frame with status 1002 (protocol error) and closes the session.
+        /// Both steps are best effort: the peer may already be gone.
+        fn fail_connection(sd: httpd_handle_t, raw_req: *mut httpd_req_t) {
+            let status = 1002_u16.to_be_bytes();
+            let close = Self::create_raw_frame(FrameType::Close, &status);
+
+            unsafe {
+                httpd_ws_send_frame(raw_req, &close as *const _ as *mut _);
+                httpd_sess_trigger_close(sd, httpd_req_to_sockfd(raw_req));
             }
         }
     }

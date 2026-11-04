@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wi-Fi: WPA2 / WPA3 Enterprise (802.1X / EAP) authentication of the station with `EnterpriseConfiguration` and `WifiDriver::enable_enterprise` / `disable_enterprise` (and on `EspWifi`); ESP-IDF v5.0.5+, v5.1.2+ and v5.2+
 
 ### Fixed
+- HTTP server: a WS frame with a reserved opcode no longer panics in `EspHttpWsConnection::recv`, which let any client reset the chip. `recv` returns `ESP_ERR_INVALID_RESPONSE`, and the session is failed with a Close frame (1002, protocol error) as RFC 6455 requires
 - Netif: fix linking with the DHCP server disabled (`CONFIG_LWIP_DHCPS=n`) in builds which keep the call to `esp_netif_dhcps_option`, e.g. without LTO
 - Log: Rust log lines show the timestamp of every `CONFIG_LOG_TIMESTAMP_SOURCE` of log v2, e.g. the date and time, rather than none
 - Netif: align the default PPP client with ESP-IDF's PPP configuration, correctly deserialize `IP_EVENT_PPP_LOST_IP`, and keep custom driver lifecycle state in sync across start/stop calls.
