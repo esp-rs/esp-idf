@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - thread: esp32s31 support (native IEEE 802.15.4 radio, host mode; ESP-IDF v6.1+)
 - bt: esp32s31 support in all three controller modes
 - ble: esp32s31 support (NimBLE, BLE-only controller mode)
+- ble: `GapEvent::EncChange` and `GapEvent::RepeatPairing`, for bonding peripherals
 - Netif: add an asynchronous PPP byte-stream bridge for `EspNetifDriver`.
 - Netif: `EspNetif::get_mtu` / `set_mtu` (ESP-IDF v6.0+)
 - mDNS: `EspMdns::enable_netif` / `disable_netif` / `announce_netif`, e.g. for enabling mDNS on an Ethernet netif running a DHCP server, on which mDNS does not enable itself, and `register_netif` / `unregister_netif` for netifs other than ESP-IDF's default ones (`espressif/mdns` component only)
