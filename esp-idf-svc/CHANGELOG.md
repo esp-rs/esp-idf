@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Thread: fix compilation when `CONFIG_OPENTHREAD_LOG_LEVEL_DYNAMIC=n` is specified
 - WS client: `WebSocketEventType::Close` decoded the closing reason from the address of the payload rather than from its first two bytes
 - WS client: `WEBSOCKET_EVENT_BEFORE_CONNECT` was reported as an error rather than as `WebSocketEventType::BeforeConnect` on ESP-IDF 6+
+- WS client: fix compilation with NimBLE enabled, whose bindings export a `log` struct that made the `log` path in `EspWebSocketClient::drop` ambiguous
 - Fix compilation and linking with IPv4 disabled (`CONFIG_LWIP_IPV4=n`). Without IPv4: the `ping` module and `EspNetif::get_ip_info` are not available; the default `NetifConfiguration`s have no `ip_configuration` (ESP-IDF then has no DHCP client / server and no static IPv4 addressing) and `EspNetif::new_with_conf` returns `ESP_ERR_NOT_SUPPORTED` for one that has; `EspNetif::is_up` reports whether the netif has an IPv6 address
 - Ping: the address of a reply (logged, and reported in `Info::addr`) was byte-swapped, and with `CONFIG_LWIP_IPV6=n` the echo requests were sent to the byte-swapped address
 - TLS: the keep-alive and PSK settings of `tls::Config` were passed to ESP-IDF as pointers to temporaries which no longer existed when ESP-IDF read them while connecting
