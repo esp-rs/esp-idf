@@ -348,7 +348,7 @@ mod esptls {
 
     use crate::{
         io::EspIOError,
-        private::cstr::{cstr_arr_from_str_slice, cstr_from_str_truncating, CStr},
+        private::cstr::{cstr_from_str_truncating, CStr},
         sys::{
             self, EspError, ESP_ERR_NO_MEM, ESP_FAIL, ESP_TLS_ERR_SSL_WANT_READ,
             ESP_TLS_ERR_SSL_WANT_WRITE, EWOULDBLOCK,
@@ -360,6 +360,8 @@ mod esptls {
 
     pub struct Config<'a> {
         /// up to 9 ALPNs allowed, with avg 10 bytes for each name
+        ///
+        /// Needs the `alloc` feature.
         pub alpn_protos: Option<&'a [&'a str]>,
         pub ca_cert: Option<X509<'a>>,
         pub client_cert: Option<X509<'a>>,
@@ -406,7 +408,11 @@ mod esptls {
             }
         }
 
-        fn try_into_raw(&self, bufs: &mut RawConfigBufs) -> Result<sys::esp_tls_cfg, EspError> {
+        fn try_into_raw(
+            &self,
+            bufs: &mut RawConfigBufs,
+            alpn: &mut SessionAlpnProtos,
+        ) -> Result<sys::esp_tls_cfg, EspError> {
             let mut rcfg: sys::esp_tls_cfg = Default::default();
 
             if let Some(ca_cert) = self.ca_cert {
@@ -449,10 +455,8 @@ mod esptls {
                 }
             }
 
-            // allow up to 9 protocols
             if let Some(protos) = self.alpn_protos {
-                bufs.alpn_protos = cstr_arr_from_str_slice(protos, &mut bufs.alpn_protos_cbuf)?;
-                rcfg.alpn_protos = bufs.alpn_protos.as_mut_ptr();
+                rcfg.alpn_protos = alpn.get_or_init(protos)?;
             }
 
             rcfg.non_block = self.non_block;
@@ -519,8 +523,6 @@ mod esptls {
 
     /// Data which the raw configuration points to, and which ESP-IDF reads while connecting
     struct RawConfigBufs {
-        alpn_protos: [*const c_char; 10],
-        alpn_protos_cbuf: [u8; 99],
         common_name_buf: [u8; MAX_COMMON_NAME_LENGTH + 1],
         keep_alive_cfg: sys::tls_keep_alive_cfg,
         #[cfg(any(
@@ -542,8 +544,6 @@ mod esptls {
     impl Default for RawConfigBufs {
         fn default() -> Self {
             RawConfigBufs {
-                alpn_protos: [core::ptr::null(); 10],
-                alpn_protos_cbuf: [0; 99],
                 common_name_buf: [0; MAX_COMMON_NAME_LENGTH + 1],
                 keep_alive_cfg: Default::default(),
                 #[cfg(any(
@@ -560,6 +560,48 @@ mod esptls {
                 hw_private_key: Default::default(),
             }
         }
+    }
+
+    /// The ALPN protocol list of a session
+    ///
+    /// mbedTLS reads the list during the handshake, and points into it until the session is
+    /// destroyed. The list is therefore on the heap, where moving the `EspTls` does not move it.
+    #[derive(Default)]
+    struct SessionAlpnProtos(#[cfg(feature = "alloc")] Option<alloc::boxed::Box<AlpnProtos>>);
+
+    impl SessionAlpnProtos {
+        /// Copy `protos` here, unless this session already has a list, and return the list
+        /// to hand to ESP-IDF
+        ///
+        /// ESP-IDF reads the list once per session, so the later calls of a non-blocking
+        /// handshake keep the first list.
+        #[cfg(feature = "alloc")]
+        fn get_or_init(&mut self, protos: &[&str]) -> Result<*mut *const c_char, EspError> {
+            if self.0.is_none() {
+                let mut alpn = alloc::boxed::Box::new(AlpnProtos {
+                    protos: [core::ptr::null(); 10],
+                    cbuf: [0; 99],
+                });
+                alpn.protos =
+                    crate::private::cstr::cstr_arr_from_str_slice(protos, &mut alpn.cbuf)?;
+
+                self.0 = Some(alpn);
+            }
+
+            Ok(self.0.as_mut().unwrap().protos.as_mut_ptr())
+        }
+
+        #[cfg(not(feature = "alloc"))]
+        fn get_or_init(&mut self, _protos: &[&str]) -> Result<*mut *const c_char, EspError> {
+            Err(EspError::from_infallible::<{ sys::ESP_ERR_NOT_SUPPORTED }>())
+        }
+    }
+
+    #[cfg(feature = "alloc")]
+    struct AlpnProtos {
+        /// Up to 9 protocols, then null
+        protos: [*const c_char; 10],
+        cbuf: [u8; 99],
     }
 
     type AlpnBuf = [u8; 16];
@@ -656,6 +698,8 @@ mod esptls {
     ))]
     pub struct ServerConfig<'a> {
         /// up to 9 ALPNs allowed, with avg 10 bytes for each name
+        ///
+        /// Needs the `alloc` feature.
         pub alpn_protos: Option<&'a [&'a str]>,
         pub ca_cert: Option<X509<'a>>,
         pub server_cert: Option<X509<'a>>,
@@ -701,7 +745,7 @@ mod esptls {
 
         fn try_into_raw(
             &self,
-            bufs: &mut RawConfigBufs,
+            alpn: &mut SessionAlpnProtos,
         ) -> Result<sys::esp_tls_cfg_server, EspError> {
             let mut rcfg: sys::esp_tls_cfg_server = Default::default();
 
@@ -725,10 +769,8 @@ mod esptls {
                 rcfg.serverkey_password_len = ckp.len() as u32;
             }
 
-            // allow up to 9 protocols
             if let Some(protos) = self.alpn_protos {
-                bufs.alpn_protos = cstr_arr_from_str_slice(protos, &mut bufs.alpn_protos_cbuf)?;
-                rcfg.alpn_protos = bufs.alpn_protos.as_mut_ptr();
+                rcfg.alpn_protos = alpn.get_or_init(protos)?;
             }
 
             rcfg.use_secure_element = self.use_secure_element;
@@ -794,6 +836,8 @@ mod esptls {
             all(esp_idf_version_at_least_5_3_0, esp_idf_esp_tls_using_mbedtls,),
         ))]
         server_session: bool,
+        /// Dropped after `esp_tls_conn_destroy`, as fields drop after `Drop::drop`
+        alpn_protos: SessionAlpnProtos,
     }
 
     // A single Mbed TLS context itself is safe to send across threads.
@@ -823,6 +867,7 @@ mod esptls {
                         all(esp_idf_version_at_least_5_3_0, esp_idf_esp_tls_using_mbedtls,),
                     ))]
                     server_session: false,
+                    alpn_protos: Default::default(),
                 })
             } else {
                 Err(EspError::from_infallible::<ESP_ERR_NO_MEM>())
@@ -845,7 +890,7 @@ mod esptls {
             cfg: &Config,
         ) -> Result<CompletedHandshake, EspError> {
             let mut bufs = RawConfigBufs::default();
-            let rcfg = cfg.try_into_raw(&mut bufs)?;
+            let rcfg = cfg.try_into_raw(&mut bufs, &mut self.alpn_protos)?;
 
             let res = self.internal_connect(host, port, cfg.non_block, &rcfg);
 
@@ -888,6 +933,7 @@ mod esptls {
                         all(esp_idf_version_at_least_5_3_0, esp_idf_esp_tls_using_mbedtls,),
                     ))]
                     server_session: false,
+                    alpn_protos: Default::default(),
                 })
             } else {
                 Err(EspError::from_infallible::<ESP_ERR_NO_MEM>())
@@ -913,7 +959,7 @@ mod esptls {
             cfg: &Config,
         ) -> Result<CompletedHandshake, EspError> {
             let mut bufs = RawConfigBufs::default();
-            let rcfg = cfg.try_into_raw(&mut bufs)?;
+            let rcfg = cfg.try_into_raw(&mut bufs, &mut self.alpn_protos)?;
 
             let res = self.internal_connect(host, 0, cfg.non_block, &rcfg);
 
@@ -941,8 +987,7 @@ mod esptls {
             all(esp_idf_version_at_least_5_3_0, esp_idf_esp_tls_using_mbedtls),
         ))]
         pub fn negotiate_server(&mut self, cfg: &ServerConfig) -> Result<(), EspError> {
-            let mut bufs = RawConfigBufs::default();
-            let mut rcfg = cfg.try_into_raw(&mut bufs)?;
+            let mut rcfg = cfg.try_into_raw(&mut self.alpn_protos)?;
 
             unsafe {
                 let error =
@@ -953,10 +998,6 @@ mod esptls {
                 }
             }
             self.server_session = true;
-
-            // Make sure buffers are held long enough
-            #[allow(clippy::drop_non_drop)]
-            drop(bufs);
 
             Ok(())
         }
@@ -974,17 +1015,13 @@ mod esptls {
         /// * `ESP_FAIL` / other ESP-TLS errors if session setup fails
         #[cfg(all(esp_idf_version_at_least_5_5_0, esp_idf_esp_tls_using_mbedtls,))]
         pub fn negotiate_server_init(&mut self, cfg: &ServerConfig) -> Result<(), EspError> {
-            let mut bufs = RawConfigBufs::default();
-            let mut rcfg = cfg.try_into_raw(&mut bufs)?;
+            let mut rcfg = cfg.try_into_raw(&mut self.alpn_protos)?;
 
             // esp_tls_server_session_init returns esp_err_t (0 on success).
             sys::esp!(unsafe {
                 sys::esp_tls_server_session_init(&mut rcfg, self.socket.handle(), self.raw)
             })?;
             self.server_session = true;
-
-            #[allow(clippy::drop_non_drop)]
-            drop(bufs);
 
             Ok(())
         }
@@ -1236,7 +1273,8 @@ mod esptls {
             unsafe impl<T> Send for AssertSend<T> {}
 
             let mut bufs = RawConfigBufs::default();
-            let mut rcfg: AssertSend<sys::esp_tls_cfg> = AssertSend(cfg.try_into_raw(&mut bufs)?);
+            let mut rcfg: AssertSend<sys::esp_tls_cfg> =
+                AssertSend(cfg.try_into_raw(&mut bufs, &mut self.0.get_mut().alpn_protos)?);
 
             // It is a bit unintuitive, but when an async socket is being adopted, `non_block` should be set to false.
             //

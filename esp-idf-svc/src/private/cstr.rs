@@ -139,6 +139,7 @@ pub fn cstr_from_str_truncating<'a>(rust_str: &str, buf: &'a mut [u8]) -> &'a CS
 ///
 /// * Panics if cbuf is empty.
 /// * Panics if N is <= 1
+#[cfg_attr(not(feature = "alloc"), allow(unused))]
 pub fn cstr_arr_from_str_slice<const N: usize>(
     rust_strs: &[&str],
     mut cbuf: &mut [u8],
