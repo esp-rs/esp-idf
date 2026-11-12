@@ -1105,6 +1105,10 @@ impl<'d> Drop for PcntUnitDriver<'d> {
             )
         };
 
+        // Channels must be deleted before the unit: pcnt_del_unit refuses
+        // (ESP_ERR_INVALID_STATE) while any channel is still attached.
+        self.channels.clear();
+
         unsafe {
             pcnt_del_unit(self.handle);
         }
