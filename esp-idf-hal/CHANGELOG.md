@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RMT (new and legacy): `Pulse::new_with_duration` / `duration_to_ticks` now return `ESP_ERR_INVALID_ARG` instead of silently rounding a non-zero duration shorter than one tick to 0 ticks (the RMT end-of-transmission marker, so nothing was sent)
 - RMT: `Symbol::repeat_for` computes the repeat count and the trailing symbol in whole ticks, so a sub-tick remainder no longer produces a zero-tick end marker
 - RMT: the RX channel did not compile against ESP-IDF v5.3.0 and v5.3.1, which name the receive config flags struct `extra_flags` rather than `extra_rmt_receive_flags`
+- PCNT: dropping a `PcntUnitDriver` with channels leaked the hardware unit, as `pcnt_del_unit` ran before the channels were deleted and failed with `ESP_ERR_INVALID_STATE`. After enough create/drop cycles `PcntUnitDriver::new` failed with `ESP_ERR_NOT_FOUND`. The channels are now deleted before the unit
 - rmt-legacy: the `clock_divider` docs now note that the tick period depends on the chip's RMT source clock (e.g. 2.5 µs with the default divider on the esp32h2)
 
 ### Breaking
