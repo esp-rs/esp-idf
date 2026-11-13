@@ -21,16 +21,9 @@ const MISMATCHES: &[(&str, Option<&str>)] = &[
     ),
     // LWIP sizes it for the largest sockaddr, while libc assumes that IPv6 is there
     ("sockaddr_storage", Some("esp_idf_lwip_ipv6")),
-    // TODO: picolibc incompatibility, see https://github.com/esp-rs/esp-idf-sys/issues/410
-    ("O_APPEND", Some("not(esp_idf_libc_picolibc)")),
-    ("O_CREAT", Some("not(esp_idf_libc_picolibc)")),
-    ("O_TRUNC", Some("not(esp_idf_libc_picolibc)")),
     // TODO: size/alignment mismatches, to be fixed, or at least carefully investigated
-    ("pthread_attr_t", None),
     ("pthread_cond_t", None),
-    ("pthread_condattr_t", None),
     ("pthread_mutex_t", None),
-    ("pthread_mutexattr_t", None),
     ("pthread_rwlock_t", None),
     ("pthread_rwlockattr_t", None),
     // TODO: size: ESP-IDF 0, libc 16

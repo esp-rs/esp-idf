@@ -1,0 +1,3 @@
+# Used by CI on top of `sdkconfig.defaults`: build with newlib, on the ESP-IDF releases which also
+# support picolibc (v5.5 and later; picolibc is the default since v6.0).
+CONFIG_LIBC_NEWLIB=y

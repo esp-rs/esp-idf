@@ -384,4 +384,16 @@ check_types_manually!(
 );
 check_constants_manually!("SOCK_CLOEXEC", sys::O_CLOEXEC, libc::SOCK_CLOEXEC);
 
+// `libc` has the picolibc values of the `O_*` flags (which `std::fs` uses) only with `--cfg espidf_picolibc`
+#[cfg(esp_idf_libc_picolibc)]
+const _: () = assert!(
+    sys::O_CREAT as i64 == libc::O_CREAT as i64,
+    "The ESP-IDF is built with picolibc, but the `libc` crate is not: add `--cfg espidf_picolibc` to the rustflags"
+);
+#[cfg(not(esp_idf_libc_picolibc))]
+const _: () = assert!(
+    sys::O_CREAT as i64 == libc::O_CREAT as i64,
+    "The ESP-IDF is built with newlib, but the `libc` crate is built for picolibc: remove `--cfg espidf_picolibc` from the rustflags"
+);
+
 include!(concat!(env!("OUT_DIR"), "/libc_checks.rs"));

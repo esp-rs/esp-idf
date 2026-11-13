@@ -1,0 +1,3 @@
+# Used by CI on top of `sdkconfig.defaults`: build with picolibc (ESP-IDF v5.5 and later; the default
+# since v6.0). The `libc` crate then needs `--cfg espidf_picolibc` in the rustflags.
+CONFIG_LIBC_PICOLIBC=y

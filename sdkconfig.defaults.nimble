@@ -1,5 +1,6 @@
 # Shared sdkconfig defaults for the whole workspace: the crates, their tests and all the examples.
-# Its variants used by CI and by specific examples live next to it (`sdkconfig.defaults.nimble`, `sdkconfig.defaults.a2dp_external_codec`).
+# Its variants used by CI and by specific examples live next to it (`sdkconfig.defaults.nimble`, `sdkconfig.defaults.a2dp_external_codec`,
+# and `sdkconfig.defaults.newlib` / `sdkconfig.defaults.picolibc`, which CI uses on top of this file).
 
 # The examples require a larger than the default stack size for the main thread, the posix threads,
 # the sysloop event task and the esp-timer task (necessary when the `embassy-time-driver` feature is enabled).

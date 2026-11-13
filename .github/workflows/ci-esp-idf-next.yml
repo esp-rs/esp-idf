@@ -29,7 +29,7 @@ env:
 
 jobs:
   compile:
-    name: "${{ matrix.target }} / ${{ matrix.idf-version }}"
+    name: "${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' ({0})', matrix.libc) || '' }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -44,9 +44,22 @@ jobs:
         idf-version:
 #          - release/v6.2
           - master
+        # The default libc of the ESP-IDF: picolibc
+        libc:
+          - ""
+        include:
+          # The other libc, for one RISC-V and one Xtensa target
+          - target: riscv32imc-esp-espidf
+            idf-version: master
+            libc: newlib
+          - target: xtensa-esp32-espidf
+            idf-version: master
+            libc: newlib
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
-      RUSTFLAGS: "--cfg espidf_time64"
+      ESP_IDF_SDKCONFIG_DEFAULTS: ${{ matrix.libc && format('sdkconfig.defaults;sdkconfig.defaults.{0}', matrix.libc) || 'sdkconfig.defaults' }}
+      # `libc` needs `--cfg espidf_picolibc` with picolibc
+      RUSTFLAGS: "--cfg espidf_time64${{ matrix.libc != 'newlib' && ' --cfg espidf_picolibc' || '' }}"
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v3

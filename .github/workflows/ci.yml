@@ -31,7 +31,7 @@ env:
 
 jobs:
   compile:
-    name: "${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}${{ matrix.extra-components-label != '' && format(' (+{0})', matrix.extra-components-label) || '' }}"
+    name: "${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}${{ matrix.extra-components-label != '' && format(' (+{0})', matrix.extra-components-label) || '' }}${{ matrix.libc && format(' ({0})', matrix.libc) || '' }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -55,11 +55,34 @@ jobs:
           - ""
         mcu:
           - ""
+        # The default libc of the ESP-IDF release: picolibc since v6.0, newlib before
+        libc:
+          - ""
         include:
           # The one riscv32imc job on the latest nightly; the others use `rust_toolchain_pinned`
           - target: riscv32imc-esp-espidf
             idf-version: v5.5.5
             latest-nightly: true
+          # The other libc of the ESP-IDF releases which support both (v5.5 and later), for one
+          # RISC-V and one Xtensa target
+          - target: riscv32imc-esp-espidf
+            idf-version: v5.5.5
+            libc: picolibc
+          - target: xtensa-esp32-espidf
+            idf-version: v5.5.5
+            libc: picolibc
+          - target: riscv32imc-esp-espidf
+            idf-version: v6.0.3
+            libc: newlib
+          - target: xtensa-esp32-espidf
+            idf-version: v6.0.3
+            libc: newlib
+          - target: riscv32imc-esp-espidf
+            idf-version: v6.1
+            libc: newlib
+          - target: xtensa-esp32-espidf
+            idf-version: v6.1
+            libc: newlib
           # Also test v6.0 with remote components that were moved out of the main tree
           # mqtt and eth SPI drivers work on all targets; eth PHY drivers only support esp32 and esp32p4
           - target: riscv32imc-esp-espidf
@@ -92,7 +115,9 @@ jobs:
       # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
       ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       ESP_IDF_SYS_EXTRA_COMPONENTS_FILE: ${{ matrix.extra-components-files }}
-      RUSTFLAGS: "--cfg espidf_time64"
+      ESP_IDF_SDKCONFIG_DEFAULTS: ${{ matrix.libc && format('sdkconfig.defaults;sdkconfig.defaults.{0}', matrix.libc) || 'sdkconfig.defaults' }}
+      # `libc` needs `--cfg espidf_picolibc` with picolibc
+      RUSTFLAGS: "--cfg espidf_time64${{ (matrix.libc == 'picolibc' || (!matrix.libc && startsWith(matrix.idf-version, 'v6'))) && ' --cfg espidf_picolibc' || '' }}"
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v3
@@ -203,7 +228,8 @@ jobs:
       # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
       ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       ESP_IDF_SDKCONFIG_DEFAULTS: "${{ github.workspace }}/sdkconfig.defaults.nimble"
-      RUSTFLAGS: "--cfg espidf_time64"
+      # `libc` needs `--cfg espidf_picolibc` with picolibc, the default libc since ESP-IDF v6.0
+      RUSTFLAGS: "--cfg espidf_time64${{ startsWith(matrix.idf-version, 'v6') && ' --cfg espidf_picolibc' || '' }}"
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v3

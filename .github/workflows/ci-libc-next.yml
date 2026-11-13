@@ -5,8 +5,9 @@ name: CILibcNext
 # is published. Two independent jobs:
 # - `std`: `std` alone against libc-0.2, with the toolchain users build with (the latest nightly for
 #   riscv32imc, `esp` for Xtensa); no ESP-IDF is needed for that
-# - `checks`: `esp-idf-sys` against libc-0.2, with a toolchain whose `std` builds with its own libc,
-#   so that a `std` broken by libc-0.2 does not hide the checks
+# - `checks`: `esp-idf-sys` against libc-0.2, with newlib and with picolibc, and with a toolchain whose
+#   `std` builds with its own libc, so that a `std` broken by libc-0.2 does not hide the checks. It also
+#   lists the known mismatches, which the checks skip, in the job summary
 
 on:
   push:
@@ -104,7 +105,7 @@ jobs:
           fi
 
   checks:
-    name: "esp-idf-sys checks / libc-0.2 / ${{ matrix.target }} / ${{ matrix.idf-version }}"
+    name: "esp-idf-sys checks / libc-0.2 / ${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' / {0}', matrix.libc) || '' }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -112,17 +113,21 @@ jobs:
         target:
           - riscv32imc-esp-espidf
           - xtensa-esp32-espidf
-        # newlib and picolibc
+        # The ESP-IDF releases with both libcs: newlib is the default of v5.5, picolibc the one of v6.x
         idf-version:
           - v5.5.5
           - v6.1
+        libc:
+          - newlib
+          - picolibc
         include:
-          # 32-bit `time_t`
+          # 32-bit `time_t` (newlib only)
           - target: riscv32imc-esp-espidf
             idf-version: v4.4.8
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
-      RUSTFLAGS: "${{ startsWith(matrix.idf-version, 'v4') && '--cfg espidf_time32' || '--cfg espidf_time64' }}"
+      ESP_IDF_SDKCONFIG_DEFAULTS: ${{ matrix.libc && format('sdkconfig.defaults;sdkconfig.defaults.{0}', matrix.libc) || 'sdkconfig.defaults' }}
+      RUSTFLAGS: "${{ startsWith(matrix.idf-version, 'v4') && '--cfg espidf_time32' || '--cfg espidf_time64' }}${{ matrix.libc == 'picolibc' && ' --cfg espidf_picolibc' || '' }}"
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v3
@@ -157,18 +162,33 @@ jobs:
           echo "CLANG_PATH=${CLANG_PATH}" >> "$GITHUB_ENV"
           rustup default esp
 
+      # A manifest-level `[patch]` does not reach `-Zbuild-std`, so `std` keeps the libc of its lockfile
       - name: Setup | libc-0.2
+        id: libc
         run: |
           .github/retry.sh git clone --depth 1 --branch libc-0.2 https://github.com/rust-lang/libc "$RUNNER_TEMP/libc"
           git -C "$RUNNER_TEMP/libc" log -1 --format='libc-0.2 is at %h: %s'
+          printf '\n[patch.crates-io]\nlibc = { path = "%s" }\n' "$RUNNER_TEMP/libc" >> Cargo.toml
 
-      # A manifest-level `[patch]` does not reach `-Zbuild-std`, so `std` keeps the libc of its lockfile
       - name: Build | esp-idf-sys against libc-0.2
         shell: bash
         run: |
-          printf '\n[patch.crates-io]\nlibc = { path = "%s" }\n' "$RUNNER_TEMP/libc" >> Cargo.toml
           cargo build -p esp-idf-sys --target ${{ matrix.target }} -Zbuild-std=std,panic_abort 2>&1 | tee "$RUNNER_TEMP/build.log"
           if sed 's/\x1b\[[0-9;]*m//g' "$RUNNER_TEMP/build.log" | grep -q 'was not used in the crate graph'; then
             echo "::error::The libc-0.2 patch was not used"
             exit 1
           fi
+
+      # Lists the known mismatches, which the build above skips, in the job summary; fails only if
+      # the build fails for another reason than these
+      - name: Build | Known esp-idf-sys/libc-0.2 mismatches
+        if: ${{ !cancelled() && steps.libc.outcome == 'success' }}
+        shell: bash
+        env:
+          ESP_IDF_LIBC_MISMATCHES: err
+        run: |
+          status=0
+          cargo build -p esp-idf-sys --target ${{ matrix.target }} -Zbuild-std=std,panic_abort \
+            --message-format=json-diagnostic-rendered-ansi > "$RUNNER_TEMP/mismatches.json" || status=$?
+          python3 .github/libc_mismatches.py "$status" "$RUNNER_TEMP/mismatches.json" \
+            "${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' / {0}', matrix.libc) || '' }}"

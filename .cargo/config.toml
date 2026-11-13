@@ -4,6 +4,7 @@ target = "riscv32imc-esp-espidf"
 
 [target.'cfg(target_os = "espidf")']
 linker = "ldproxy"
+# With picolibc (the default since ESP-IDF v6.0), add "--cfg", "espidf_picolibc" as well
 rustflags = [ "--cfg",  "espidf_time64"]
 
 [unstable]

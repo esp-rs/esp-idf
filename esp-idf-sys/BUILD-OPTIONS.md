@@ -21,6 +21,12 @@ The following are flags passed to `rustc` that influence the build.
   This is a flag for the [libc crate](https://docs.rs/libc/) that uses 64-bits (instead of 32-bits) for
   `time_t`. This *must be set* for ESP-IDF 5.0 and above and *must be unset* for lesser versions.
 
+- ### `--cfg espidf_picolibc`
+  This is a flag for the [libc crate](https://docs.rs/libc/) that uses the values of picolibc (instead of newlib)
+  for the `O_APPEND`, `O_CREAT` and `O_TRUNC` flags of `open`, which `std::fs` uses. This *must be set* when the
+  ESP-IDF is built with picolibc (`CONFIG_LIBC_PICOLIBC=y`: the default since ESP-IDF 6.0, and an option since
+  ESP-IDF 5.5) and *must be unset* with newlib. `esp-idf-sys` fails the build if it does not match the ESP-IDF.
+
 - ### `-Zbuild-std=std,panic_abort`
   Required for `std` support. Rust does not provide `std` libraries for ESP32 targets since they are tier-2/-3.
 
