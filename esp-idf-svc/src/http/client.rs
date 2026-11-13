@@ -86,6 +86,10 @@ pub struct Configuration {
     pub keep_alive_idle: Option<usize>,
     pub keep_alive_interval: Option<usize>,
     pub keep_alive_count: Option<usize>,
+    /// Keep the TLS session ticket of a connection and resume the session on the next
+    /// connection to the same host, instead of a full handshake. Needs
+    /// `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS=y`; ignored without it.
+    pub save_client_session: bool,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -124,6 +128,8 @@ impl EspHttpConnection {
             use_global_ca_store: configuration.use_global_ca_store,
             crt_bundle_attach: configuration.crt_bundle_attach,
             keep_alive_enable: configuration.keep_alive_enable,
+            #[cfg(esp_idf_esp_tls_client_session_tickets)]
+            save_client_session: configuration.save_client_session,
 
             ..Default::default()
         };
@@ -413,6 +419,18 @@ impl EspHttpConnection {
         } else {
             Ok(())
         }
+    }
+
+    /// Closes the connection to the server, keeping the client and what it holds: its
+    /// buffers, its configuration and, with `Configuration::save_client_session`, the TLS
+    /// session ticket, so the next request resumes the TLS session instead of a full
+    /// handshake. A response that was not read to the end is discarded. The connection is
+    /// in its initial state afterwards and ready for `initiate_request`.
+    pub fn close(&mut self) -> Result<(), EspError> {
+        esp!(unsafe { esp_http_client_close(self.raw_client) })?;
+        self.state = State::New;
+
+        Ok(())
     }
 
     fn flush_response(&mut self) -> Result<(), EspError> {
