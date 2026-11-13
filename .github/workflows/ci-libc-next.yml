@@ -6,8 +6,9 @@ name: CILibcNext
 # - `std`: `std` alone against libc-0.2, with the toolchain users build with (the latest nightly for
 #   riscv32imc, `esp` for Xtensa); no ESP-IDF is needed for that
 # - `checks`: `esp-idf-sys` against libc-0.2, with newlib and with picolibc, and with a toolchain whose
-#   `std` builds with its own libc, so that a `std` broken by libc-0.2 does not hide the checks. It also
-#   lists the known mismatches, which the checks skip, in the job summary
+#   `std` builds with its own libc, so that a `std` broken by libc-0.2 does not hide the checks. It then
+#   builds with the known mismatches as well, which the checks skip, lists them, and fails while there
+#   are any
 
 on:
   push:
@@ -179,8 +180,8 @@ jobs:
             exit 1
           fi
 
-      # Lists the known mismatches, which the build above skips, in the job summary; fails only if
-      # the build fails for another reason than these
+      # Builds with the known mismatches as well, which the build above skips, lists them in the job
+      # summary, and fails while there are any. A failure of the step above means a new mismatch
       - name: Build | Known esp-idf-sys/libc-0.2 mismatches
         if: ${{ !cancelled() && steps.libc.outcome == 'success' }}
         shell: bash

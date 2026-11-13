@@ -4,8 +4,7 @@
 Usage: libc_mismatches.py <exit code of cargo> <messages of cargo> <title>
 
 The messages are the output of `cargo build --message-format=json...`. The list goes to the log
-and, under GitHub Actions, to the job summary. Fails only if the build failed for another reason
-than the checks against `libc`.
+and, under GitHub Actions, to the job summary and an annotation. Fails if the build failed.
 """
 
 import json
@@ -21,6 +20,14 @@ def span_files(span):
     while span:
         yield span["file_name"]
         span = (span.get("expansion") or {}).get("span")
+
+
+def escape(text, property=False):
+    """Escapes the message, or with `property` a property, of a workflow command"""
+    text = text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    if property:
+        text = text.replace(":", "%3A").replace(",", "%2C")
+    return text
 
 
 def is_check(message):
@@ -64,19 +71,21 @@ def main():
         with open(summary, "a", encoding="utf-8") as file:
             file.write(report + "\n")
 
+    # Also as an annotation, which the page of the run shows above the job summaries
+    if checks and os.environ.get("GITHUB_ACTIONS"):
+        heading = f"{title}: {len(checks)} known libc mismatches"
+        print(f"::error title={escape(heading, True)}::{escape(chr(10).join(checks))}")
+
     if status == 0:
         return 0
 
     if others:
         print("The build failed for other reasons as well:\n")
         print("\n".join(others))
-        return 1
-
-    if not checks:
+    elif not checks:
         print("The build failed before compiling the checks against `libc` (see the log above)")
-        return 1
 
-    return 0
+    return 1
 
 
 if __name__ == "__main__":
