@@ -1443,6 +1443,9 @@ fn gpio_reset_without_pull(pin: gpio_num_t) -> Result<(), EspError> {
 /// interrupt configuration of the pin alone, so a pin that is already being
 /// driven does not glitch.
 fn select_gpio_function(pin: gpio_num_t) -> Result<(), EspError> {
+    // Both steps below are compiled out on chips without RTC IO with ESP-IDF v6+
+    let _ = pin;
+
     #[cfg(not(any(esp32c3, esp32c2, esp32h2, esp32h21)))]
     if unsafe { rtc_gpio_is_valid_gpio(pin) } {
         esp!(unsafe { rtc_gpio_deinit(pin) })?;

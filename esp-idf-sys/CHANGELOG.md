@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bindings: the Digital Signature peripheral (`esp_ds.h`) on the chips which have it (ESP-IDF v5.1+)
 - bindings: the OpenThread FTD API (`openthread/thread_ftd.h`) with `CONFIG_OPENTHREAD_FTD=y`
 - `checks/libc.rs`: the checks against `libc` are generated (`cargo xtask libc-checks`) and cover struct fields, signedness and function signatures too; `ESP_IDF_LIBC_MISMATCHES=err` checks the known mismatches as well
+- Native builder: `ESP_IDF_INSTALL_CLANG=off` (`esp_idf_install_clang`) skips installing the clang toolchain of the ESP-IDF, e.g. because the one of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which newer distros such as Ubuntu 26.04 no longer have
 
 ### Changed
 - bindings: the Bluedroid Classic BT headers are included for the esp32s31 as well as the esp32
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bindings: include `ulp_lp_core.h` instead of `ulp_riscv.h` when the ULP is an LP core (`CONFIG_ULP_COPROC_TYPE_LP_CORE`: esp32c5, esp32c6, esp32p4 and esp32s31); bindgen failed because `ulp_riscv.h` does not exist on those chips
 - Sort the extra components' dirs so that we get a predictable build hash by the ESP-IDF Component Manager
 - `checks/libc.rs`: gate the IPv4-specific checks (`sockaddr_in`, `ip_mreq`, `IP_ADD_MEMBERSHIP`, `IP_DROP_MEMBERSHIP`) on `esp_idf_lwip_ipv4`, so builds with `CONFIG_LWIP_IPV4=n` no longer fail
+- With the `std` feature, fail the build if no `rustfmt` can format the generated bindings, instead of silently generating no checks against `libc`
 
 ## [0.38.1] - 2026-09-16
 

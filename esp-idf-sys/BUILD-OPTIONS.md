@@ -334,6 +334,20 @@ The following configuration options are available:
   * `err` - Fail the build if the symlink is not available or broken
   * `ignore` - Do not use the symlink at all
 
+- ### *`esp_idf_install_clang`*, `$ESP_IDF_INSTALL_CLANG`
+
+    *native builder only*
+
+    Whether the native builder should install the clang toolchain of the ESP-IDF, and use its libclang for generating the bindings.
+
+    Can be any of `true`, `y`, `yes`, `on` for on, and `false`, `n`, `no`, `off` for off.
+
+    If not specified, it is *on by default*, and the libclang of the ESP-IDF takes precedence over a `LIBCLANG_PATH` env var.
+
+    When off, the bindings are generated with the libclang of the `LIBCLANG_PATH` env var if it is set, otherwise with the one of the `espup` symlink (see `esp_idf_espup_clang_symlink` above), otherwise with the one `bindgen` finds by itself. For the Xtensa targets, that libclang must support Xtensa (as the one installed by `espup` does).
+
+    One reason to turn it off: the clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which newer Linux distributions (such as Ubuntu 26.04) no longer have, so the ESP-IDF tools fail to install there.
+
 - ### *`esp_idf_component_manager`*, `$ESP_IDF_COMPONENT_MANAGER`
 
     Whether the [esp-idf component manager](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)

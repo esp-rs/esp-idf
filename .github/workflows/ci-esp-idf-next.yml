@@ -14,7 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  rust_toolchain: nightly
+  # Newer nightlies cannot build `std` for ESP-IDF, as libc 0.2.191 renamed the `stat` fields it
+  # reads (rust-lang/rust#164555); the CI workflow keeps one riscv32imc job on the latest nightly
+  rust_toolchain: nightly-2026-10-19
   CARGO_INCREMENTAL: 0
   CARGO_TERM_COLOR: always
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

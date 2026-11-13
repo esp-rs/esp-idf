@@ -82,6 +82,8 @@ pub fn build() -> Result<EspIdfBuildOutput> {
     let profile = common::build_profile();
     let cmake_generator = config.native.esp_idf_cmake_generator();
 
+    let install_clang = config.native.esp_idf_install_clang();
+
     // A closure to specify which tools `idf-tools.py` should install.
     let make_tools = move |tree: &SourceTree,
                            version: &Result<espidf::EspIdfVersion>|
@@ -93,10 +95,11 @@ pub fn build() -> Result<EspIdfBuildOutput> {
         );
 
         let mut tools = vec![];
-        let mut subtools = vec![
-            chip.gcc_toolchain(version.as_ref().ok()),
-            chip.clang_toolchain(version.as_ref().ok()),
-        ];
+        let mut subtools = vec![chip.gcc_toolchain(version.as_ref().ok())];
+
+        if install_clang {
+            subtools.push(chip.clang_toolchain(version.as_ref().ok()));
+        }
 
         subtools.extend(chip.esp_rom_elfs(version.as_ref().ok()));
 
@@ -579,7 +582,14 @@ pub fn build() -> Result<EspIdfBuildOutput> {
 
     copy_binaries_to_target_folder()?;
 
-    if let Some(clang) = which::which_in_global("clang", Some(idf.exported_path.clone()))?.next() {
+    if !install_clang {
+        // The libclang of `LIBCLANG_PATH`, else of the `espup` symlink, else whichever `bindgen` finds
+        if env::var_os("LIBCLANG_PATH").is_none() {
+            setup_clang_env(None)?;
+        }
+    } else if let Some(clang) =
+        which::which_in_global("clang", Some(idf.exported_path.clone()))?.next()
+    {
         // Found a `clang` binary on the path
         // Check if its `lib` directory contains `libclang`
         //

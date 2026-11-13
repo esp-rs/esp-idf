@@ -16,6 +16,9 @@ concurrency:
 
 env:
   rust_toolchain: nightly
+  # All riscv32imc jobs but one (`latest-nightly` in the matrix) use this nightly: the newer ones cannot
+  # build `std` for ESP-IDF, as libc 0.2.191 renamed the `stat` fields it reads (rust-lang/rust#164555)
+  rust_toolchain_pinned: nightly-2026-10-19
   CARGO_INCREMENTAL: 0
   CARGO_TERM_COLOR: always
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -53,6 +56,10 @@ jobs:
         mcu:
           - ""
         include:
+          # The one riscv32imc job on the latest nightly; the others use `rust_toolchain_pinned`
+          - target: riscv32imc-esp-espidf
+            idf-version: v5.5.5
+            latest-nightly: true
           # Also test v6.0 with remote components that were moved out of the main tree
           # mqtt and eth SPI drivers work on all targets; eth PHY drivers only support esp32 and esp32p4
           - target: riscv32imc-esp-espidf
@@ -82,6 +89,8 @@ jobs:
           #  extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
+      # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
+      ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       ESP_IDF_SYS_EXTRA_COMPONENTS_FILE: ${{ matrix.extra-components-files }}
       RUSTFLAGS: "--cfg espidf_time64"
     steps:
@@ -105,9 +114,15 @@ jobs:
       # now and then on a reset connection, and composite actions cannot be wrapped in a retry
       - name: Setup | Rust
         if: matrix.target == 'riscv32imc-esp-espidf'
+        env:
+          toolchain: ${{ matrix.latest-nightly && env.rust_toolchain || env.rust_toolchain_pinned }}
         run: |
-          .github/retry.sh rustup toolchain install ${{ env.rust_toolchain }} --profile minimal --component rustfmt,clippy,rust-src
-          rustup default ${{ env.rust_toolchain }}
+          .github/retry.sh rustup toolchain install "$toolchain" --profile minimal --component rustfmt,clippy,rust-src
+          rustup default "$toolchain"
+          # Without the clang toolchain of the ESP-IDF, the bindings use the clang of the runner
+          if [ "$ESP_IDF_INSTALL_CLANG" = off ]; then
+            echo "LIBCLANG_PATH=$(dirname "$(readlink -f "$(command -v clang)")")/../lib" >> "$GITHUB_ENV"
+          fi
 
       - name: Setup | Rust for Xtensa
         if: matrix.target != 'riscv32imc-esp-espidf'
@@ -185,6 +200,8 @@ jobs:
             mcu: esp32h21
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
+      # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
+      ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       ESP_IDF_SDKCONFIG_DEFAULTS: "${{ github.workspace }}/sdkconfig.defaults.nimble"
       RUSTFLAGS: "--cfg espidf_time64"
     steps:
@@ -208,9 +225,15 @@ jobs:
       # now and then on a reset connection, and composite actions cannot be wrapped in a retry
       - name: Setup | Rust
         if: matrix.target == 'riscv32imc-esp-espidf'
+        env:
+          toolchain: ${{ matrix.latest-nightly && env.rust_toolchain || env.rust_toolchain_pinned }}
         run: |
-          .github/retry.sh rustup toolchain install ${{ env.rust_toolchain }} --profile minimal --component rustfmt,clippy,rust-src
-          rustup default ${{ env.rust_toolchain }}
+          .github/retry.sh rustup toolchain install "$toolchain" --profile minimal --component rustfmt,clippy,rust-src
+          rustup default "$toolchain"
+          # Without the clang toolchain of the ESP-IDF, the bindings use the clang of the runner
+          if [ "$ESP_IDF_INSTALL_CLANG" = off ]; then
+            echo "LIBCLANG_PATH=$(dirname "$(readlink -f "$(command -v clang)")")/../lib" >> "$GITHUB_ENV"
+          fi
 
       - name: Setup | Rust for Xtensa
         if: matrix.target != 'riscv32imc-esp-espidf'
@@ -282,6 +305,8 @@ jobs:
             idf-version: v5.2.8
     env:
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
+      # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
+      ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       RUSTFLAGS: "${{ startsWith(matrix.idf-version, 'v4') && '--cfg espidf_time32' || '--cfg espidf_time64' }}"
     steps:
       - name: Setup | Checkout
@@ -300,9 +325,15 @@ jobs:
       # now and then on a reset connection, and composite actions cannot be wrapped in a retry
       - name: Setup | Rust
         if: matrix.target == 'riscv32imc-esp-espidf'
+        env:
+          toolchain: ${{ matrix.latest-nightly && env.rust_toolchain || env.rust_toolchain_pinned }}
         run: |
-          .github/retry.sh rustup toolchain install ${{ env.rust_toolchain }} --profile minimal --component rustfmt,clippy,rust-src
-          rustup default ${{ env.rust_toolchain }}
+          .github/retry.sh rustup toolchain install "$toolchain" --profile minimal --component rustfmt,clippy,rust-src
+          rustup default "$toolchain"
+          # Without the clang toolchain of the ESP-IDF, the bindings use the clang of the runner
+          if [ "$ESP_IDF_INSTALL_CLANG" = off ]; then
+            echo "LIBCLANG_PATH=$(dirname "$(readlink -f "$(command -v clang)")")/../lib" >> "$GITHUB_ENV"
+          fi
 
       - name: Setup | Rust for Xtensa
         if: matrix.target != 'riscv32imc-esp-espidf'

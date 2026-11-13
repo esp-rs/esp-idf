@@ -68,6 +68,11 @@ pub struct NativeConfig {
     /// (`true`, `y`, `yes`, `on`) or off (`false`, `n`, `no`, `off`)
     #[serde(default, deserialize_with = "parse::toggle_setting")]
     esp_idf_component_manager: Option<bool>,
+
+    /// Whether the clang toolchain of the esp-idf should be installed and used for the
+    /// bindings (`true`, `y`, `yes`, `on`) or not (`false`, `n`, `no`, `off`)
+    #[serde(default, deserialize_with = "parse::toggle_setting")]
+    esp_idf_install_clang: Option<bool>,
 }
 
 impl NativeConfig {
@@ -103,6 +108,12 @@ impl NativeConfig {
             Some(true) | None => "1",
             Some(false) => "0",
         }
+    }
+
+    /// Whether to install and use the clang toolchain of the esp-idf. On by default (if
+    /// [`Self::esp_idf_install_clang`] is [`None`]).
+    pub fn esp_idf_install_clang(&self) -> bool {
+        self.esp_idf_install_clang.unwrap_or(true)
     }
 
     /// Get the user-specified esp-idf version or [`DEFAULT_ESP_IDF_VERSION`] if unset.
@@ -277,6 +288,7 @@ impl NativeConfig {
                     extra_components,
                     esp_idf_components,
                     esp_idf_component_manager,
+                    esp_idf_install_clang,
                 },
         } = EspIdfSys::deserialize(&root.metadata)?;
 
@@ -289,6 +301,7 @@ impl NativeConfig {
             &mut self.esp_idf_component_manager,
             esp_idf_component_manager,
         );
+        set_when_none(&mut self.esp_idf_install_clang, esp_idf_install_clang);
 
         fn make_processor(
             package: &Package,

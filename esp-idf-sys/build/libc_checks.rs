@@ -3,11 +3,11 @@
 
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
-use std::fs;
 use std::path::Path;
+use std::{env, fs};
 
 use anyhow::{bail, Result};
-use embuild::cargo;
+use embuild::{cargo, cmd};
 
 use crate::libc_items::{CONSTS, FNS, STRUCTS, TYPES};
 
@@ -304,6 +304,37 @@ impl Checks {
             .find(|(name, _)| *name == item)
             .map(|(_, cfg)| *cfg)
     }
+}
+
+/// Formats `bindings_file` with the `rustfmt` of the current toolchain, of stable or of nightly
+///
+/// `generate` scans the formatted bindings, and finds nothing in unformatted ones. So when the
+/// checks are compiled (the `std` feature), not being able to format them is an error.
+pub fn format_bindings(bindings_file: &Path) -> Result<()> {
+    let formatted = cmd!("rustfmt", bindings_file).run().is_ok()
+        || cmd!("rustup", "run", "stable", "rustfmt", bindings_file)
+            .run()
+            .is_ok()
+        || cmd!("rustup", "run", "nightly", "rustfmt", bindings_file)
+            .run()
+            .is_ok();
+
+    if !formatted {
+        if env::var_os("CARGO_FEATURE_STD").is_some() {
+            bail!(
+                "Could not format the generated bindings with `rustfmt` (tried the one of the current \
+                 toolchain, of stable and of nightly). The checks against `libc` of the `std` feature \
+                 need the formatted bindings. Is `rustfmt` installed (`rustup component add rustfmt`)?"
+            );
+        }
+
+        cargo::print_warning(
+            "rustfmt not found in the current toolchain, nor in stable or nightly. \
+             The generated bindings will not be properly formatted.",
+        );
+    }
+
+    Ok(())
 }
 
 /// Writes to `out_file` the checks of the items which both `libc_items.rs` and `bindings_file` have

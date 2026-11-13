@@ -256,7 +256,7 @@ fn main() -> anyhow::Result<()> {
     .with_context(bindgen_err)?;
 
     // Cargo fmt generated bindings.
-    bindgen_utils::cargo_fmt_file(&bindings_file);
+    libc_checks::format_bindings(&bindings_file)?;
 
     // The `libc` compatibility checks of `src/checks/libc.rs`
     libc_checks::generate(

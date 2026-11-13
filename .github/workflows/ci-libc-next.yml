@@ -1,12 +1,12 @@
 name: CILibcNext
 
-# Builds `esp-idf-sys` - and with it `std` - against the unreleased `libc-0.2` branch of
-# rust-lang/libc, so that a libc change breaking `std` or the compile-time checks in
-# `esp-idf-sys/src/checks/libc.rs` shows up before it is published.
-# The `[patch]` is passed with `--config`, as only a config-level patch reaches `-Zbuild-std`.
-# An informational second build lists the known mismatches of the checks as well: with libc-0.2
-# for `esp-idf-sys` only, by a manifest-level patch, so that a `std` broken by libc-0.2 does not
-# hide them.
+# Builds against the unreleased `libc-0.2` branch of rust-lang/libc, so that a libc change which
+# breaks `std` or the compile-time checks of `esp-idf-sys/src/checks/libc.rs` shows up before it
+# is published. Two independent builds:
+# - `std` and `esp-idf-sys` against libc-0.2, with the toolchain users build with (the latest
+#   nightly for riscv32imc, `esp` for Xtensa)
+# - `esp-idf-sys` alone against libc-0.2, with a toolchain whose `std` builds with its own libc, so
+#   that a `std` broken by libc-0.2 does not hide the checks
 
 on:
   push:
@@ -23,6 +23,9 @@ concurrency:
 
 env:
   rust_toolchain: nightly
+  # For the checks on riscv32imc: the `std` of newer nightlies does not build with its own libc
+  # (0.2.191) for ESP-IDF (rust-lang/rust#164555)
+  rust_toolchain_pinned: nightly-2026-10-19
   CARGO_INCREMENTAL: 0
   CARGO_TERM_COLOR: always
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,8 +66,11 @@ jobs:
       - name: Setup | Rust
         if: matrix.target == 'riscv32imc-esp-espidf'
         run: |
-          .github/retry.sh rustup toolchain install ${{ env.rust_toolchain }} --profile minimal --component rust-src
+          for toolchain in ${{ env.rust_toolchain }} ${{ env.rust_toolchain_pinned }}; do
+            .github/retry.sh rustup toolchain install "$toolchain" --profile minimal --component rustfmt,rust-src
+          done
           rustup default ${{ env.rust_toolchain }}
+          echo "checks_toolchain=${{ env.rust_toolchain_pinned }}" >> "$GITHUB_ENV"
 
       - name: Setup | Rust for Xtensa
         if: matrix.target != 'riscv32imc-esp-espidf'
@@ -84,19 +90,33 @@ jobs:
           echo "LIBCLANG_PATH=${LIBCLANG_PATH}" >> "$GITHUB_ENV"
           echo "CLANG_PATH=${CLANG_PATH}" >> "$GITHUB_ENV"
           rustup default esp
+          echo "checks_toolchain=esp" >> "$GITHUB_ENV"
 
-      - name: Build | Compile esp-idf-sys and std against libc-0.2
-        run: >-
-          cargo build -p esp-idf-sys --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
-          --config 'patch.crates-io.libc.git="https://github.com/rust-lang/libc"'
-          --config 'patch.crates-io.libc.branch="libc-0.2"'
-
-      # Fails as long as any known mismatch of `esp-idf-sys/build/libc_checks.rs` remains
-      - name: Build | All known esp-idf-sys/libc mismatches (informational)
-        if: ${{ !cancelled() }}
-        continue-on-error: true
-        env:
-          ESP_IDF_LIBC_MISMATCHES: err
+      - name: Setup | libc-0.2
         run: |
-          printf '\n[patch.crates-io]\nlibc = { git = "https://github.com/rust-lang/libc", branch = "libc-0.2" }\n' >> Cargo.toml
-          cargo build -p esp-idf-sys --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
+          .github/retry.sh git clone --depth 1 --branch libc-0.2 https://github.com/rust-lang/libc "$RUNNER_TEMP/libc"
+          git -C "$RUNNER_TEMP/libc" log -1 --format='libc-0.2 is at %h: %s'
+
+      # A `[patch]` reaches the libc that `-Zbuild-std` builds `std` with only if it has the version
+      # which the lockfile of `std` pins, so `std` gets a copy of libc-0.2 with that version
+      - name: Build | std and esp-idf-sys against libc-0.2
+        shell: bash
+        run: |
+          lock="$(rustc --print sysroot)/lib/rustlib/src/rust/library/Cargo.lock"
+          version=$(grep -A1 '^name = "libc"$' "$lock" | sed -n 's/^version = "\(.*\)"/\1/p')
+          echo "The lockfile of std pins libc $version"
+          cp -r "$RUNNER_TEMP/libc" "$RUNNER_TEMP/libc-std"
+          sed -i "0,/^version = .*/s//version = \"$version\"/" "$RUNNER_TEMP/libc-std/Cargo.toml"
+          cargo build -p esp-idf-sys --target ${{ matrix.target }} -Zbuild-std=std,panic_abort \
+            --config "patch.crates-io.libc.path=\"$RUNNER_TEMP/libc-std\"" 2>&1 | tee "$RUNNER_TEMP/build.log"
+          if sed 's/\x1b\[[0-9;]*m//g' "$RUNNER_TEMP/build.log" | grep -q 'was not used in the crate graph'; then
+            echo "::error::The libc-0.2 patch was not used"
+            exit 1
+          fi
+
+      # A manifest-level `[patch]` does not reach `-Zbuild-std`, so `std` keeps the libc of its lockfile
+      - name: Build | esp-idf-sys against libc-0.2
+        if: ${{ !cancelled() }}
+        run: |
+          printf '\n[patch.crates-io]\nlibc = { path = "%s" }\n' "$RUNNER_TEMP/libc" >> Cargo.toml
+          cargo +"$checks_toolchain" build -p esp-idf-sys --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
