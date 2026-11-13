@@ -9,6 +9,7 @@
 // contain them regardless of which ESP-IDF components are built
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/times.h>
 
 #include "esp_rom_crc.h"
 #include "esp_log.h"

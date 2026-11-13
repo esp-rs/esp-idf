@@ -14,11 +14,9 @@ use crate::libc_items::{CONSTS, FNS, STRUCTS, TYPES};
 /// Known mismatches, as `(item, cfg)`: the item (`<name>`, or `<struct>::<field>`) is checked only
 /// where `cfg` holds, or never if it is `None`. The entry of a struct covers its fields too.
 const MISMATCHES: &[(&str, Option<&str>)] = &[
-    // 1 byte on Xtensa (esp32/s2/s3) before ESP-IDF v5.4, 4 bytes in libc
-    (
-        "wchar_t",
-        Some("any(not(any(esp32, esp32s2, esp32s3)), esp_idf_version_at_least_5_4_0)"),
-    ),
+    // On Xtensa, GCC (which builds ESP-IDF) has a 2-byte `unsigned short`, but the bindings, which
+    // clang makes, have another type
+    ("wchar_t", Some("not(target_arch = \"xtensa\")")),
     // LWIP sizes it for the largest sockaddr, while libc assumes that IPv6 is there
     ("sockaddr_storage", Some("esp_idf_lwip_ipv6")),
     // A 4-byte pointer to a heap object in ESP-IDF and in libc, but libc aligns it to 8, so it pads
@@ -29,9 +27,7 @@ const MISMATCHES: &[(&str, Option<&str>)] = &[
     // An `int` in ESP-IDF, 12 bytes aligned to 1 in libc. ESP-IDF has no `pthread_rwlockattr_*`
     // functions, and `pthread_rwlock_init` ignores the attributes
     ("pthread_rwlockattr_t", None),
-    // TODO: size: ESP-IDF 0, libc 16
-    ("tms", None),
-    // TODO: the values come from LWIP rather than from the libc headers; double-check
+    // 6 in ESP-IDF (LWIP's `NETIF_NAMESIZE`), 16 in libc
     ("IF_NAMESIZE", None),
     ("IFNAMSIZ", None),
     // libc's newlib `termios` has a `c_line` before `c_cc`, which ESP-IDF's does not
@@ -45,13 +41,13 @@ const MISMATCHES: &[(&str, Option<&str>)] = &[
 /// Known signedness mismatches, as `(item, cfg)` like `MISMATCHES`: the signedness of the item (of
 /// all its integers, if a function) is checked only where `cfg` holds, while its size always is
 const SIGNEDNESS_MISMATCHES: &[(&str, Option<&str>)] = &[
-    // `int` in ESP-IDF, `u32` in libc
+    // `int` in ESP-IDF on RISC-V, `u32` in libc
     ("wchar_t", None),
-    // An opaque struct in libc, an `unsigned long` in ESP-IDF
+    // A struct of one `u32` in libc, an `unsigned long` in ESP-IDF: the same layout
     ("sigaction::sa_mask", None),
-    // An opaque pointer in libc, an `int` in picolibc
+    // An opaque pointer in libc, an `int` in picolibc: the same size
     ("locale_t", None),
-    // libc's `ioctl` takes a `c_ulong` request, ESP-IDF's an `int`
+    // libc's `ioctl` takes a `c_ulong` request, ESP-IDF's an `int`: the same bits in a register
     ("ioctl", None),
 ];
 
