@@ -21,10 +21,13 @@ const MISMATCHES: &[(&str, Option<&str>)] = &[
     ),
     // LWIP sizes it for the largest sockaddr, while libc assumes that IPv6 is there
     ("sockaddr_storage", Some("esp_idf_lwip_ipv6")),
-    // TODO: size/alignment mismatches, to be fixed, or at least carefully investigated
+    // A 4-byte pointer to a heap object in ESP-IDF and in libc, but libc aligns it to 8, so it pads
+    // it to 8 bytes too. Harmless where Rust owns the memory and only passes pointers to ESP-IDF
     ("pthread_cond_t", None),
     ("pthread_mutex_t", None),
     ("pthread_rwlock_t", None),
+    // An `int` in ESP-IDF, 12 bytes aligned to 1 in libc. ESP-IDF has no `pthread_rwlockattr_*`
+    // functions, and `pthread_rwlock_init` ignores the attributes
     ("pthread_rwlockattr_t", None),
     // TODO: size: ESP-IDF 0, libc 16
     ("tms", None),

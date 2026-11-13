@@ -13,6 +13,8 @@
 use crate as sys;
 use compile_fmt::{clip, compile_assert, fmt};
 
+// Each check has a `const` of its own, as the evaluation of a `const` stops at its first failure
+
 macro_rules! check_constants {
     ($ident:ident) => {
         const _: () = {
@@ -48,6 +50,8 @@ macro_rules! check_types {
                 std::mem::size_of::<sys::$ident>() => fmt::<usize>(),
                 " libc=", std::mem::size_of::<libc::$ident>() => fmt::<usize>()
             );
+        };
+        const _: () = {
             compile_assert!(
                 std::mem::align_of::<sys::$ident>() == std::mem::align_of::<libc::$ident>(),
                 "libc/esp-idf-sys type mismatch for `", stringify!($ident), "` alignment: esp-idf=",
@@ -85,6 +89,8 @@ macro_rules! check_types_manually {
                 $size1 => fmt::<usize>(),
                 " rhs=", $size2 => fmt::<usize>()
             );
+        };
+        const _: () = {
             compile_assert!(
                 $align1 == $align2,
                 "libc/esp-idf-sys type mismatch for `", $name, "` alignment: lhs=",
@@ -106,7 +112,8 @@ macro_rules! check_fields {
                     "`: esp-idf=", std::mem::offset_of!(sys::$ident, $field) => fmt::<usize>(),
                     " libc=", std::mem::offset_of!(libc::$ident, $field) => fmt::<usize>()
                 );
-
+            };
+            const _: () = {
                 let sys_size = field_size(|s: *const sys::$ident| unsafe { &raw const (*s).$field });
                 let libc_size = field_size(|s: *const libc::$ident| unsafe { &raw const (*s).$field });
                 compile_assert!(
@@ -164,12 +171,11 @@ macro_rules! check_symbols {
 /// of the integer `$ints` (argument indices, `ret` for the return value).
 ///
 /// Another number of arguments, or variadic-ness, fails the casts to the function pointer type.
+/// The sizes of the arguments are checked together, up to the first argument of another size.
 macro_rules! check_functions {
-    ($name:ident, $sys:ident, ($($args:tt)*), [$($ints:tt),*]) => {
+    ($name:ident, $sys:ident, $args:tt, [$($ints:tt),*]) => {
         const _: () = {
-            let sys_fn = sys::$sys as unsafe extern "C" fn($($args)*) -> _;
-            let libc_fn = libc::$name as unsafe extern "C" fn($($args)*) -> _;
-
+            let (sys_fn, libc_fn) = check_functions!(@fns $name, $sys, $args);
             let (sys_size, libc_size) = (ret_size(sys_fn), ret_size(libc_fn));
             compile_assert!(
                 sys_size == libc_size,
@@ -177,7 +183,9 @@ macro_rules! check_functions {
                 sys_size => fmt::<usize>(),
                 " libc=", libc_size => fmt::<usize>()
             );
-
+        };
+        const _: () = {
+            let (sys_fn, libc_fn) = check_functions!(@fns $name, $sys, $args);
             let (sys_sizes, libc_sizes) = (arg_sizes(sys_fn), arg_sizes(libc_fn));
             let mut index = 0;
             while index < sys_sizes.len() {
@@ -189,9 +197,19 @@ macro_rules! check_functions {
                 );
                 index += 1;
             }
-
-            $(check_functions!(@signedness $name, sys_fn, libc_fn, $ints);)*
         };
+        $(
+            const _: () = {
+                let (sys_fn, libc_fn) = check_functions!(@fns $name, $sys, $args);
+                check_functions!(@signedness $name, sys_fn, libc_fn, $ints);
+            };
+        )*
+    };
+    (@fns $name:ident, $sys:ident, ($($args:tt)*)) => {
+        (
+            sys::$sys as unsafe extern "C" fn($($args)*) -> _,
+            libc::$name as unsafe extern "C" fn($($args)*) -> _,
+        )
     };
     (@signedness $name:ident, $sys_fn:ident, $libc_fn:ident, ret) => {
         let (sys_signed, libc_signed) = (ret_signedness($sys_fn), ret_signedness($libc_fn));
