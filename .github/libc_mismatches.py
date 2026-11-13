@@ -22,14 +22,6 @@ def span_files(span):
         span = (span.get("expansion") or {}).get("span")
 
 
-def escape(text, property=False):
-    """Escapes the message, or with `property` a property, of a workflow command"""
-    text = text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
-    if property:
-        text = text.replace(":", "%3A").replace(",", "%2C")
-    return text
-
-
 def is_check(message):
     return any(
         file.endswith(CHECK_FILES)
@@ -71,10 +63,9 @@ def main():
         with open(summary, "a", encoding="utf-8") as file:
             file.write(report + "\n")
 
-    # Also as an annotation, which the page of the run shows above the job summaries
+    # The page of the run shows the annotation, rather than "Process completed with exit code 1"
     if checks and os.environ.get("GITHUB_ACTIONS"):
-        heading = f"{title}: {len(checks)} known libc mismatches"
-        print(f"::error title={escape(heading, True)}::{escape(chr(10).join(checks))}")
+        print(f"::error::{len(checks)} known libc mismatches, listed in the job summary")
 
     if status == 0:
         return 0
