@@ -106,6 +106,10 @@ pub struct EspHttpConnection {
     follow_redirects: bool,
     headers: BTreeMap<Uncased<'static>, String>,
     content_len_header: UnsafeCell<Option<Option<String>>>,
+    /// The names of the headers the previous request set. ESP-IDF keeps
+    /// request headers on the client handle, so without deleting them a
+    /// reused connection would send them again with the next request.
+    request_headers: alloc::vec::Vec<alloc::ffi::CString>,
     _hw_private_key: RawHwPrivateKey,
 }
 
@@ -217,6 +221,7 @@ impl EspHttpConnection {
                 follow_redirects: false,
                 headers: BTreeMap::new(),
                 content_len_header: UnsafeCell::new(None),
+                request_headers: alloc::vec::Vec::new(),
                 _hw_private_key: hw_private_key,
             })
         }
@@ -282,6 +287,16 @@ impl EspHttpConnection {
 
         let mut content_len = None;
 
+        // Delete the previous request's headers: `esp_http_client_set_header` keeps a header
+        // on the client until it is deleted, so on a reused connection the next request
+        // would send e.g. a stale `Range` or `Authorization` header it did not set itself.
+        // (Not `esp_http_client_delete_all_headers`: ESP-IDF stores its own `Host` and
+        // `User-Agent` in the same list.) A header that is already gone, e.g. a name that
+        // the previous request set twice, is `ESP_ERR_NOT_FOUND`, which is fine.
+        for c_name in self.request_headers.drain(..) {
+            unsafe { esp_http_client_delete_header(self.raw_client, c_name.as_ptr() as _) };
+        }
+
         for (name, value) in headers {
             if name.eq_ignore_ascii_case("Content-Length") {
                 if let Ok(len) = value.parse::<i64>() {
@@ -289,6 +304,7 @@ impl EspHttpConnection {
                 }
             } else {
                 let c_name = to_cstring_arg(name)?;
+                self.request_headers.push(c_name.clone());
 
                 // TODO: Replace with a proper conversion from UTF8 to ISO-8859-1
                 let c_value = to_cstring_arg(value)?;
