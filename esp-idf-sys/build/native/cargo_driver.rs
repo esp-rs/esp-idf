@@ -709,18 +709,23 @@ pub fn to_cmake_path_list(iter: impl IntoIterator<Item = impl AsRef<OsStr>>) -> 
 // folder is tagged with a fingerprint, it is not easily usable for tools such as espflash
 // (see issue https://github.com/esp-rs/esp-idf-sys/issues/97).
 //
-// This function moves the bootloader.bin file to the regular rust build folder
+// This function copies the bootloader.bin file to the regular rust build folder
 // (e.g. `target/xtensa-esp32-espidf/release`) so that it can be accessed more easily.
+// If `build.build-dir` is set apart from the target dir, that is the folder in the build dir.
 //
 // Ditto for the partition table binary.
 fn copy_binaries_to_target_folder() -> Result<()> {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let target_dir = out_dir
-        .parent()
-        .and_then(Path::parent)
-        .and_then(Path::parent)
-        .ok_or_else(|| anyhow!("Cannot locate target dir of {}", out_dir.display()))?
-        .canonicalize()?;
+    let pkg_name = env::var("CARGO_PKG_NAME")?;
+
+    let Some(target_dir) = profile_dir(&out_dir, &pkg_name) else {
+        cargo::print_warning(format!(
+            "Cannot locate the target dir of {}: bootloader.bin and partition-table.bin are not copied there",
+            out_dir.display()
+        ));
+        return Ok(());
+    };
+    let target_dir = target_dir.canonicalize()?;
 
     let build_dir = out_dir.join("build");
 
@@ -749,4 +754,35 @@ fn copy_binaries_to_target_folder() -> Result<()> {
     })?;
 
     Ok(())
+}
+
+/// The folder of the build profile (e.g. `target/xtensa-esp32-espidf/release`) that holds
+/// `out_dir`, the out dir of package `pkg_name`, or `None` if `out_dir` is not where cargo
+/// puts one.
+///
+/// Newer cargo (rust-lang/cargo#17354) nests the out dir one level deeper:
+/// - `<profile>/build/<pkg>-<hash>/out` (older cargo)
+/// - `<profile>/build/<pkg>/<hash>/out` (newer cargo)
+///
+/// As in `embuild::cargo::workspace_dir`, the two are told apart by the folder holding `out`.
+fn profile_dir<'a>(out_dir: &'a Path, pkg_name: &str) -> Option<&'a Path> {
+    let unit_dir = out_dir.parent()?;
+    let unit_name = unit_dir.file_name()?.to_str()?;
+
+    let build_dir = if unit_name.starts_with(&format!("{pkg_name}-")) {
+        unit_dir.parent()?
+    } else {
+        let pkg_dir = unit_dir.parent()?;
+        if pkg_dir.file_name()? != pkg_name {
+            return None;
+        }
+
+        pkg_dir.parent()?
+    };
+
+    if build_dir.file_name()? != "build" {
+        return None;
+    }
+
+    build_dir.parent()
 }

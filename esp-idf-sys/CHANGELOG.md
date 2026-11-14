@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bindings: support the esp_tinyusb v2.x remote component, which no longer has `tinyusb_types.h` and `tusb_tasks.h`, and pick up `-D` defines passed by components as compile options (embuild 0.33.6), so that the TinyUSB bindings no longer fail with `'FreeRTOS.h' file not found`
 - bindings: include `ulp_lp_core.h` instead of `ulp_riscv.h` when the ULP is an LP core (`CONFIG_ULP_COPROC_TYPE_LP_CORE`: esp32c5, esp32c6, esp32p4 and esp32s31); bindgen failed because `ulp_riscv.h` does not exist on those chips
 - Sort the extra components' dirs so that we get a predictable build hash by the ESP-IDF Component Manager
+- Native builder: with cargo's new build-dir layout, `bootloader.bin` and `partition-table.bin` went to `target/<triple>/<profile>/build/` instead of `target/<triple>/<profile>/`; an unknown layout now warns instead of copying them elsewhere (#631)
 - `checks/libc.rs`: gate the IPv4-specific checks (`sockaddr_in`, `ip_mreq`, `IP_ADD_MEMBERSHIP`, `IP_DROP_MEMBERSHIP`) on `esp_idf_lwip_ipv4`, so builds with `CONFIG_LWIP_IPV4=n` no longer fail
 - With the `std` feature, fail the build if no `rustfmt` can format the generated bindings, instead of silently generating no checks against `libc`
 
