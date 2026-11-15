@@ -117,6 +117,11 @@ mod example {
             sys_loop.clone(),
         )?;
 
+        // Set the STA configuration before starting the driver, or else it might start
+        // in AP mode, and then the STA netif (the backbone) never comes up
+        wifi.set_configuration(&wifi_configuration())?;
+        info!("Wifi configuration set");
+
         // Need to start the Wifi driver before calling `set_backbone_netif`
         wifi.start()?;
 
@@ -124,6 +129,11 @@ mod example {
         unsafe {
             EspThread::set_backbone_netif(Some(wifi.wifi().sta_netif()));
         }
+
+        // mDNS must be up before constructing the Thread stack, because TREL starts
+        // browsing for its peers then, and the browse silently fails without mDNS
+        esp!(unsafe { mdns_init() })?;
+        esp!(unsafe { mdns_hostname_set(b"esp-ot-br\0" as *const _ as *const _) })?;
 
         // On the C6, run the Thread Border Router in co-exist mode
         #[cfg(esp32c6)]
@@ -158,9 +168,6 @@ mod example {
         thread.set_tod_from_cfg()?;
         thread.enable_ipv6(true)?;
         thread.enable_thread(true)?;
-
-        esp!(unsafe { mdns_init() })?;
-        esp!(unsafe { mdns_hostname_set(b"esp-ot-br\0" as *const _ as *const _) })?;
 
         info!("Thread Border Router initialized, now running...");
 
@@ -207,19 +214,18 @@ mod example {
         }
     }
 
-    fn connect_wifi(wifi: &mut BlockingWifi<EspWifi<'static>>) -> anyhow::Result<()> {
-        let wifi_configuration: Configuration = Configuration::Client(ClientConfiguration {
+    fn wifi_configuration() -> Configuration {
+        Configuration::Client(ClientConfiguration {
             ssid: SSID.try_into().unwrap(),
             bssid: None,
             auth_method: AuthMethod::WPA2Personal,
             password: PASSWORD.try_into().unwrap(),
             channel: None,
             ..Default::default()
-        });
+        })
+    }
 
-        wifi.set_configuration(&wifi_configuration)?;
-        info!("Wifi configuration set");
-
+    fn connect_wifi(wifi: &mut BlockingWifi<EspWifi<'static>>) -> anyhow::Result<()> {
         wifi.connect()?;
         info!("Wifi connected");
 
