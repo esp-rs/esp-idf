@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Event loop: `Wait::also` / `AsyncWait::also`, for waiting on events of several sources
 - Wi-Fi: `WifiDriver::set_power_save` / `get_power_save` (and on `EspWifi`), e.g. for disabling modem sleep, which delays receiving data by up to the DTIM period
 - Wi-Fi: WPA2 / WPA3 Enterprise (802.1X / EAP) authentication of the station with `EnterpriseConfiguration` and `WifiDriver::enable_enterprise` / `disable_enterprise` (and on `EspWifi`); ESP-IDF v5.0.5+, v5.1.2+ and v5.2+
+- HTTP client, MQTT client: `if_name` in `Configuration` / `MqttClientConfiguration`, to bind the connection to one network interface (`SO_BINDTODEVICE`) with its lwIP name, e.g. from `EspNetif::get_name` (ESP-IDF v5+)
 
 ### Fixed
 - TLS: the non-blocking server handshake (`EspTls::negotiate_server_init`, `EspAsyncTls::negotiate_server`) read the ALPN list after freeing it, which failed the handshake or crashed. The list now lives as long as the session, and `alpn_protos` needs the `alloc` feature

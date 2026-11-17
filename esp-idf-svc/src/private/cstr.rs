@@ -7,7 +7,7 @@ pub use alloc::ffi::CString;
 pub use core::ffi::{c_char, CStr};
 use core::str::Utf8Error;
 
-use crate::sys::{EspError, ESP_ERR_INVALID_SIZE};
+use crate::sys::{EspError, ESP_ERR_INVALID_ARG, ESP_ERR_INVALID_SIZE};
 
 pub fn set_str(buf: &mut [u8], s: &str) -> Result<(), EspError> {
     if s.len() >= buf.len() {
@@ -18,6 +18,18 @@ pub fn set_str(buf: &mut [u8], s: &str) -> Result<(), EspError> {
     buf[s.len()] = 0;
 
     Ok(())
+}
+
+#[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+pub fn to_ifreq(if_name: &str) -> Result<crate::sys::ifreq, EspError> {
+    if if_name.is_empty() || !if_name.is_ascii() {
+        return Err(EspError::from_infallible::<ESP_ERR_INVALID_ARG>());
+    }
+
+    let mut ifreq = crate::sys::ifreq { ifr_name: [0; 6] };
+    set_str(c_char_to_u8_slice_mut(&mut ifreq.ifr_name), if_name)?;
+
+    Ok(ifreq)
 }
 
 pub fn set_str_no_termination_requirement(buf: &mut [u8], s: &str) -> Result<(), EspError> {

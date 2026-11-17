@@ -86,6 +86,8 @@ pub struct Configuration {
     pub keep_alive_idle: Option<usize>,
     pub keep_alive_interval: Option<usize>,
     pub keep_alive_count: Option<usize>,
+    #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+    pub if_name: Option<heapless::String<6>>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -201,6 +203,13 @@ impl EspHttpConnection {
             if let Some(keep_alive_count) = configuration.keep_alive_count {
                 native_config.keep_alive_count = keep_alive_count as _;
             }
+        }
+
+        #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+        let mut if_name = configuration.if_name.as_deref().map(to_ifreq).transpose()?;
+        #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+        if let Some(if_name) = if_name.as_mut() {
+            native_config.if_name = if_name;
         }
 
         let raw_client = unsafe { esp_http_client_init(&native_config) };
