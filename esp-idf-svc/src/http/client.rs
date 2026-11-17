@@ -69,7 +69,7 @@ pub enum FollowRedirectsPolicy {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Configuration {
+pub struct Configuration<'a> {
     pub buffer_size: Option<usize>,
     pub buffer_size_tx: Option<usize>,
     pub timeout: Option<core::time::Duration>,
@@ -86,8 +86,9 @@ pub struct Configuration {
     pub keep_alive_idle: Option<usize>,
     pub keep_alive_interval: Option<usize>,
     pub keep_alive_count: Option<usize>,
-    #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
-    pub if_name: Option<heapless::String<6>>,
+    /// The network interface to bind the connection to, by its lwIP name (e.g. from
+    /// `EspNetif::get_name`)
+    pub if_name: Option<&'a str>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -112,7 +113,7 @@ pub struct EspHttpConnection {
 }
 
 impl EspHttpConnection {
-    pub fn new(configuration: &Configuration) -> Result<Self, EspError> {
+    pub fn new(configuration: &Configuration<'_>) -> Result<Self, EspError> {
         let event_handler = Box::new(None);
 
         #[allow(clippy::manual_c_str_literals)]
@@ -205,9 +206,8 @@ impl EspHttpConnection {
             }
         }
 
-        #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
-        let mut if_name = configuration.if_name.as_deref().map(to_ifreq).transpose()?;
-        #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+        // ESP-IDF copies the name, so it only needs to live until `esp_http_client_init`
+        let mut if_name = configuration.if_name.map(to_ifreq).transpose()?;
         if let Some(if_name) = if_name.as_mut() {
             native_config.if_name = if_name;
         }

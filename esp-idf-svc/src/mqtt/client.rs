@@ -118,7 +118,9 @@ pub struct MqttClientConfiguration<'a> {
     /// A private key kept in hardware, used instead of `private_key`
     pub hw_private_key: Option<HwPrivateKey>,
 
-    #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+    /// The network interface to bind the connection to, by its lwIP name (e.g. from
+    /// `EspNetif::get_name`)
+    #[cfg(all(esp_idf_comp_lwip_enabled, esp_idf_version_at_least_5_1_2))]
     pub if_name: Option<&'a str>,
 
     #[cfg(all(esp_idf_esp_tls_psk_verification, feature = "alloc"))]
@@ -168,7 +170,7 @@ impl Default for MqttClientConfiguration<'_> {
 
             hw_private_key: None,
 
-            #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+            #[cfg(all(esp_idf_comp_lwip_enabled, esp_idf_version_at_least_5_1_2))]
             if_name: None,
 
             #[cfg(all(esp_idf_esp_tls_psk_verification, feature = "alloc"))]
@@ -557,9 +559,10 @@ impl<'a> EspMqttClient<'a> {
             c_conf.credentials.authentication.ecdsa_key_efuse_blk = efuse_block;
         }
 
-        #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+        // ESP-IDF copies the name, so it only needs to live until `esp_mqtt_client_init`
+        #[cfg(all(esp_idf_comp_lwip_enabled, esp_idf_version_at_least_5_1_2))]
         let mut if_name = conf.if_name.map(to_ifreq).transpose()?;
-        #[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+        #[cfg(all(esp_idf_comp_lwip_enabled, esp_idf_version_at_least_5_1_2))]
         if let Some(if_name) = if_name.as_mut() {
             c_conf.network.if_name = if_name;
         }

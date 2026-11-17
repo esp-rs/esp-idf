@@ -20,13 +20,13 @@ pub fn set_str(buf: &mut [u8], s: &str) -> Result<(), EspError> {
     Ok(())
 }
 
-#[cfg(all(esp_idf_comp_lwip_enabled, not(esp_idf_version_major = "4")))]
+#[cfg(esp_idf_comp_lwip_enabled)]
 pub fn to_ifreq(if_name: &str) -> Result<crate::sys::ifreq, EspError> {
     if if_name.is_empty() || !if_name.is_ascii() {
         return Err(EspError::from_infallible::<ESP_ERR_INVALID_ARG>());
     }
 
-    let mut ifreq = crate::sys::ifreq { ifr_name: [0; 6] };
+    let mut ifreq = crate::sys::ifreq::default();
     set_str(c_char_to_u8_slice_mut(&mut ifreq.ifr_name), if_name)?;
 
     Ok(ifreq)
