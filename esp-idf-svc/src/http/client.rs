@@ -13,6 +13,7 @@ use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
 
 use ::log::*;
 
@@ -106,10 +107,8 @@ pub struct EspHttpConnection {
     follow_redirects: bool,
     headers: BTreeMap<Uncased<'static>, String>,
     content_len_header: UnsafeCell<Option<Option<String>>>,
-    /// The names of the headers the previous request set. ESP-IDF keeps
-    /// request headers on the client handle, so without deleting them a
-    /// reused connection would send them again with the next request.
-    request_headers: alloc::vec::Vec<alloc::ffi::CString>,
+    /// The names of the headers set by the previous request, deleted before the next one
+    request_headers: Vec<CString>,
     _hw_private_key: RawHwPrivateKey,
 }
 
@@ -221,7 +220,7 @@ impl EspHttpConnection {
                 follow_redirects: false,
                 headers: BTreeMap::new(),
                 content_len_header: UnsafeCell::new(None),
-                request_headers: alloc::vec::Vec::new(),
+                request_headers: Vec::new(),
                 _hw_private_key: hw_private_key,
             })
         }
@@ -287,12 +286,8 @@ impl EspHttpConnection {
 
         let mut content_len = None;
 
-        // Delete the previous request's headers: `esp_http_client_set_header` keeps a header
-        // on the client until it is deleted, so on a reused connection the next request
-        // would send e.g. a stale `Range` or `Authorization` header it did not set itself.
-        // (Not `esp_http_client_delete_all_headers`: ESP-IDF stores its own `Host` and
-        // `User-Agent` in the same list.) A header that is already gone, e.g. a name that
-        // the previous request set twice, is `ESP_ERR_NOT_FOUND`, which is fine.
+        // ESP-IDF keeps request headers on the client, so delete those of the previous request.
+        // A name it set twice is already gone (`ESP_ERR_NOT_FOUND`), which is fine.
         for c_name in self.request_headers.drain(..) {
             unsafe { esp_http_client_delete_header(self.raw_client, c_name.as_ptr() as _) };
         }
@@ -304,7 +299,6 @@ impl EspHttpConnection {
                 }
             } else {
                 let c_name = to_cstring_arg(name)?;
-                self.request_headers.push(c_name.clone());
 
                 // TODO: Replace with a proper conversion from UTF8 to ISO-8859-1
                 let c_value = to_cstring_arg(value)?;
@@ -316,6 +310,12 @@ impl EspHttpConnection {
                         c_value.as_ptr() as _,
                     )
                 })?;
+
+                // Not `Host` or `User-Agent`: ESP-IDF would not set its own value again, and
+                // the next request would go out without them
+                if !name.eq_ignore_ascii_case("Host") && !name.eq_ignore_ascii_case("User-Agent") {
+                    self.request_headers.push(c_name);
+                }
             }
         }
 
