@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ULP: `UlpDriver` supports the LP core (`CONFIG_ULP_COPROC_TYPE_LP_CORE`) of the esp32c5, esp32c6, esp32p4 and esp32s31
 
 ### Fixed
+- esp32s31: RMT, the GPTimer and the UART did not compile against ESP-IDF v6.1.1, which renamed the 80 MHz clock source from `PLL_F80M` to `REF_F80M`
 - GPIO: `PinDriver` now releases the USB Serial/JTAG D-/D+ pads (e.g. GPIO19/20 on the esp32s3, GPIO18/19 on the esp32c3) and the RTC IO MUX when routing a pad to GPIO, without resetting the pulls, drive strength or level of the pin (#614)
 - GPIO: the `PinDriver::try_into_*` mode conversions no longer reset the pin right after configuring it in the new mode. The converted driver used to end up disabled, with its pulls cleared
 - GPIO: `PinDriver::disabled` and `PinDriver::try_into_disabled` now actually disable the input and output of the pin

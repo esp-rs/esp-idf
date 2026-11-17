@@ -364,11 +364,20 @@ pub mod config {
             esp_idf_soc_uart_support_pll_f80m_clk,
             all(
                 esp_idf_version_at_least_6_0_0,
-                any(esp32c5, esp32c6, esp32c61, esp32p4, esp32s31)
+                any(
+                    esp32c5,
+                    esp32c6,
+                    esp32c61,
+                    esp32p4,
+                    all(esp32s31, not(esp_idf_version_at_least_6_1_1))
+                )
             )
         )
     ))]
     const PLL_F80M_SCLK: uart_sclk_t = soc_periph_uart_clk_src_legacy_t_UART_SCLK_PLL_F80M;
+    // ESP-IDF v6.1.1 renamed the esp32s31's 80 MHz source REF_F80M
+    #[cfg(all(esp32s31, esp_idf_version_at_least_6_1_1))]
+    const PLL_F80M_SCLK: uart_sclk_t = soc_periph_uart_clk_src_legacy_t_UART_SCLK_REF_F80M;
     #[cfg(all(esp_idf_version_major = "4", esp_idf_soc_uart_support_pll_f80m_clk))]
     const PLL_F80M_SCLK: uart_sclk_t = uart_sclk_t_UART_SCLK_PLL_F80M;
 

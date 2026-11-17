@@ -490,8 +490,16 @@ impl From<ClockSource> for rmt_clock_source_t {
                 esp32c3, esp32c5, esp32c6, esp32h2, esp32h21, esp32h4, esp32p4, esp32s3, esp32s31
             ))]
             ClockSource::XTAL => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_XTAL,
-            #[cfg(any(esp32c5, esp32c6, esp32p4, esp32s31))]
+            #[cfg(any(
+                esp32c5,
+                esp32c6,
+                esp32p4,
+                all(esp32s31, not(esp_idf_version_at_least_6_1_1))
+            ))]
             ClockSource::PLLF80M => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_PLL_F80M,
+            // ESP-IDF v6.1.1 renamed the esp32s31's 80 MHz source REF_F80M
+            #[cfg(all(esp32s31, esp_idf_version_at_least_6_1_1))]
+            ClockSource::PLLF80M => soc_periph_rmt_clk_src_t_RMT_CLK_SRC_REF_F80M,
         }
     }
 }
