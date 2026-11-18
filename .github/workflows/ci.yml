@@ -1,12 +1,23 @@
 name: CI
 
+# The esp-rs organization shares a small pool of GitHub-hosted runners between all of its
+# repositories, so this workflow tries to use few of them:
+# - Pull requests and pushes build a subset of the matrix: every target with the default ESP-IDF
+#   release, the oldest and the newest release with a few targets, and the MCUs which share a target
+#   with another MCU (jobs `compile`, `compile-nimble`, `compile-sys-legacy`)
+# - The weekly run and manual runs build the full matrix (the `*-full` jobs)
+# - Every job waits for one of six runner slots (`concurrency` with `queue: max`), so that all the
+#   runs of the CI workflows of this repository, of any branch or PR, together take at most six
+#   runners at a time. The other runs wait in the queue of their slot
+# Each pair of jobs shares its name, environment and steps through YAML anchors.
+
 on:
   push:
     branches:
       - master
   pull_request:
   schedule:
-    - cron: "50 4 * * *"
+    - cron: "50 4 * * 0"
   workflow_dispatch:
 
 # A new run for the same branch or PR cancels the one still in progress
@@ -30,87 +41,61 @@ env:
   GATEWAY_NETMASK: "24"
 
 jobs:
+  # Pull requests and pushes: a subset of the matrix of `compile-full`
   compile:
-    name: "${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}${{ matrix.extra-components-label != '' && format(' (+{0})', matrix.extra-components-label) || '' }}${{ matrix.libc && format(' ({0})', matrix.libc) || '' }}"
+    name: &compile-name "${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}${{ matrix.extra-components-label != '' && format(' (+{0})', matrix.extra-components-label) || '' }}${{ matrix.libc && format(' ({0})', matrix.libc) || '' }}${{ matrix.latest-nightly && ' (latest nightly)' || '' }}"
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
+    # The slot follows from the position of the job in its matrix; the list covers matrices of up to 60 jobs
+    concurrency: &runner-slot
+      group: esp-idf-runner-slot-${{ fromJSON('[0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5]')[strategy.job-index] }}
+      queue: max
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - riscv32imc-esp-espidf
-          - riscv32imac-esp-espidf
-          - riscv32imafc-esp-espidf
-          - xtensa-esp32-espidf
-          - xtensa-esp32s2-espidf
-          - xtensa-esp32s3-espidf
-        idf-version:
-          - v5.3.6
-          - v5.4.4
-          - v5.5.5
-          - v6.0.3
-          - v6.1
-        extra-components-label:
-          - ""
-        extra-components-files:
-          - ""
-        mcu:
-          - ""
-        # The default libc of the ESP-IDF release: picolibc since v6.0, newlib before
-        libc:
-          - ""
         include:
-          # The one riscv32imc job on the latest nightly; the others use `rust_toolchain_pinned`
+          # Every target with the default ESP-IDF release
           - target: riscv32imc-esp-espidf
             idf-version: v5.5.5
-            latest-nightly: true
-          # The other libc of the ESP-IDF releases which support both (v5.5 and later), for one
-          # RISC-V and one Xtensa target
-          - target: riscv32imc-esp-espidf
+          - target: riscv32imac-esp-espidf
             idf-version: v5.5.5
-            libc: picolibc
+          - target: riscv32imafc-esp-espidf
+            idf-version: v5.5.5
           - target: xtensa-esp32-espidf
             idf-version: v5.5.5
-            libc: picolibc
+          - target: xtensa-esp32s2-espidf
+            idf-version: v5.5.5
+          - target: xtensa-esp32s3-espidf
+            idf-version: v5.5.5
+          # The oldest and the newest ESP-IDF release, with one RISC-V and one Xtensa target
           - target: riscv32imc-esp-espidf
-            idf-version: v6.0.3
-            libc: newlib
+            idf-version: v5.3.6
           - target: xtensa-esp32-espidf
-            idf-version: v6.0.3
-            libc: newlib
+            idf-version: v5.3.6
           - target: riscv32imc-esp-espidf
             idf-version: v6.1
-            libc: newlib
-          - target: xtensa-esp32-espidf
+          - target: xtensa-esp32s3-espidf
             idf-version: v6.1
-            libc: newlib
-          # Also test v6.0 with remote components that were moved out of the main tree
-          # mqtt and eth SPI drivers work on all targets; eth PHY drivers only support esp32 and esp32p4
-          - target: riscv32imc-esp-espidf
-            idf-version: v6.0
-            extra-components-label: v6_mqtt
-            # We could add v6_eth_spi here, but example is esp32-only.
-            extra-components-files: "extra_components_v6_mqtt.toml"
-          - target: xtensa-esp32-espidf
-            idf-version: v6.0
-            extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
-            extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
-          # The esp32s31 and esp32h4 share the riscv32imafc target with the esp32p4, which is the MCU picked by default
+          # The MCUs which share their target with the esp32p4 and the esp32c6
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32s31
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32h4
-          # The esp32h21 shares the riscv32imac target with the esp32c6, which is the MCU picked by default
           - target: riscv32imac-esp-espidf
             idf-version: v6.1
             mcu: esp32h21
-          # esp32p4 also supports eth, but examples are esp32-only for now
-          #- target: riscv32imafc-esp-espidf
-          #  idf-version: v6.0
-          #  extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
-          #  extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
-    env:
+          # The other libc of a release which supports both
+          - target: xtensa-esp32-espidf
+            idf-version: v6.1
+            libc: newlib
+          # The remote components which were moved out of the main tree in v6.0
+          - target: xtensa-esp32-espidf
+            idf-version: v6.0
+            extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
+            extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
+    env: &compile-env
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
       ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
@@ -118,7 +103,7 @@ jobs:
       ESP_IDF_SDKCONFIG_DEFAULTS: ${{ matrix.libc && format('sdkconfig.defaults;sdkconfig.defaults.{0}', matrix.libc) || 'sdkconfig.defaults' }}
       # `libc` needs `--cfg espidf_picolibc` with picolibc
       RUSTFLAGS: "--cfg espidf_time64${{ (matrix.libc == 'picolibc' || (!matrix.libc && startsWith(matrix.idf-version, 'v6'))) && ' --cfg espidf_picolibc' || '' }}"
-    steps:
+    steps: &compile-steps
       - name: Setup | Checkout
         uses: actions/checkout@v3
 
@@ -192,45 +177,130 @@ jobs:
       - name: Build | Compile, no_std, alloc
         run: cargo build -p esp-idf-sys -p esp-idf-hal -p esp-idf-svc --no-default-features --features esp-idf-hal/alloc,esp-idf-hal/experimental,esp-idf-svc/alloc,esp-idf-svc/nightly,esp-idf-svc/experimental --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
 
-  # The `compile` job above builds with Bluedroid. The `esp_idf_svc::ble` module and the `ble_*`
-  # examples are NimBLE-only (gated behind `esp_idf_bt_nimble_enabled`), so that job never compiles
-  # them - the two hosts are a mutually-exclusive Kconfig `choice` and cannot coexist in one build.
-  # This job builds the workspace and the examples against `sdkconfig.defaults.nimble` to
-  # compile-check the NimBLE paths too. The targets cover the three ways the NimBLE headers expose
-  # the low-level mbuf functions (see `esp_idf_svc::ble::mbuf`): riscv32imc (esp32c3) has the
-  # plain `os_mbuf_append`, riscv32imac (esp32c6/h2) keeps the BLE controller in ROM and aliases it to
-  # `r_os_mbuf_append`, and the esp32s31 wraps that same `r_` symbol in a `static inline` function.
-  compile-nimble:
-    name: "NimBLE / ${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}"
+  # The weekly run and manual runs: every target with every ESP-IDF release, and the variants
+  compile-full:
+    name: *compile-name
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    concurrency: *runner-slot
+    # The latest nightly cannot build `std` for ESP-IDF yet (see `rust_toolchain_pinned`)
+    continue-on-error: ${{ matrix.latest-nightly == true }}
     strategy:
       fail-fast: false
       matrix:
         target:
           - riscv32imc-esp-espidf
           - riscv32imac-esp-espidf
+          - riscv32imafc-esp-espidf
+          - xtensa-esp32-espidf
+          - xtensa-esp32s2-espidf
+          - xtensa-esp32s3-espidf
         idf-version:
-          - v5.3.4
-          - v5.4.3
-          - v5.5.3
+          - v5.3.6
+          - v5.4.4
+          - v5.5.5
+          - v6.0.3
+          - v6.1
+        extra-components-label:
+          - ""
+        extra-components-files:
+          - ""
+        mcu:
+          - ""
+        # The default libc of the ESP-IDF release: picolibc since v6.0, newlib before
+        libc:
+          - ""
+        latest-nightly:
+          - false
         include:
+          # One more riscv32imc job, on the latest nightly; the others use `rust_toolchain_pinned`
+          - target: riscv32imc-esp-espidf
+            idf-version: v5.5.5
+            latest-nightly: true
+          # The other libc of the ESP-IDF releases which support both (v5.5 and later), for one
+          # RISC-V and one Xtensa target
+          - target: riscv32imc-esp-espidf
+            idf-version: v5.5.5
+            libc: picolibc
+          - target: xtensa-esp32-espidf
+            idf-version: v5.5.5
+            libc: picolibc
+          - target: riscv32imc-esp-espidf
+            idf-version: v6.0.3
+            libc: newlib
+          - target: xtensa-esp32-espidf
+            idf-version: v6.0.3
+            libc: newlib
+          - target: riscv32imc-esp-espidf
+            idf-version: v6.1
+            libc: newlib
+          - target: xtensa-esp32-espidf
+            idf-version: v6.1
+            libc: newlib
+          # Also test v6.0 with remote components that were moved out of the main tree
+          # mqtt and eth SPI drivers work on all targets; eth PHY drivers only support esp32 and esp32p4
+          - target: riscv32imc-esp-espidf
+            idf-version: v6.0
+            extra-components-label: v6_mqtt
+            # We could add v6_eth_spi here, but example is esp32-only.
+            extra-components-files: "extra_components_v6_mqtt.toml"
+          - target: xtensa-esp32-espidf
+            idf-version: v6.0
+            extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
+            extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
+          # The esp32s31 and esp32h4 share the riscv32imafc target with the esp32p4, which is the MCU picked by default
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32s31
           - target: riscv32imafc-esp-espidf
             idf-version: v6.1
             mcu: esp32h4
+          # The esp32h21 shares the riscv32imac target with the esp32c6, which is the MCU picked by default
           - target: riscv32imac-esp-espidf
             idf-version: v6.1
             mcu: esp32h21
-    env:
+          # esp32p4 also supports eth, but examples are esp32-only for now
+          #- target: riscv32imafc-esp-espidf
+          #  idf-version: v6.0
+          #  extra-components-label: v6_mqtt v6_eth_spi v6_eth_phy
+          #  extra-components-files: "extra_components_v6_mqtt.toml,extra_components_v6_eth_spi.toml,extra_components_v6_eth_phy.toml"
+    env: *compile-env
+    steps: *compile-steps
+
+  # The `compile` jobs above build with Bluedroid. The `esp_idf_svc::ble` module and the `ble_*`
+  # examples are NimBLE-only (gated behind `esp_idf_bt_nimble_enabled`), so those jobs never compile
+  # them - the two hosts are a mutually-exclusive Kconfig `choice` and cannot coexist in one build.
+  # These jobs build the workspace and the examples against `sdkconfig.defaults.nimble` to
+  # compile-check the NimBLE paths too. The targets cover the three ways the NimBLE headers expose
+  # the low-level mbuf functions (see `esp_idf_svc::ble::mbuf`): riscv32imc (esp32c3) has the
+  # plain `os_mbuf_append`, riscv32imac (esp32c6/h2) keeps the BLE controller in ROM and aliases it to
+  # `r_os_mbuf_append`, and the esp32s31 wraps that same `r_` symbol in a `static inline` function.
+  #
+  # Pull requests and pushes: one job for each of these three ways
+  compile-nimble:
+    name: &compile-nimble-name "NimBLE / ${{ matrix.target }}${{ matrix.mcu && format(' ({0})', matrix.mcu) || '' }} / ${{ matrix.idf-version }}"
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency: *runner-slot
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: riscv32imc-esp-espidf
+            idf-version: v5.5.3
+          - target: riscv32imac-esp-espidf
+            idf-version: v5.5.3
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32s31
+    env: &compile-nimble-env
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
       ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       ESP_IDF_SDKCONFIG_DEFAULTS: "${{ github.workspace }}/sdkconfig.defaults.nimble"
       # `libc` needs `--cfg espidf_picolibc` with picolibc, the default libc since ESP-IDF v6.0
       RUSTFLAGS: "--cfg espidf_time64${{ startsWith(matrix.idf-version, 'v6') && ' --cfg espidf_picolibc' || '' }}"
-    steps:
+    steps: &compile-nimble-steps
       - name: Setup | Checkout
         uses: actions/checkout@v3
 
@@ -294,47 +364,58 @@ jobs:
       - name: Build | Compile, all crates and examples
         run: cargo build --workspace --lib --bins --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
 
-  # esp-idf-hal and esp-idf-svc require ESP-IDF v5.3 or newer, but esp-idf-sys still supports the
-  # older ESP-IDF releases, so it alone is compile-checked against them
-  compile-sys-legacy:
-    name: "esp-idf-sys / ${{ matrix.target }} / ${{ matrix.idf-version }}"
+  # The weekly run and manual runs: the two targets with every ESP-IDF release, and the other MCUs
+  compile-nimble-full:
+    name: *compile-nimble-name
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    concurrency: *runner-slot
     strategy:
       fail-fast: false
       matrix:
         target:
           - riscv32imc-esp-espidf
           - riscv32imac-esp-espidf
-          - riscv32imafc-esp-espidf
-          - xtensa-esp32-espidf
-          - xtensa-esp32s2-espidf
-          - xtensa-esp32s3-espidf
         idf-version:
-          - v4.4.8
-          - v5.0.9
-          - v5.1.7
-          - v5.2.8
-        exclude:
-          # ESP32-C6/H2 (riscv32imac) not supported before v5.1
+          - v5.3.4
+          - v5.4.3
+          - v5.5.3
+        include:
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32s31
+          - target: riscv32imafc-esp-espidf
+            idf-version: v6.1
+            mcu: esp32h4
           - target: riscv32imac-esp-espidf
+            idf-version: v6.1
+            mcu: esp32h21
+    env: *compile-nimble-env
+    steps: *compile-nimble-steps
+
+  # esp-idf-hal and esp-idf-svc require ESP-IDF v5.3 or newer, but esp-idf-sys still supports the
+  # older ESP-IDF releases, so it alone is compile-checked against them
+  #
+  # Pull requests and pushes: the oldest release with a RISC-V target, the newest with an Xtensa one
+  compile-sys-legacy:
+    name: &compile-sys-legacy-name "esp-idf-sys / ${{ matrix.target }} / ${{ matrix.idf-version }}"
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency: *runner-slot
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: riscv32imc-esp-espidf
             idf-version: v4.4.8
-          - target: riscv32imac-esp-espidf
-            idf-version: v5.0.9
-          # ESP32-P4 (riscv32imafc) not supported before v5.3
-          - target: riscv32imafc-esp-espidf
-            idf-version: v4.4.8
-          - target: riscv32imafc-esp-espidf
-            idf-version: v5.0.9
-          - target: riscv32imafc-esp-espidf
-            idf-version: v5.1.7
-          - target: riscv32imafc-esp-espidf
+          - target: xtensa-esp32-espidf
             idf-version: v5.2.8
-    env:
+    env: &compile-sys-legacy-env
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       # The clang toolchain of ESP-IDF v5.1 - v5.3 needs `libxml2.so.2`, which Ubuntu 26.04 does not have
       ESP_IDF_INSTALL_CLANG: ${{ (startsWith(matrix.idf-version, 'v5.1.') || startsWith(matrix.idf-version, 'v5.2.') || startsWith(matrix.idf-version, 'v5.3.')) && 'off' || 'on' }}
       RUSTFLAGS: "${{ startsWith(matrix.idf-version, 'v4') && '--cfg espidf_time32' || '--cfg espidf_time64' }}"
-    steps:
+    steps: &compile-sys-legacy-steps
       - name: Setup | Checkout
         uses: actions/checkout@v3
 
@@ -389,3 +470,42 @@ jobs:
 
       - name: Build | Compile, no_std
         run: cargo build -p esp-idf-sys --no-default-features --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
+
+  # The weekly run and manual runs: every target with every older release which supports it
+  compile-sys-legacy-full:
+    name: *compile-sys-legacy-name
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    concurrency: *runner-slot
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - riscv32imc-esp-espidf
+          - riscv32imac-esp-espidf
+          - riscv32imafc-esp-espidf
+          - xtensa-esp32-espidf
+          - xtensa-esp32s2-espidf
+          - xtensa-esp32s3-espidf
+        idf-version:
+          - v4.4.8
+          - v5.0.9
+          - v5.1.7
+          - v5.2.8
+        exclude:
+          # ESP32-C6/H2 (riscv32imac) not supported before v5.1
+          - target: riscv32imac-esp-espidf
+            idf-version: v4.4.8
+          - target: riscv32imac-esp-espidf
+            idf-version: v5.0.9
+          # ESP32-P4 (riscv32imafc) not supported before v5.3
+          - target: riscv32imafc-esp-espidf
+            idf-version: v4.4.8
+          - target: riscv32imafc-esp-espidf
+            idf-version: v5.0.9
+          - target: riscv32imafc-esp-espidf
+            idf-version: v5.1.7
+          - target: riscv32imafc-esp-espidf
+            idf-version: v5.2.8
+    env: *compile-sys-legacy-env
+    steps: *compile-sys-legacy-steps
