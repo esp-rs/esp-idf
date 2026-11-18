@@ -70,7 +70,7 @@ pub enum FollowRedirectsPolicy {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Configuration {
+pub struct Configuration<'a> {
     pub buffer_size: Option<usize>,
     pub buffer_size_tx: Option<usize>,
     pub timeout: Option<core::time::Duration>,
@@ -87,6 +87,9 @@ pub struct Configuration {
     pub keep_alive_idle: Option<usize>,
     pub keep_alive_interval: Option<usize>,
     pub keep_alive_count: Option<usize>,
+    /// The network interface to bind the connection to, by its lwIP name (e.g. from
+    /// `EspNetif::get_name`)
+    pub if_name: Option<&'a str>,
     /// Resume the TLS session on the next connection with the ticket saved from the last one.
     /// ESP-IDF keeps one ticket per client and offers it to whatever host the client connects
     /// to next, so this is meant for a client per host. Needs ESP-IDF v5.3+ with
@@ -118,7 +121,7 @@ pub struct EspHttpConnection {
 }
 
 impl EspHttpConnection {
-    pub fn new(configuration: &Configuration) -> Result<Self, EspError> {
+    pub fn new(configuration: &Configuration<'_>) -> Result<Self, EspError> {
         let event_handler = Box::new(None);
 
         #[allow(clippy::manual_c_str_literals)]
@@ -217,6 +220,12 @@ impl EspHttpConnection {
             if let Some(keep_alive_count) = configuration.keep_alive_count {
                 native_config.keep_alive_count = keep_alive_count as _;
             }
+        }
+
+        // ESP-IDF copies the name, so it only needs to live until `esp_http_client_init`
+        let mut if_name = configuration.if_name.map(to_ifreq).transpose()?;
+        if let Some(if_name) = if_name.as_mut() {
+            native_config.if_name = if_name;
         }
 
         let raw_client = unsafe { esp_http_client_init(&native_config) };
