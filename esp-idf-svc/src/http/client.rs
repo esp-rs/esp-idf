@@ -13,6 +13,7 @@ use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
 
 use ::log::*;
 
@@ -106,6 +107,8 @@ pub struct EspHttpConnection {
     follow_redirects: bool,
     headers: BTreeMap<Uncased<'static>, String>,
     content_len_header: UnsafeCell<Option<Option<String>>>,
+    /// The names of the headers set by the previous request, deleted before the next one
+    request_headers: Vec<CString>,
     _hw_private_key: RawHwPrivateKey,
 }
 
@@ -217,6 +220,7 @@ impl EspHttpConnection {
                 follow_redirects: false,
                 headers: BTreeMap::new(),
                 content_len_header: UnsafeCell::new(None),
+                request_headers: Vec::new(),
                 _hw_private_key: hw_private_key,
             })
         }
@@ -282,6 +286,12 @@ impl EspHttpConnection {
 
         let mut content_len = None;
 
+        // ESP-IDF keeps request headers on the client, so delete those of the previous request.
+        // A name it set twice is already gone (`ESP_ERR_NOT_FOUND`), which is fine.
+        for c_name in self.request_headers.drain(..) {
+            unsafe { esp_http_client_delete_header(self.raw_client, c_name.as_ptr() as _) };
+        }
+
         for (name, value) in headers {
             if name.eq_ignore_ascii_case("Content-Length") {
                 if let Ok(len) = value.parse::<i64>() {
@@ -300,6 +310,12 @@ impl EspHttpConnection {
                         c_value.as_ptr() as _,
                     )
                 })?;
+
+                // Not `Host` or `User-Agent`: ESP-IDF would not set its own value again, and
+                // the next request would go out without them
+                if !name.eq_ignore_ascii_case("Host") && !name.eq_ignore_ascii_case("User-Agent") {
+                    self.request_headers.push(c_name);
+                }
             }
         }
 
