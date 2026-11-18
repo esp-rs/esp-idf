@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP server: a WS frame with a reserved opcode no longer panics in `EspHttpWsConnection::recv`, which let any client reset the chip. `recv` returns `ESP_ERR_INVALID_RESPONSE`, and the session is failed with a Close frame (1002, protocol error) as RFC 6455 requires
 - Netif: fix linking with the DHCP server disabled (`CONFIG_LWIP_DHCPS=n`) in builds which keep the call to `esp_netif_dhcps_option`, e.g. without LTO
 - Log: Rust log lines show the timestamp of every `CONFIG_LOG_TIMESTAMP_SOURCE` of log v2, e.g. the date and time, rather than none
+- Netif: the default Wi-Fi station, Ethernet client and PPP client netifs autoconfigure IPv6 addresses again (since ESP-IDF v5.4 this needs `ESP_NETIF_FLAG_IPV6_AUTOCONFIG_ENABLED`), and the station sends MLD reports, as in ESP-IDF's defaults
 - Netif: align the default PPP client with ESP-IDF's PPP configuration, correctly deserialize `IP_EVENT_PPP_LOST_IP`, and keep custom driver lifecycle state in sync across start/stop calls.
 - Thread: fix compilation when `CONFIG_OPENTHREAD_LOG_LEVEL_DYNAMIC=n` is specified
 - WS client: `WebSocketEventType::Close` decoded the closing reason from the address of the payload rather than from its first two bytes

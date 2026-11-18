@@ -202,6 +202,22 @@ impl NetifStack {
     }
 }
 
+/// MLD reports, as ESP-IDF's default Wi-Fi station netif has them when lwIP
+/// sends them (`CONFIG_LWIP_ESP_MLDV6_REPORT`).
+#[cfg(esp_idf_lwip_esp_mldv6_report)]
+const MLDV6_REPORT_FLAGS: u32 = esp_netif_flags_ESP_NETIF_FLAG_MLDV6_REPORT;
+#[cfg(not(esp_idf_lwip_esp_mldv6_report))]
+const MLDV6_REPORT_FLAGS: u32 = 0;
+
+/// IPv6 address autoconfiguration, as ESP-IDF's default Wi-Fi station, Ethernet
+/// and PPP netifs have it when lwIP supports it (`CONFIG_LWIP_IPV6_AUTOCONFIG`).
+/// Since ESP-IDF v5.4, only this flag turns it on; before,
+/// `esp_netif_create_ip6_linklocal` did.
+#[cfg(all(esp_idf_lwip_ipv6_autoconfig, esp_idf_version_at_least_5_4_0))]
+const IPV6_AUTOCONFIG_FLAGS: u32 = esp_netif_flags_ESP_NETIF_FLAG_IPV6_AUTOCONFIG_ENABLED;
+#[cfg(not(all(esp_idf_lwip_ipv6_autoconfig, esp_idf_version_at_least_5_4_0)))]
+const IPV6_AUTOCONFIG_FLAGS: u32 = 0;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NetifConfiguration {
     pub flags: u32,
@@ -239,7 +255,8 @@ impl NetifConfiguration {
     pub fn eth_default_client() -> Self {
         Self {
             flags: esp_netif_flags_ESP_NETIF_FLAG_GARP
-                | esp_netif_flags_ESP_NETIF_FLAG_EVENT_IP_MODIFIED,
+                | esp_netif_flags_ESP_NETIF_FLAG_EVENT_IP_MODIFIED
+                | IPV6_AUTOCONFIG_FLAGS,
             got_ip_event_id: NonZeroU32::new(ip_event_t_IP_EVENT_ETH_GOT_IP as _),
             lost_ip_event_id: NonZeroU32::new(ip_event_t_IP_EVENT_ETH_LOST_IP as _),
             key: "ETH_DEF".try_into().unwrap(),
@@ -272,7 +289,9 @@ impl NetifConfiguration {
     pub fn wifi_default_client() -> Self {
         Self {
             flags: esp_netif_flags_ESP_NETIF_FLAG_GARP
-                | esp_netif_flags_ESP_NETIF_FLAG_EVENT_IP_MODIFIED,
+                | esp_netif_flags_ESP_NETIF_FLAG_EVENT_IP_MODIFIED
+                | MLDV6_REPORT_FLAGS
+                | IPV6_AUTOCONFIG_FLAGS,
             got_ip_event_id: NonZeroU32::new(ip_event_t_IP_EVENT_STA_GOT_IP as _),
             lost_ip_event_id: NonZeroU32::new(ip_event_t_IP_EVENT_STA_LOST_IP as _),
             key: "WIFI_STA_DEF".try_into().unwrap(),
@@ -306,7 +325,7 @@ impl NetifConfiguration {
     #[cfg(esp_idf_lwip_ppp_support)]
     pub fn ppp_default_client() -> Self {
         Self {
-            flags: esp_netif_flags_ESP_NETIF_FLAG_IS_PPP,
+            flags: esp_netif_flags_ESP_NETIF_FLAG_IS_PPP | IPV6_AUTOCONFIG_FLAGS,
             got_ip_event_id: NonZeroU32::new(ip_event_t_IP_EVENT_PPP_GOT_IP as _),
             lost_ip_event_id: NonZeroU32::new(ip_event_t_IP_EVENT_PPP_LOST_IP as _),
             key: "PPP_CL_DEF".try_into().unwrap(),
