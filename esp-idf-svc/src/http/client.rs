@@ -87,6 +87,11 @@ pub struct Configuration {
     pub keep_alive_idle: Option<usize>,
     pub keep_alive_interval: Option<usize>,
     pub keep_alive_count: Option<usize>,
+    /// Resume the TLS session on the next connection with the ticket saved from the last one.
+    /// ESP-IDF keeps one ticket per client and offers it to whatever host the client connects
+    /// to next, so this is meant for a client per host. Needs ESP-IDF v5.3+ with
+    /// `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS`; ignored otherwise.
+    pub save_client_session: bool,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -127,9 +132,17 @@ impl EspHttpConnection {
             use_global_ca_store: configuration.use_global_ca_store,
             crt_bundle_attach: configuration.crt_bundle_attach,
             keep_alive_enable: configuration.keep_alive_enable,
+            // The Kconfig option is older than this field, which came with ESP-IDF v5.3
+            #[cfg(all(esp_idf_esp_tls_client_session_tickets, esp_idf_version_at_least_5_3_0))]
+            save_client_session: configuration.save_client_session,
 
             ..Default::default()
         };
+
+        #[cfg(not(all(esp_idf_esp_tls_client_session_tickets, esp_idf_version_at_least_5_3_0)))]
+        if configuration.save_client_session {
+            warn!("`save_client_session` is ignored: it needs ESP-IDF v5.3+ with `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS`");
+        }
 
         if let Some(buffer_size) = configuration.buffer_size {
             native_config.buffer_size = buffer_size as _;
@@ -429,6 +442,16 @@ impl EspHttpConnection {
         } else {
             Ok(())
         }
+    }
+
+    /// Closes the connection to the server but keeps the client, so the next `initiate_request`
+    /// connects again (and resumes the TLS session with `Configuration::save_client_session`).
+    /// A response that was not read to the end is discarded.
+    pub fn close(&mut self) -> Result<(), EspError> {
+        // ESP-IDF resets the client even when closing the socket fails
+        self.state = State::New;
+
+        esp!(unsafe { esp_http_client_close(self.raw_client) })
     }
 
     fn flush_response(&mut self) -> Result<(), EspError> {
