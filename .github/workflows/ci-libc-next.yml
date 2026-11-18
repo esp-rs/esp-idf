@@ -9,13 +9,15 @@ name: CILibcNext
 #   `std` builds with its own libc, so that a `std` broken by libc-0.2 does not hide the checks. It then
 #   builds with the known mismatches as well, which the checks skip, lists them, and fails while there
 #   are any
+#
+# To use few of the runners which the esp-rs organization shares, Monday to Saturday run the `checks`
+# with a subset of their matrix, and Sunday and manual runs with the full matrix (`checks-full`). Every
+# job waits for one of the six runner slots which the CI workflows of this repository share (see `ci.yml`).
 
 on:
-  push:
-    branches:
-      - master
   schedule:
-    - cron: "50 6 * * *"
+    - cron: "50 6 * * 1-6"
+    - cron: "50 6 * * 0"
   workflow_dispatch:
 
 # A new run for the same branch or PR cancels the one still in progress
@@ -36,6 +38,10 @@ jobs:
   std:
     name: "std / libc-0.2 / ${{ matrix.target }} / ${{ matrix.time }}"
     runs-on: ubuntu-latest
+    # The slot follows from the position of the job in its matrix; the list covers matrices of up to 60 jobs
+    concurrency: &runner-slot
+      group: esp-idf-runner-slot-${{ fromJSON('[0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5]')[strategy.job-index] }}
+      queue: max
     strategy:
       fail-fast: false
       matrix:
@@ -105,31 +111,28 @@ jobs:
             exit 1
           fi
 
+  # Monday to Saturday: both libcs with one RISC-V and one Xtensa target, on the newest ESP-IDF release
   checks:
-    name: "esp-idf-sys checks / libc-0.2 / ${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' / {0}', matrix.libc) || '' }}"
+    name: &checks-name "esp-idf-sys checks / libc-0.2 / ${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' / {0}', matrix.libc) || '' }}"
+    if: github.event.schedule == '50 6 * * 1-6'
     runs-on: ubuntu-latest
+    concurrency: *runner-slot
     strategy:
       fail-fast: false
       matrix:
         target:
           - riscv32imc-esp-espidf
           - xtensa-esp32-espidf
-        # The ESP-IDF releases with both libcs: newlib is the default of v5.5, picolibc the one of v6.x
         idf-version:
-          - v5.5.5
           - v6.1
         libc:
           - newlib
           - picolibc
-        include:
-          # 32-bit `time_t` (newlib only)
-          - target: riscv32imc-esp-espidf
-            idf-version: v4.4.8
-    env:
+    env: &checks-env
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       ESP_IDF_SDKCONFIG_DEFAULTS: ${{ matrix.libc && format('sdkconfig.defaults;sdkconfig.defaults.{0}', matrix.libc) || 'sdkconfig.defaults' }}
       RUSTFLAGS: "${{ startsWith(matrix.idf-version, 'v4') && '--cfg espidf_time32' || '--cfg espidf_time64' }}${{ matrix.libc == 'picolibc' && ' --cfg espidf_picolibc' || '' }}"
-    steps:
+    steps: &checks-steps
       - name: Setup | Checkout
         uses: actions/checkout@v3
 
@@ -193,3 +196,29 @@ jobs:
             --message-format=json-diagnostic-rendered-ansi > "$RUNNER_TEMP/mismatches.json" || status=$?
           python3 .github/libc_mismatches.py "$status" "$RUNNER_TEMP/mismatches.json" \
             "${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' / {0}', matrix.libc) || '' }}"
+
+  # Sunday and manual runs: also ESP-IDF v5.5, and v4.4 for the 32-bit `time_t`
+  checks-full:
+    name: *checks-name
+    if: github.event.schedule == '50 6 * * 0' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    concurrency: *runner-slot
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - riscv32imc-esp-espidf
+          - xtensa-esp32-espidf
+        # The ESP-IDF releases with both libcs: newlib is the default of v5.5, picolibc the one of v6.x
+        idf-version:
+          - v5.5.5
+          - v6.1
+        libc:
+          - newlib
+          - picolibc
+        include:
+          # 32-bit `time_t` (newlib only)
+          - target: riscv32imc-esp-espidf
+            idf-version: v4.4.8
+    env: *checks-env
+    steps: *checks-steps

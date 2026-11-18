@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- HTTP client: `Configuration::save_client_session`, for resuming TLS sessions (ESP-IDF v5.3+ with `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS`)
+- HTTP client: `EspHttpConnection::close`, which closes the connection but keeps the client
 - Thread: a DNS client for DNS-SD, `dns_resolve_service_and_host_address` and `dns_browse` (with `CONFIG_OPENTHREAD_DNS_CLIENT`)
 - Thread: `srp_wait_changed`, to wait for the SRP client to find or lose a server
 - Thread: Sleepy End Device controls `set_link_mode`, `set_poll_period`, `set_child_timeout` and `set_child_supervision_check_timeout`
@@ -31,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP client, MQTT client: `if_name`, to bind the connection to a network interface by its lwIP name (MQTT: ESP-IDF v5.1.2+)
 
 ### Fixed
+- HTTP client: a request on a reused `EspHttpConnection` no longer also sends the headers of the previous request, e.g. its `Authorization` or `Range` header
 - TLS: the non-blocking server handshake (`EspTls::negotiate_server_init`, `EspAsyncTls::negotiate_server`) read the ALPN list after freeing it, which failed the handshake or crashed. The list now lives as long as the session, and `alpn_protos` needs the `alloc` feature
 - HTTP server: a WS frame with a reserved opcode no longer panics in `EspHttpWsConnection::recv`, which let any client reset the chip. `recv` returns `ESP_ERR_INVALID_RESPONSE`, and the session is failed with a Close frame (1002, protocol error) as RFC 6455 requires
 - Netif: fix linking with the DHCP server disabled (`CONFIG_LWIP_DHCPS=n`) in builds which keep the call to `esp_netif_dhcps_option`, e.g. without LTO

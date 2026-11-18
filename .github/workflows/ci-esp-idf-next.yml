@@ -1,11 +1,14 @@
 name: CIEspIdfNext
 
+# Builds against the development branch of ESP-IDF. To use few of the runners which the esp-rs
+# organization shares, Monday to Saturday build a subset of the matrix (job `compile`), and Sunday
+# and manual runs build the full matrix (job `compile-full`). Every job waits for one of the six
+# runner slots which the CI workflows of this repository share (see `ci.yml`).
+
 on:
-  push:
-    branches:
-      - master
   schedule:
-    - cron: "50 5 * * *"
+    - cron: "50 5 * * 1-6"
+    - cron: "50 5 * * 0"
   workflow_dispatch:
 
 # A new run for the same branch or PR cancels the one still in progress
@@ -28,39 +31,32 @@ env:
   GATEWAY_NETMASK: "24"
 
 jobs:
+  # Monday to Saturday: one RISC-V and one Xtensa target, and the other libc with the RISC-V one
   compile:
-    name: "${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' ({0})', matrix.libc) || '' }}"
+    name: &compile-name "${{ matrix.target }} / ${{ matrix.idf-version }}${{ matrix.libc && format(' ({0})', matrix.libc) || '' }}"
+    if: github.event.schedule == '50 5 * * 1-6'
     runs-on: ubuntu-latest
+    # The slot follows from the position of the job in its matrix; the list covers matrices of up to 60 jobs
+    concurrency: &runner-slot
+      group: esp-idf-runner-slot-${{ fromJSON('[0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5]')[strategy.job-index] }}
+      queue: max
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - riscv32imc-esp-espidf
-          - riscv32imac-esp-espidf
-          - riscv32imafc-esp-espidf
-          - xtensa-esp32-espidf
-          - xtensa-esp32s2-espidf
-          - xtensa-esp32s3-espidf
-        idf-version:
-#          - release/v6.2
-          - master
-        # The default libc of the ESP-IDF: picolibc
-        libc:
-          - ""
         include:
-          # The other libc, for one RISC-V and one Xtensa target
+          - target: riscv32imc-esp-espidf
+            idf-version: master
+          - target: xtensa-esp32-espidf
+            idf-version: master
           - target: riscv32imc-esp-espidf
             idf-version: master
             libc: newlib
-          - target: xtensa-esp32-espidf
-            idf-version: master
-            libc: newlib
-    env:
+    env: &compile-env
       ESP_IDF_VERSION: ${{ matrix.idf-version }}
       ESP_IDF_SDKCONFIG_DEFAULTS: ${{ matrix.libc && format('sdkconfig.defaults;sdkconfig.defaults.{0}', matrix.libc) || 'sdkconfig.defaults' }}
       # `libc` needs `--cfg espidf_picolibc` with picolibc
       RUSTFLAGS: "--cfg espidf_time64${{ matrix.libc != 'newlib' && ' --cfg espidf_picolibc' || '' }}"
-    steps:
+    steps: &compile-steps
       - name: Setup | Checkout
         uses: actions/checkout@v3
 
@@ -123,3 +119,36 @@ jobs:
 
       - name: Build | Compile, no_std, alloc
         run: cargo build -p esp-idf-sys -p esp-idf-hal -p esp-idf-svc --no-default-features --features esp-idf-hal/alloc,esp-idf-hal/experimental,esp-idf-svc/alloc,esp-idf-svc/nightly,esp-idf-svc/experimental --target ${{ matrix.target }} -Zbuild-std=std,panic_abort
+
+  # Sunday and manual runs: every target, and the other libc with one RISC-V and one Xtensa target
+  compile-full:
+    name: *compile-name
+    if: github.event.schedule == '50 5 * * 0' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    concurrency: *runner-slot
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - riscv32imc-esp-espidf
+          - riscv32imac-esp-espidf
+          - riscv32imafc-esp-espidf
+          - xtensa-esp32-espidf
+          - xtensa-esp32s2-espidf
+          - xtensa-esp32s3-espidf
+        idf-version:
+#          - release/v6.2
+          - master
+        # The default libc of the ESP-IDF: picolibc
+        libc:
+          - ""
+        include:
+          # The other libc, for one RISC-V and one Xtensa target
+          - target: riscv32imc-esp-espidf
+            idf-version: master
+            libc: newlib
+          - target: xtensa-esp32-espidf
+            idf-version: master
+            libc: newlib
+    env: *compile-env
+    steps: *compile-steps

@@ -13,6 +13,7 @@ use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
 
 use ::log::*;
 
@@ -89,6 +90,11 @@ pub struct Configuration<'a> {
     /// The network interface to bind the connection to, by its lwIP name (e.g. from
     /// `EspNetif::get_name`)
     pub if_name: Option<&'a str>,
+    /// Resume the TLS session on the next connection with the ticket saved from the last one.
+    /// ESP-IDF keeps one ticket per client and offers it to whatever host the client connects
+    /// to next, so this is meant for a client per host. Needs ESP-IDF v5.3+ with
+    /// `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS`; ignored otherwise.
+    pub save_client_session: bool,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -109,6 +115,8 @@ pub struct EspHttpConnection {
     follow_redirects: bool,
     headers: BTreeMap<Uncased<'static>, String>,
     content_len_header: UnsafeCell<Option<Option<String>>>,
+    /// The names of the headers set by the previous request, deleted before the next one
+    request_headers: Vec<CString>,
     _hw_private_key: RawHwPrivateKey,
 }
 
@@ -127,9 +135,17 @@ impl EspHttpConnection {
             use_global_ca_store: configuration.use_global_ca_store,
             crt_bundle_attach: configuration.crt_bundle_attach,
             keep_alive_enable: configuration.keep_alive_enable,
+            // The Kconfig option is older than this field, which came with ESP-IDF v5.3
+            #[cfg(all(esp_idf_esp_tls_client_session_tickets, esp_idf_version_at_least_5_3_0))]
+            save_client_session: configuration.save_client_session,
 
             ..Default::default()
         };
+
+        #[cfg(not(all(esp_idf_esp_tls_client_session_tickets, esp_idf_version_at_least_5_3_0)))]
+        if configuration.save_client_session {
+            warn!("`save_client_session` is ignored: it needs ESP-IDF v5.3+ with `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS`");
+        }
 
         if let Some(buffer_size) = configuration.buffer_size {
             native_config.buffer_size = buffer_size as _;
@@ -226,6 +242,7 @@ impl EspHttpConnection {
                 follow_redirects: false,
                 headers: BTreeMap::new(),
                 content_len_header: UnsafeCell::new(None),
+                request_headers: Vec::new(),
                 _hw_private_key: hw_private_key,
             })
         }
@@ -291,6 +308,12 @@ impl EspHttpConnection {
 
         let mut content_len = None;
 
+        // ESP-IDF keeps request headers on the client, so delete those of the previous request.
+        // A name it set twice is already gone (`ESP_ERR_NOT_FOUND`), which is fine.
+        for c_name in self.request_headers.drain(..) {
+            unsafe { esp_http_client_delete_header(self.raw_client, c_name.as_ptr() as _) };
+        }
+
         for (name, value) in headers {
             if name.eq_ignore_ascii_case("Content-Length") {
                 if let Ok(len) = value.parse::<i64>() {
@@ -309,6 +332,12 @@ impl EspHttpConnection {
                         c_value.as_ptr() as _,
                     )
                 })?;
+
+                // Not `Host` or `User-Agent`: ESP-IDF would not set its own value again, and
+                // the next request would go out without them
+                if !name.eq_ignore_ascii_case("Host") && !name.eq_ignore_ascii_case("User-Agent") {
+                    self.request_headers.push(c_name);
+                }
             }
         }
 
@@ -422,6 +451,16 @@ impl EspHttpConnection {
         } else {
             Ok(())
         }
+    }
+
+    /// Closes the connection to the server but keeps the client, so the next `initiate_request`
+    /// connects again (and resumes the TLS session with `Configuration::save_client_session`).
+    /// A response that was not read to the end is discarded.
+    pub fn close(&mut self) -> Result<(), EspError> {
+        // ESP-IDF resets the client even when closing the socket fails
+        self.state = State::New;
+
+        esp!(unsafe { esp_http_client_close(self.raw_client) })
     }
 
     fn flush_response(&mut self) -> Result<(), EspError> {
