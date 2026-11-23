@@ -4,7 +4,9 @@ on:
   workflow_dispatch
 
 env:
-  rust_toolchain: nightly
+  # Newer nightlies cannot build `std` for ESP-IDF, as libc 0.2.191 renamed the `stat` fields
+  # it reads (rust-lang/rust#164555)
+  rust_toolchain: nightly-2026-10-19
   crate_name: esp-idf-hal
 
 jobs:
