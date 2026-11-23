@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["as_ref","from_ref","new"]};

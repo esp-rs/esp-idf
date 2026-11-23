@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Cyclic Redundancy Check"><title>esp_idf_hal::rom::crc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="esp_idf_hal" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module crc</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../esp_idf_hal/index.html">esp_<wbr>idf_<wbr>hal</a><span class="version">0.48.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module crc</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#parameters" title="Parameters">Parameters</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul><h3><a href="#functions">Module Items</a></h3><ul class="block"><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In esp_<wbr>idf_<wbr>hal::<wbr>rom</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">esp_idf_hal</a>::<wbr><a href="../index.html">rom</a></div><h1>Module <span>crc</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/esp_idf_hal/rom.rs.html#6">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Cyclic Redundancy Check</p>
+<p>These are safe abstractions to the CRC functions in the ESP32 ROM.
+Some chips may not include all of these functions so they will be compiled
+into the program binary in those cases.</p>
+<h2 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h2>
+<p>The ROM provides the following polynomials for each CRC width:</p>
+<div class="table"><table><thead><tr><th>CRC Width</th><th>Polynomial</th></tr></thead><tbody>
+<tr><td>CRC-8</td><td>0x07</td></tr>
+<tr><td>CRC-16</td><td>0x1021</td></tr>
+<tr><td>CRC-32</td><td>0x04c11db7</td></tr>
+</tbody></table>
+</div>
+<p>The “big-endian” <code>*_be()</code> functions are left-shifting algorithms to be used
+when input and output reflection are <strong>not</strong> needed. If input and output
+reflection <strong>are</strong> needed, the right-shifting “little-endian” <code>*_le()</code>
+functions should be used.</p>
+<p>These functions are designed to compute a CRC over a single buffer or as an
+ongoing calculation over multiple buffers. To do this, the initial value
+passed in and the final value returned are one’s complemented.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// CRC-32/MPEG-2
+</span><span class="kw">const </span>CRC_INITIAL = <span class="number">0xffffffff</span>; <span class="comment">// "init" or "xorin" of all ones
+</span><span class="kw">let </span><span class="kw-2">mut </span>crc = crc32_be(!CRC_INITIAL, <span class="kw-2">&amp;</span>data0); <span class="comment">// start
+</span>crc = crc32_be(crc, <span class="kw-2">&amp;</span>data1);
+crc = !crc32_be(crc, <span class="kw-2">&amp;</span>data2); <span class="comment">// finish</span></code></pre></div><h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>A catalogue of these parameters can be found at
+<a href="https://reveng.sourceforge.io/crc-catalogue/all.htm">https://reveng.sourceforge.io/crc-catalogue/all.htm</a></p>
+<p>CRC-32/ISO-HDLC poly=0x04c11db7 init=0xffffffff refin=true refout=true xorout=0xffffffff</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>crc = crc32_le(!<span class="number">0xffffffff</span>, <span class="kw-2">&amp;</span>data);</code></pre></div>
+<p>CRC-32/BZIP2 poly=0x04c11db7 init=0xffffffff refin=false refout=false xorout=0xffffffff</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>crc = crc32_be(!<span class="number">0xffffffff</span>, <span class="kw-2">&amp;</span>data);</code></pre></div>
+<p>CRC-32/MPEG-2 poly=0x04c11db7 init=0xffffffff refin=false refout=false xorout=0x00000000</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>crc = !crc32_be(!<span class="number">0xffffffff</span>, <span class="kw-2">&amp;</span>data);</code></pre></div>
+<p>CRC-32/CKSUM poly=0x04c11db7 init=0x00000000 refin=false refout=false xorout=0xffffffff</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>crc = crc32_be(!<span class="number">0</span>, <span class="kw-2">&amp;</span>data);</code></pre></div>
+<p>CRC-16/KERMIT poly=0x1021 init=0x0000 refin=true refout=true xorout=0x0000</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>crc = !crc16_le(!<span class="number">0</span>, <span class="kw-2">&amp;</span>data);</code></pre></div></div></details><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.crc8_be.html" title="fn esp_idf_hal::rom::crc::crc8_be">crc8_be</a></dt><dd>Left-shifting CRC-8 with polynomial 0x07</dd><dt><a class="fn" href="fn.crc8_le.html" title="fn esp_idf_hal::rom::crc::crc8_le">crc8_le</a></dt><dd>Right-shifting CRC-8 with polynomial 0x07</dd><dt><a class="fn" href="fn.crc16_be.html" title="fn esp_idf_hal::rom::crc::crc16_be">crc16_<wbr>be</a></dt><dd>Left-shifting CRC-16 with polynomial 0x1021</dd><dt><a class="fn" href="fn.crc16_le.html" title="fn esp_idf_hal::rom::crc::crc16_le">crc16_<wbr>le</a></dt><dd>Right-shifting CRC-16 with polynomial 0x1021</dd><dt><a class="fn" href="fn.crc32_be.html" title="fn esp_idf_hal::rom::crc::crc32_be">crc32_<wbr>be</a></dt><dd>Left-shifting CRC-32 with polynomial 0x04c11db7</dd><dt><a class="fn" href="fn.crc32_le.html" title="fn esp_idf_hal::rom::crc::crc32_le">crc32_<wbr>le</a></dt><dd>Right-shifting CRC-32 with polynomial 0x04c11db7</dd></dl></section></div></main></body></html>

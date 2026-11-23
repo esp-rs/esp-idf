@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `esp-idf-hal/src/rmt/tx_queue.rs`."><title>tx_queue.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="esp_idf_hal" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">esp_idf_hal/rmt/</div>tx_queue.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span>core::fmt;
+<a href=#2 id=2 data-nosnippet>2</a>
+<a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>alloc::vec::Vec;
+<a href=#4 id=4 data-nosnippet>4</a>
+<a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>alloc::collections::VecDeque;
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>esp_idf_sys::{EspError, ESP_ERR_TIMEOUT};
+<a href=#7 id=7 data-nosnippet>7</a>
+<a href=#8 id=8 data-nosnippet>8</a><span class="kw">use </span><span class="kw">super</span>::tx_channel::TxChannelDriver;
+<a href=#9 id=9 data-nosnippet>9</a><span class="kw">use </span><span class="kw">crate</span>::rmt::config::TransmitConfig;
+<a href=#10 id=10 data-nosnippet>10</a><span class="kw">use </span><span class="kw">crate</span>::rmt::encoder::{Encoder, EncoderWrapper, RawEncoder};
+<a href=#11 id=11 data-nosnippet>11</a>
+<a href=#12 id=12 data-nosnippet>12</a><span class="comment">// What kind of signal is necessary for the TxQueue to be safe?
+<a href=#13 id=13 data-nosnippet>13</a>//
+<a href=#14 id=14 data-nosnippet>14</a>// - From the signal, one should be able to get a pointer and a length to the buffer,
+<a href=#15 id=15 data-nosnippet>15</a>//   e.g. as_ref(&amp;self) -&gt; &amp;[E::Item], from which one could get the ptr and len.
+<a href=#16 id=16 data-nosnippet>16</a>// - The signal must be guaranteed to be valid until the transmission is done,
+<a href=#17 id=17 data-nosnippet>17</a>//   this would be the same lifetime for which the TxQueue is valid.
+<a href=#18 id=18 data-nosnippet>18</a>// - The TxQueue will move the signal around, with some types like [E::Item; N] this would
+<a href=#19 id=19 data-nosnippet>19</a>//   invalidate the pointer to the data
+<a href=#20 id=20 data-nosnippet>20</a>//
+<a href=#21 id=21 data-nosnippet>21</a>// What are the options?
+<a href=#22 id=22 data-nosnippet>22</a>// - Only allow &amp;'a [E::Item] where 'a is the lifetime of the TxQueue (assuming no mem::forget) or 'a = 'static
+<a href=#23 id=23 data-nosnippet>23</a>//   if mem::forget is used. This has the downside that one can not pass owned data like Vec or Box.
+<a href=#24 id=24 data-nosnippet>24</a>// - Keep an owned buffer like Vec&lt;E::Item&gt; or Box&lt;[E::Item]&gt; for each encoder, then clone the passed signal into it.
+<a href=#25 id=25 data-nosnippet>25</a>//   The benefits are that the user can pass any kind of signal that implements AsRef&lt;[E::Item]&gt;, but it would require
+<a href=#26 id=26 data-nosnippet>26</a>//   an initial allocation, copy the signal into the internal buffer, and E::Item would have to be Clone.
+<a href=#27 id=27 data-nosnippet>27</a>// - Implementing a custom queue where the stored elements are not moved until they are removed from the queue.
+<a href=#28 id=28 data-nosnippet>28</a>//   This is the likely the most performant option, but will require a lot of code to implement a custom queue
+<a href=#29 id=29 data-nosnippet>29</a>//   and might perform worse than the other options (another issue is fragmentation).
+<a href=#30 id=30 data-nosnippet>30</a>// - Define an unsafe trait that is implemented for types that are safe to move around like &amp;[E::Item],
+<a href=#31 id=31 data-nosnippet>31</a>//   Vec&lt;E::Item&gt;, Box&lt;[E::Item]&gt;, ...
+<a href=#32 id=32 data-nosnippet>32</a>//   This allows the user to pass both owned and borrowed data. A disadvantage in comparison to the internal buffers
+<a href=#33 id=33 data-nosnippet>33</a>//   is that the user has to ensure that the data is valid until the transmission is done, and it might perform worse
+<a href=#34 id=34 data-nosnippet>34</a>//   when the buffers are not reused.
+<a href=#35 id=35 data-nosnippet>35</a>
+<a href=#36 id=36 data-nosnippet>36</a></span><span class="attr">#[derive(Debug)]
+<a href=#37 id=37 data-nosnippet>37</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>EncoderBuffer&lt;E: RawEncoder&gt; {
+<a href=#38 id=38 data-nosnippet>38</a>    encoder: E,
+<a href=#39 id=39 data-nosnippet>39</a>    buffer: Vec&lt;E::Item&gt;,
+<a href=#40 id=40 data-nosnippet>40</a>}
+<a href=#41 id=41 data-nosnippet>41</a>
+<a href=#42 id=42 data-nosnippet>42</a><span class="kw">impl</span>&lt;E: RawEncoder&gt; EncoderBuffer&lt;E&gt; {
+<a href=#43 id=43 data-nosnippet>43</a>    <span class="kw">pub fn </span>new(encoder: E) -&gt; <span class="self">Self </span>{
+<a href=#44 id=44 data-nosnippet>44</a>        <span class="self">Self </span>{
+<a href=#45 id=45 data-nosnippet>45</a>            encoder,
+<a href=#46 id=46 data-nosnippet>46</a>            buffer: Vec::new(),
+<a href=#47 id=47 data-nosnippet>47</a>        }
+<a href=#48 id=48 data-nosnippet>48</a>    }
+<a href=#49 id=49 data-nosnippet>49</a>
+<a href=#50 id=50 data-nosnippet>50</a>    <span class="doccomment">/// Updates the internal buffer to contain the given signal.
+<a href=#51 id=51 data-nosnippet>51</a>    ///
+<a href=#52 id=52 data-nosnippet>52</a>    /// It returns a mutable reference to the stored encoder and a reference to the now
+<a href=#53 id=53 data-nosnippet>53</a>    /// internally stored signal.
+<a href=#54 id=54 data-nosnippet>54</a>    </span><span class="kw">fn </span>update_from_slice(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signal: <span class="kw-2">&amp;</span>[E::Item]) -&gt; (<span class="kw-2">&amp;mut </span>E, <span class="kw-2">&amp;</span>[E::Item])
+<a href=#55 id=55 data-nosnippet>55</a>    <span class="kw">where
+<a href=#56 id=56 data-nosnippet>56</a>        </span>E::Item: Clone,
+<a href=#57 id=57 data-nosnippet>57</a>    {
+<a href=#58 id=58 data-nosnippet>58</a>        <span class="comment">// Ensure that the buffer is large enough to hold the signal.
+<a href=#59 id=59 data-nosnippet>59</a>        //
+<a href=#60 id=60 data-nosnippet>60</a>        // The value will be overwritten anyway, so we can just clone the first element
+<a href=#61 id=61 data-nosnippet>61</a>        // to resize the buffer.
+<a href=#62 id=62 data-nosnippet>62</a>        </span><span class="self">self</span>.buffer.resize(signal.len(), signal[<span class="number">0</span>].clone());
+<a href=#63 id=63 data-nosnippet>63</a>
+<a href=#64 id=64 data-nosnippet>64</a>        <span class="comment">// Copy the signal into the buffer, ensuring that the signal will be valid for the entire
+<a href=#65 id=65 data-nosnippet>65</a>        // transmission.
+<a href=#66 id=66 data-nosnippet>66</a>        </span><span class="self">self</span>.buffer[..signal.len()].clone_from_slice(signal);
+<a href=#67 id=67 data-nosnippet>67</a>
+<a href=#68 id=68 data-nosnippet>68</a>        (<span class="kw-2">&amp;mut </span><span class="self">self</span>.encoder, <span class="kw-2">&amp;</span><span class="self">self</span>.buffer[..signal.len()])
+<a href=#69 id=69 data-nosnippet>69</a>    }
+<a href=#70 id=70 data-nosnippet>70</a>}
+<a href=#71 id=71 data-nosnippet>71</a>
+<a href=#72 id=72 data-nosnippet>72</a><span class="doccomment">/// A queue to efficiently transmit multiple signals, reusing encoders when possible.
+<a href=#73 id=73 data-nosnippet>73</a>///
+<a href=#74 id=74 data-nosnippet>74</a>/// The driver has an internal queue from which it will copy the signals into the peripheral
+<a href=#75 id=75 data-nosnippet>75</a>/// memory. The signal and encoder must be valid until the transmission is done,
+<a href=#76 id=76 data-nosnippet>76</a>/// which can not be guaranteed when directly using the queue through [`TxChannelDriver::start_send`].
+<a href=#77 id=77 data-nosnippet>77</a>///
+<a href=#78 id=78 data-nosnippet>78</a>/// This type provides a safe interface to fill up the queue, reusing encoders when possible.
+<a href=#79 id=79 data-nosnippet>79</a>/// To do this, it keeps an allocated buffer for each encoder, to which the signal will be copied
+<a href=#80 id=80 data-nosnippet>80</a>/// before starting the transmission. This ensures that both the signal and encoder are valid
+<a href=#81 id=81 data-nosnippet>81</a>/// until the transmission is done.
+<a href=#82 id=82 data-nosnippet>82</a>///
+<a href=#83 id=83 data-nosnippet>83</a>/// # Drop behavior
+<a href=#84 id=84 data-nosnippet>84</a>///
+<a href=#85 id=85 data-nosnippet>85</a>/// When the `TxQueue` is dropped, it will wait for all transmissions to finish.
+<a href=#86 id=86 data-nosnippet>86</a>/// This ensures that the internal buffers are not dropped while they are still in use
+<a href=#87 id=87 data-nosnippet>87</a>/// by the peripheral.
+<a href=#88 id=88 data-nosnippet>88</a></span><span class="kw">pub struct </span>TxQueue&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E: Encoder&gt; {
+<a href=#89 id=89 data-nosnippet>89</a>    queue: VecDeque&lt;EncoderBuffer&lt;EncoderWrapper&lt;E&gt;&gt;&gt;,
+<a href=#90 id=90 data-nosnippet>90</a>    channel: <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>TxChannelDriver&lt;<span class="lifetime">'d</span>&gt;,
+<a href=#91 id=91 data-nosnippet>91</a>}
+<a href=#92 id=92 data-nosnippet>92</a>
+<a href=#93 id=93 data-nosnippet>93</a><span class="kw">impl</span>&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E: Encoder&gt; TxQueue&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E&gt; {
+<a href=#94 id=94 data-nosnippet>94</a>    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
+<a href=#95 id=95 data-nosnippet>95</a>        queue: VecDeque&lt;EncoderBuffer&lt;EncoderWrapper&lt;E&gt;&gt;&gt;,
+<a href=#96 id=96 data-nosnippet>96</a>        channel: <span class="kw-2">&amp;</span><span class="lifetime">'c </span><span class="kw-2">mut </span>TxChannelDriver&lt;<span class="lifetime">'d</span>&gt;,
+<a href=#97 id=97 data-nosnippet>97</a>    ) -&gt; <span class="self">Self </span>{
+<a href=#98 id=98 data-nosnippet>98</a>        <span class="macro">assert!</span>(
+<a href=#99 id=99 data-nosnippet>99</a>            !queue.is_empty(),
+<a href=#100 id=100 data-nosnippet>100</a>            <span class="string">"At least one encoder is required to encode a TxQueue"
+<a href=#101 id=101 data-nosnippet>101</a>        </span>);
+<a href=#102 id=102 data-nosnippet>102</a>
+<a href=#103 id=103 data-nosnippet>103</a>        <span class="self">Self </span>{ queue, channel }
+<a href=#104 id=104 data-nosnippet>104</a>    }
+<a href=#105 id=105 data-nosnippet>105</a>
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// Returns a mutable reference to the channel this queue is using.
+<a href=#107 id=107 data-nosnippet>107</a>    </span><span class="attr">#[must_use]
+<a href=#108 id=108 data-nosnippet>108</a>    </span><span class="kw">pub fn </span>channel(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>TxChannelDriver&lt;<span class="lifetime">'d</span>&gt; {
+<a href=#109 id=109 data-nosnippet>109</a>        <span class="self">self</span>.channel
+<a href=#110 id=110 data-nosnippet>110</a>    }
+<a href=#111 id=111 data-nosnippet>111</a>}
+<a href=#112 id=112 data-nosnippet>112</a>
+<a href=#113 id=113 data-nosnippet>113</a><span class="kw">impl</span>&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E: Encoder&gt; TxQueue&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E&gt; {
+<a href=#114 id=114 data-nosnippet>114</a>    <span class="doccomment">/// Pushes a signal onto the transmission queue.
+<a href=#115 id=115 data-nosnippet>115</a>    ///
+<a href=#116 id=116 data-nosnippet>116</a>    /// The signal will be cloned into an internal buffer to ensure that it is valid for the entire
+<a href=#117 id=117 data-nosnippet>117</a>    /// transmission. These buffers will be reused for future transmissions after the current transmission
+<a href=#118 id=118 data-nosnippet>118</a>    /// is done.
+<a href=#119 id=119 data-nosnippet>119</a>    ///
+<a href=#120 id=120 data-nosnippet>120</a>    /// # Blocking behavior
+<a href=#121 id=121 data-nosnippet>121</a>    ///
+<a href=#122 id=122 data-nosnippet>122</a>    /// If the queue is full (i.e. all encoders are busy), this function will behave differently depending
+<a href=#123 id=123 data-nosnippet>123</a>    /// on whether [`TransmitConfig::queue_non_blocking`] is set or not:
+<a href=#124 id=124 data-nosnippet>124</a>    /// - If `queue_non_blocking` is `false`, it will block until one encoder is available.
+<a href=#125 id=125 data-nosnippet>125</a>    /// - If `queue_non_blocking` is `true`, it will return an error with code `ESP_ERR_TIMEOUT`.
+<a href=#126 id=126 data-nosnippet>126</a>    ///   There will be no state change, so the function can be called again immediately.
+<a href=#127 id=127 data-nosnippet>127</a>    ///
+<a href=#128 id=128 data-nosnippet>128</a>    /// If this queue has more encoders available than the channel queue size and `queue_non_blocking` is set,
+<a href=#129 id=129 data-nosnippet>129</a>    /// it will copy the signal into the internal buffer, but might fail (with a timeout) to start the
+<a href=#130 id=130 data-nosnippet>130</a>    /// transmission if the channel queue is full.
+<a href=#131 id=131 data-nosnippet>131</a>    ///
+<a href=#132 id=132 data-nosnippet>132</a>    /// # Panics
+<a href=#133 id=133 data-nosnippet>133</a>    ///
+<a href=#134 id=134 data-nosnippet>134</a>    /// If the signal is empty.
+<a href=#135 id=135 data-nosnippet>135</a>    </span><span class="kw">pub fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signal: <span class="kw-2">&amp;</span>[E::Item], config: <span class="kw-2">&amp;</span>TransmitConfig) -&gt; <span class="prelude-ty">Result</span>&lt;(), EspError&gt;
+<a href=#136 id=136 data-nosnippet>136</a>    <span class="kw">where
+<a href=#137 id=137 data-nosnippet>137</a>        </span>E::Item: Clone,
+<a href=#138 id=138 data-nosnippet>138</a>    {
+<a href=#139 id=139 data-nosnippet>139</a>        <span class="macro">assert!</span>(!signal.is_empty(), <span class="string">"Can not send an empty signal"</span>);
+<a href=#140 id=140 data-nosnippet>140</a>
+<a href=#141 id=141 data-nosnippet>141</a>        <span class="comment">// Before a new transmission can be started, an encoder has to be available.
+<a href=#142 id=142 data-nosnippet>142</a>        //
+<a href=#143 id=143 data-nosnippet>143</a>        // Assuming the TxQueue has N encoders, it can immediately start sending if there are less than
+<a href=#144 id=144 data-nosnippet>144</a>        // N transmissions in progress on the channel.
+<a href=#145 id=145 data-nosnippet>145</a>        //
+<a href=#146 id=146 data-nosnippet>146</a>        // If there are N transmissions or more in progress, it would have to wait until there are less than
+<a href=#147 id=147 data-nosnippet>147</a>        // N transmissions in progress to guarantee that one encoder is available.
+<a href=#148 id=148 data-nosnippet>148</a>        </span><span class="kw">while </span><span class="self">self</span>.channel.queue_size() &gt;= <span class="self">self</span>.queue.len() {
+<a href=#149 id=149 data-nosnippet>149</a>            <span class="comment">// If we should not block, replicate the error from esp-idf's send function
+<a href=#150 id=150 data-nosnippet>150</a>            </span><span class="kw">if </span>config.queue_non_blocking {
+<a href=#151 id=151 data-nosnippet>151</a>                <span class="kw">return </span><span class="prelude-val">Err</span>(EspError::from_infallible::&lt;ESP_ERR_TIMEOUT&gt;());
+<a href=#152 id=152 data-nosnippet>152</a>            }
+<a href=#153 id=153 data-nosnippet>153</a>
+<a href=#154 id=154 data-nosnippet>154</a>            <span class="comment">// This waits for a transmission to finish
+<a href=#155 id=155 data-nosnippet>155</a>            </span><span class="kw">crate</span>::task::block_on(<span class="self">self</span>.channel.wait_for_progress());
+<a href=#156 id=156 data-nosnippet>156</a>        }
+<a href=#157 id=157 data-nosnippet>157</a>
+<a href=#158 id=158 data-nosnippet>158</a>        <span class="comment">// This returns the next encoder and the buffer of the encoder.
+<a href=#159 id=159 data-nosnippet>159</a>        //
+<a href=#160 id=160 data-nosnippet>160</a>        // With the above waiting, it should be guaranteed that one encoder is available
+<a href=#161 id=161 data-nosnippet>161</a>        // which would be the first one in the queue (they are ordered from oldest first to newest last).
+<a href=#162 id=162 data-nosnippet>162</a>        </span><span class="kw">let </span>(next_encoder, buffer) = <span class="self">self
+<a href=#163 id=163 data-nosnippet>163</a>            </span>.queue
+<a href=#164 id=164 data-nosnippet>164</a>            .front_mut()
+<a href=#165 id=165 data-nosnippet>165</a>            .expect(<span class="string">"queue should never be empty"</span>)
+<a href=#166 id=166 data-nosnippet>166</a>            .update_from_slice(signal);
+<a href=#167 id=167 data-nosnippet>167</a>
+<a href=#168 id=168 data-nosnippet>168</a>        <span class="kw">unsafe </span>{ <span class="self">self</span>.channel.start_send(next_encoder, buffer, config) }<span class="question-mark">?</span>;
+<a href=#169 id=169 data-nosnippet>169</a>
+<a href=#170 id=170 data-nosnippet>170</a>        <span class="comment">// If the channel queue is shorter than the number of encoders in this TxQueue,
+<a href=#171 id=171 data-nosnippet>171</a>        // and the non-blocking flag is set, it could happen that the start_send errors.
+<a href=#172 id=172 data-nosnippet>172</a>        //
+<a href=#173 id=173 data-nosnippet>173</a>        // To prevent loosing an encoder and its buffer, it will only be removed from
+<a href=#174 id=174 data-nosnippet>174</a>        // the front of the queue after a successful start_send.
+<a href=#175 id=175 data-nosnippet>175</a>        </span><span class="kw">let </span>buffer = <span class="self">self</span>.queue.pop_front().unwrap();
+<a href=#176 id=176 data-nosnippet>176</a>        <span class="self">self</span>.queue.push_back(buffer);
+<a href=#177 id=177 data-nosnippet>177</a>
+<a href=#178 id=178 data-nosnippet>178</a>        <span class="prelude-val">Ok</span>(())
+<a href=#179 id=179 data-nosnippet>179</a>    }
+<a href=#180 id=180 data-nosnippet>180</a>}
+<a href=#181 id=181 data-nosnippet>181</a>
+<a href=#182 id=182 data-nosnippet>182</a><span class="kw">impl</span>&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E: Encoder&gt; Drop <span class="kw">for </span>TxQueue&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E&gt; {
+<a href=#183 id=183 data-nosnippet>183</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#184 id=184 data-nosnippet>184</a>        <span class="comment">// This ensures that all transmissions are done before the internal buffers are dropped.
+<a href=#185 id=185 data-nosnippet>185</a>        </span><span class="kw">let _ </span>= <span class="self">self</span>.channel.wait_all_done(<span class="prelude-val">None</span>);
+<a href=#186 id=186 data-nosnippet>186</a>    }
+<a href=#187 id=187 data-nosnippet>187</a>}
+<a href=#188 id=188 data-nosnippet>188</a>
+<a href=#189 id=189 data-nosnippet>189</a><span class="kw">impl</span>&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E: Encoder&gt; fmt::Debug <span class="kw">for </span>TxQueue&lt;<span class="lifetime">'c</span>, <span class="lifetime">'d</span>, E&gt;
+<a href=#190 id=190 data-nosnippet>190</a><span class="kw">where
+<a href=#191 id=191 data-nosnippet>191</a>    </span>E: fmt::Debug,
+<a href=#192 id=192 data-nosnippet>192</a>    E::Item: fmt::Debug,
+<a href=#193 id=193 data-nosnippet>193</a>{
+<a href=#194 id=194 data-nosnippet>194</a>    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
+<a href=#195 id=195 data-nosnippet>195</a>        f.debug_struct(<span class="string">"TxQueue"</span>)
+<a href=#196 id=196 data-nosnippet>196</a>            .field(<span class="string">"queue"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.queue)
+<a href=#197 id=197 data-nosnippet>197</a>            .field(<span class="string">"channel"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.channel)
+<a href=#198 id=198 data-nosnippet>198</a>            .finish()
+<a href=#199 id=199 data-nosnippet>199</a>    }
+<a href=#200 id=200 data-nosnippet>200</a>}
+</code></pre></div></section></main></body></html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Receive an item from a queue.  The item is received by copy so a buffer of adequate size must be provided.  The number of bytes copied into the buffer was defined when the queue was created."><title>xQueueReceive in esp_idf_sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="esp_idf_sys" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">xQueueReceive</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../esp_idf_sys/index.html">esp_<wbr>idf_<wbr>sys</a><span class="version">0.39.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">esp_idf_sys</a></div><h1>Function <span class="fn">xQueue<wbr>Receive</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#16278-16282">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn xQueueReceive(
+    xQueue: <a class="type" href="type.QueueHandle_t.html" title="type esp_idf_sys::QueueHandle_t">QueueHandle_t</a>,
+    pvBuffer: *mut c_void,
+    xTicksToWait: <a class="type" href="type.TickType_t.html" title="type esp_idf_sys::TickType_t">TickType_t</a>,
+) -&gt; <a class="type" href="type.BaseType_t.html" title="type esp_idf_sys::BaseType_t">BaseType_t</a></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Receive an item from a queue.  The item is received by copy so a buffer of
+adequate size must be provided.  The number of bytes copied into the buffer
+was defined when the queue was created.</p>
+<p>Successfully received items are removed from the queue.</p>
+<p>This function must not be used in an interrupt service routine.  See
+xQueueReceiveFromISR for an alternative that can.</p>
+<p>@param xQueue The handle to the queue from which the item is to be
+received.</p>
+<p>@param pvBuffer Pointer to the buffer into which the received item will
+be copied.</p>
+<p>@param xTicksToWait The maximum amount of time the task should block
+waiting for an item to receive should the queue be empty at the time
+of the call. xQueueReceive() will return immediately if xTicksToWait
+is zero and the queue is empty.  The time is defined in tick periods so the
+constant portTICK_PERIOD_MS should be used to convert to real time if this is
+required.</p>
+<p>@return pdTRUE if an item was successfully received from the queue,
+otherwise pdFALSE.</p>
+<p>Example usage:
+@code{c}
+struct AMessage
+{
+char ucMessageID;
+char ucData[ 20 ];
+} xMessage;</p>
+<p>QueueHandle_t xQueue;</p>
+<p>// Task to create a queue and post a value.
+void vATask( void *pvParameters )
+{
+struct AMessage *pxMessage;</p>
+<p>// Create a queue capable of containing 10 pointers to AMessage structures.
+// These should be passed by pointer as they contain a lot of data.
+xQueue = xQueueCreate( 10, sizeof( struct AMessage * ) );
+if( xQueue == 0 )
+{
+// Failed to create the queue.
+}</p>
+<p>// …</p>
+<p>// Send a pointer to a struct AMessage object.  Don’t block if the
+// queue is already full.
+pxMessage = &amp; xMessage;
+xQueueSend( xQueue, ( void * ) &amp;pxMessage, ( TickType_t ) 0 );</p>
+<p>// … Rest of task code.
+}</p>
+<p>// Task to receive from the queue.
+void vADifferentTask( void *pvParameters )
+{
+struct AMessage *pxRxedMessage;</p>
+<p>if( xQueue != 0 )
+{
+// Receive a message on the created queue.  Block for 10 ticks if a
+// message is not immediately available.
+if( xQueueReceive( xQueue, &amp;( pxRxedMessage ), ( TickType_t ) 10 ) )
+{
+// pcRxedMessage now points to the struct AMessage variable posted
+// by vATask.
+}
+}</p>
+<p>// … Rest of task code.
+}
+@endcode
+\ingroup QueueManagement</p>
+</div></details></section></div></main></body></html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Compile-time formatting and derived functionality (e.g., panics / assertions)."><title>compile_fmt - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="compile_fmt" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate compile_fmt</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../compile_fmt/index.html">compile_<wbr>fmt</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#what" title="What?">What?</a></li><li><a href="#why" title="Why?">Why?</a></li><li><a href="#limitations" title="Limitations">Limitations</a></li><li><a href="#alternatives-and-similar-tools" title="Alternatives and similar tools">Alternatives and similar tools</a></li><li><a href="#examples" title="Examples">Examples</a><ul><li><a href="#basic-usage" title="Basic usage">Basic usage</a></li><li><a href="#usage-with-dynamic-strings" title="Usage with dynamic strings">Usage with dynamic strings</a></li><li><a href="#printing-dynamically-sized-messages" title="Printing dynamically-sized messages">Printing dynamically-sized messages</a></li></ul></li></ul><h3><a href="#macros">Crate Items</a></h3><ul class="block"><li><a href="#macros" title="Macros">Macros</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>compile_<wbr>fmt</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/compile_fmt/lib.rs.html#1-298">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Compile-time formatting and derived functionality (e.g., panics / assertions).</p>
+<h2 id="what"><a class="doc-anchor" href="#what">§</a>What?</h2>
+<p>This crate allows formatting values in compile time (e.g., in <code>const fn</code>s). The formatted values
+are not required to be constants; e.g., arguments or local vars in <code>const fn</code> can be formatted.</p>
+<p>Features:</p>
+<ul>
+<li>Zero dependencies.</li>
+<li>Unconditionally <code>#[no_std]</code>-compatible.</li>
+<li>The formatting logic is space-efficient; i.e., it allocates the least amount of bytes
+that can provably to be sufficient for all possible provided inputs. As a consequence, non-constant
+formatted args require a <a href="struct.Fmt.html" title="struct compile_fmt::Fmt">format specifier</a>.</li>
+<li>Does not rely on proc macros. This makes the library more lightweight.</li>
+</ul>
+<h2 id="why"><a class="doc-anchor" href="#why">§</a>Why?</h2>
+<p>A guiding use case for the crate is richer dynamic compile-time panic messages. It can be used
+in other contexts as well (including in runtime).</p>
+<h2 id="limitations"><a class="doc-anchor" href="#limitations">§</a>Limitations</h2>
+<ul>
+<li>Only a few types from the standard library can be formatted: integers, <code>char</code>s and <code>str</code>ings.</li>
+<li>Formatting specifiers do not support hex encoding, debug formatting etc.</li>
+<li>Padding logic assumes that any Unicode char has identical displayed width, which isn’t really
+true (e.g., there are chars that have zero width and instead combine with the previous char).
+The same assumption is made by the <code>std</code> padding logic.</li>
+</ul>
+<h2 id="alternatives-and-similar-tools"><a class="doc-anchor" href="#alternatives-and-similar-tools">§</a>Alternatives and similar tools</h2>
+<ul>
+<li><a href="https://crates.io/crates/const_panic"><code>const_panic</code></a> provides functionality covering the guiding use case (compile-time panics).
+It supports more types and formats at the cost of being more complex. It also uses a different
+approach to compute produced message sizes.</li>
+<li><a href="https://crates.io/crates/const_format/"><code>const_format</code></a> provides general-purpose formatting of constant values. It doesn’t seem to support
+“dynamic” / non-constant args.</li>
+</ul>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2><h3 id="basic-usage"><a class="doc-anchor" href="#basic-usage">§</a>Basic usage</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>compile_fmt::{compile_assert, fmt};
+
+<span class="kw">const </span>THRESHOLD: usize = <span class="number">42</span>;
+
+<span class="kw">const fn </span>check_value(value: usize) {
+    <span class="macro">compile_assert!</span>(
+        value &lt;= THRESHOLD,
+        <span class="string">"Expected "</span>, value =&gt; fmt::&lt;usize&gt;(), <span class="string">" to not exceed "</span>, THRESHOLD
+    );
+    <span class="comment">// main logic
+</span>}</code></pre></div>
+<p>Note the formatting spec produced with <a href="fn.fmt.html" title="fn compile_fmt::fmt"><code>fmt()</code></a>.</p>
+<h3 id="usage-with-dynamic-strings"><a class="doc-anchor" href="#usage-with-dynamic-strings">§</a>Usage with dynamic strings</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>compile_fmt::{compile_assert, clip};
+
+<span class="kw">const fn </span>check_str(s: <span class="kw-2">&amp;</span>str) {
+    <span class="kw">const </span>MAX_LEN: usize = <span class="number">16</span>;
+    <span class="macro">compile_assert!</span>(
+        s.len() &lt;= MAX_LEN,
+        <span class="string">"String '"</span>, s =&gt; clip(MAX_LEN, <span class="string">"…"</span>), <span class="string">"' is too long; \
+         expected no more than "</span>, MAX_LEN, <span class="string">" bytes"
+    </span>);
+    <span class="comment">// main logic
+</span>}</code></pre></div><h3 id="printing-dynamically-sized-messages"><a class="doc-anchor" href="#printing-dynamically-sized-messages">§</a>Printing dynamically-sized messages</h3>
+<p><code>compile_args!</code> allows specifying capacity of the produced message. This is particularly useful
+when formatting enums (e.g., to compile-format errors):</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Debug)]
+</span><span class="kw">enum </span>Error {
+    Number(u64),
+    Tuple(usize, char),
+}
+
+<span class="kw">type </span>ErrorArgs = CompileArgs&lt;<span class="number">55</span>&gt;;
+<span class="comment">// ^ 55 is the exact lower boundary on capacity. It's valid to specify
+// a greater value, e.g. 64.
+
+</span><span class="kw">impl </span>Error {
+    <span class="kw">const fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ErrorArgs {
+        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+            <span class="self">Self</span>::Number(number) =&gt; <span class="macro">compile_args!</span>(
+                capacity: ErrorArgs::CAPACITY,
+                <span class="string">"don't like number "</span>, number =&gt; fmt::&lt;u64&gt;()
+            ),
+            <span class="self">Self</span>::Tuple(pos, ch) =&gt; <span class="macro">compile_args!</span>(
+                <span class="string">"don't like char '"</span>, ch =&gt; fmt::&lt;char&gt;(), <span class="string">"' at position "</span>,
+                pos =&gt; fmt::&lt;usize&gt;()
+            ),
+        }
+    }
+}
+
+<span class="comment">// `Error::fmt()` can be used as a building block for more complex messages:
+</span><span class="kw">let </span>err = Error::Tuple(<span class="number">1_234</span>, <span class="string">'?'</span>);
+<span class="kw">let </span>message = <span class="macro">compile_args!</span>(<span class="string">"Operation failed: "</span>, <span class="kw-2">&amp;</span>err.fmt() =&gt; fmt::&lt;<span class="kw-2">&amp;</span>ErrorArgs&gt;());
+<span class="macro">assert_eq!</span>(
+    message.as_str(),
+    <span class="string">"Operation failed: don't like char '?' at position 1234"
+</span>);</code></pre></div>
+<p>See docs for macros and format specifiers for more examples.</p>
+</div></details><h2 id="macros" class="section-header">Macros<a href="#macros" class="anchor">§</a></h2><dl class="item-table"><dt><a class="macro" href="macro.compile_args.html" title="macro compile_fmt::compile_args">compile_<wbr>args</a></dt><dd>Concatenates arguments in compile time.</dd><dt><a class="macro" href="macro.compile_assert.html" title="macro compile_fmt::compile_assert">compile_<wbr>assert</a></dt><dd>Version of the [<code>assert!</code>] macro with the ability to format args in compile time.</dd><dt><a class="macro" href="macro.compile_panic.html" title="macro compile_fmt::compile_panic">compile_<wbr>panic</a></dt><dd>Version of the [<code>panic!</code>] macro with the ability to format args in compile time.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Ascii.html" title="struct compile_fmt::Ascii">Ascii</a></dt><dd>ASCII string wrapper.</dd><dt><a class="struct" href="struct.CompileArgs.html" title="struct compile_fmt::CompileArgs">Compile<wbr>Args</a></dt><dd>Formatted string returned by the <a href="macro.compile_args.html" title="macro compile_fmt::compile_args"><code>compile_args!</code></a> macro, similar to <a href="fmt::Arguments"><code>Arguments</code></a>.</dd><dt><a class="struct" href="struct.Fmt.html" title="struct compile_fmt::Fmt">Fmt</a></dt><dd>Formatting specification for an <a href="crate::Argument"><code>Argument</code></a>.</dd><dt><a class="struct" href="struct.StrLength.html" title="struct compile_fmt::StrLength">StrLength</a></dt><dd>Length of a string measured in bytes and chars.</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.FormatArgument.html" title="trait compile_fmt::FormatArgument">Format<wbr>Argument</a></dt><dd>Type that can be formatted. Implemented for standard integer types, <code>&amp;str</code> and <code>char</code>.</dd><dt><a class="trait" href="trait.MaxLength.html" title="trait compile_fmt::MaxLength">MaxLength</a></dt><dd>Type that has a known upper boundary for the formatted length.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.clip.html" title="fn compile_fmt::clip">clip</a></dt><dd>Creates a format that will clip the value to the specified max <strong>char</strong> width (not byte width!).
+If clipped, the end of the string will be replaced with the specified replacer, which can be empty.</dd><dt><a class="fn" href="fn.clip_ascii.html" title="fn compile_fmt::clip_ascii">clip_<wbr>ascii</a></dt><dd>Same as <a href="fn.clip.html" title="fn compile_fmt::clip"><code>clip()</code></a>, but for <a href="struct.Ascii.html" title="struct compile_fmt::Ascii"><code>Ascii</code></a> strings.</dd><dt><a class="fn" href="fn.fmt.html" title="fn compile_fmt::fmt">fmt</a></dt><dd>Creates a default format for a type that has known bounded formatting width.</dd></dl></section></div></main></body></html>

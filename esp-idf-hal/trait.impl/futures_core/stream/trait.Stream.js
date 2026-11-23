@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["embassy_sync",[["impl&lt;'a, PSB: <a class=\"trait\" href=\"embassy_sync/pubsub/trait.PubSubBehavior.html\" title=\"trait embassy_sync::pubsub::PubSubBehavior\">PubSubBehavior</a>&lt;T&gt; + ?Sized, T: Clone&gt; <a class=\"trait\" href=\"futures_core/stream/trait.Stream.html\" title=\"trait futures_core::stream::Stream\">Stream</a> for <a class=\"struct\" href=\"embassy_sync/pubsub/subscriber/struct.Sub.html\" title=\"struct embassy_sync::pubsub::subscriber::Sub\">Sub</a>&lt;'a, PSB, T&gt;",0],["impl&lt;'ch, M, T, const N: usize&gt; <a class=\"trait\" href=\"futures_core/stream/trait.Stream.html\" title=\"trait futures_core::stream::Stream\">Stream</a> for <a class=\"struct\" href=\"embassy_sync/channel/struct.Receiver.html\" title=\"struct embassy_sync::channel::Receiver\">Receiver</a>&lt;'ch, M, T, N&gt;<div class=\"where\">where\n    M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>,</div>",0],["impl&lt;M, T, const N: usize&gt; <a class=\"trait\" href=\"futures_core/stream/trait.Stream.html\" title=\"trait futures_core::stream::Stream\">Stream</a> for <a class=\"struct\" href=\"embassy_sync/channel/struct.Channel.html\" title=\"struct embassy_sync::channel::Channel\">Channel</a>&lt;M, T, N&gt;<div class=\"where\">where\n    M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>,</div>",0]]],["futures_core",[]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1523,20]}

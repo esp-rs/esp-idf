@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Replaces all the instances of `$pattern` in `$input` (a `&#38;&#39;static str` constant) with `$replace_with` (a `&#38;&#39;static str` constant)."><title>str_replace in esp_idf_hal::sys::const_format - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="esp_idf_hal" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc macro"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">str_replace</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../esp_idf_hal/index.html">esp_<wbr>idf_<wbr>hal</a><span class="version">0.48.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">str_<wbr>replace</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#signature" title="Signature">Signature</a></li><li><a href="#example" title="Example">Example</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>hal::<wbr>sys::<wbr>const_<wbr>format</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">esp_idf_hal</a>::<wbr><a href="../index.html">sys</a>::<wbr><a href="index.html">const_format</a></div><h1>Macro <span class="macro">str_<wbr>replace</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/const_format/macros/str_methods.rs.html#67">Source</a> </span></div><pre class="rust item-decl"><code>macro_rules! str_replace {
+    ($input:expr, $pattern:expr, $replace_with:expr $(,)*) =&gt; { ... };
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Replaces all the instances of <code>$pattern</code> in <code>$input</code>
+(a <code>&amp;'static str</code> constant) with <code>$replace_with</code> (a <code>&amp;'static str</code> constant).</p>
+<h2 id="signature"><a class="doc-anchor" href="#signature">§</a>Signature</h2>
+<p>This macro acts like a function of this signature:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>str_replace(
+    input: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
+    pattern: <span class="kw">impl </span>Pattern,
+    replace_with: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
+) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str</code></pre></div>
+<p>and is evaluated at compile-time.</p>
+<p>Where <code>pattern</code> can be any of these types:</p>
+<ul>
+<li>
+<p><code>&amp;'static str</code></p>
+</li>
+<li>
+<p><code>char</code></p>
+</li>
+<li>
+<p><code>u8</code>: required to be ascii (<code>0</code> up to <code>127</code> inclusive).</p>
+</li>
+</ul>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>const_format::str_replace;
+
+<span class="comment">// Passing a string pattern
+</span><span class="macro">assert_eq!</span>(
+    <span class="macro">str_replace!</span>(<span class="string">"The incredible shrinking man."</span>, <span class="string">"i"</span>, <span class="string">"eee"</span>),
+    <span class="string">"The eeencredeeeble shreeenkeeeng man."</span>,
+);
+
+<span class="comment">// Passing a char pattern
+</span><span class="macro">assert_eq!</span>(
+    <span class="macro">str_replace!</span>(<span class="string">"The incredible shrinking man."</span>, <span class="string">' '</span>, <span class="string">"---"</span>),
+    <span class="string">"The---incredible---shrinking---man."</span>,
+);
+
+<span class="comment">// Passing an ascii u8 pattern.
+</span><span class="macro">assert_eq!</span>(
+    <span class="macro">str_replace!</span>(<span class="string">"The incredible shrinking man."</span>, <span class="string">b'i'</span>, <span class="string">"eee"</span>),
+    <span class="string">"The eeencredeeeble shreeenkeeeng man."</span>,
+);
+
+<span class="comment">// Removing all instances of the pattern
+</span><span class="macro">assert_eq!</span>(
+    <span class="macro">str_replace!</span>(<span class="string">"remove haire"</span>, <span class="string">"re"</span>, <span class="string">""</span>),
+    <span class="string">"move hai"</span>,
+);
+
+<span class="comment">// This shows that all the arguments can be `const`s, they don't have to be literals.
+</span>{
+    <span class="kw">const </span>IN: <span class="kw-2">&amp;</span>str = <span class="string">"Foo Boo Patoo"</span>;
+    <span class="kw">const </span>REPLACING: <span class="kw-2">&amp;</span>str = <span class="string">"oo"</span>;
+    <span class="kw">const </span>REPLACE_WITH: <span class="kw-2">&amp;</span>str = <span class="string">"uh"</span>;
+    <span class="macro">assert_eq!</span>(<span class="macro">str_replace!</span>(IN, REPLACING, REPLACE_WITH), <span class="string">"Fuh Buh Patuh"</span>);
+}</code></pre></div></div></details></section></div></main></body></html>

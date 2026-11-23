@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["esp_idf_hal",[["impl&lt;'d, C, M&gt; <a class=\"trait\" href=\"embedded_hal/adc/trait.OneShot.html\" title=\"trait embedded_hal::adc::OneShot\">OneShot</a>&lt;&lt;C as <a class=\"trait\" href=\"esp_idf_hal/adc/trait.AdcChannel.html\" title=\"trait esp_idf_hal::adc::AdcChannel\">AdcChannel</a>&gt;::<a class=\"associatedtype\" href=\"esp_idf_hal/adc/trait.AdcChannel.html#associatedtype.AdcUnit\" title=\"type esp_idf_hal::adc::AdcChannel::AdcUnit\">AdcUnit</a>, u16, <a class=\"struct\" href=\"esp_idf_hal/adc/oneshot/struct.AdcChannelDriver.html\" title=\"struct esp_idf_hal::adc::oneshot::AdcChannelDriver\">AdcChannelDriver</a>&lt;'d, C, M&gt;&gt; for <a class=\"struct\" href=\"esp_idf_hal/adc/oneshot/struct.AdcDriver.html\" title=\"struct esp_idf_hal::adc::oneshot::AdcDriver\">AdcDriver</a>&lt;'d, C::<a class=\"associatedtype\" href=\"esp_idf_hal/adc/trait.AdcChannel.html#associatedtype.AdcUnit\" title=\"type esp_idf_hal::adc::AdcChannel::AdcUnit\">AdcUnit</a>&gt;<div class=\"where\">where\n    C: <a class=\"trait\" href=\"esp_idf_hal/adc/trait.AdcChannel.html\" title=\"trait esp_idf_hal::adc::AdcChannel\">AdcChannel</a>,\n    M: Borrow&lt;<a class=\"struct\" href=\"esp_idf_hal/adc/oneshot/struct.AdcDriver.html\" title=\"struct esp_idf_hal::adc::oneshot::AdcDriver\">AdcDriver</a>&lt;'d, C::<a class=\"associatedtype\" href=\"esp_idf_hal/adc/trait.AdcChannel.html#associatedtype.AdcUnit\" title=\"type esp_idf_hal::adc::AdcChannel::AdcUnit\">AdcUnit</a>&gt;&gt;,</div>",0]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1493]}

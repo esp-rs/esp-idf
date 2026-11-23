@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["blocking_mutex","channel","lazy_lock","mutex","once_lock","pipe","priority_channel","pubsub","rwlock","semaphore","signal","waitqueue","watch","zerocopy_channel"]};

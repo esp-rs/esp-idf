@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TempSensorClockSource"],"mod":["config"],"struct":["TempSensor","TempSensorDriver"],"type":["TempSensorConfig"]};

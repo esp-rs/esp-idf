@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A const equivalent of `&#38;string[start..end]`."><title>str_range in konst::string - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="konst" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">str_range</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../konst/index.html">konst</a><span class="version">0.2.20</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">str_<wbr>range</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#alternatives" title="Alternatives">Alternatives</a></li><li><a href="#performance" title="Performance">Performance</a></li><li><a href="#panics" title="Panics">Panics</a></li><li><a href="#example" title="Example">Example</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In konst::<wbr>string</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">konst</a>::<wbr><a href="index.html">string</a></div><h1>Function <span class="fn">str_<wbr>range</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/konst/string.rs.html#605-616">Source</a> </span></div><pre class="rust item-decl"><code>pub const fn str_range(string: &amp;str, start: usize, end: usize) -&gt; &amp;str</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A const equivalent of <code>&amp;string[start..end]</code>.</p>
+<p>If <code>start &gt;= end </code> or <code>string.len() &lt; start </code>, this returns an empty string.</p>
+<p>If <code>string.len() &lt; end</code>, this returns the string from <code>start</code>.</p>
+<h2 id="alternatives"><a class="doc-anchor" href="#alternatives">§</a>Alternatives</h2>
+<p>For a const equivalent of <code>&amp;string[start..]</code> there’s <a href="./fn.str_from.html"><code>str_from</code></a>.</p>
+<p>For a const equivalent of <code>&amp;string[..end]</code> there’s <a href="./fn.str_up_to.html"><code>str_up_to</code></a>.</p>
+<h2 id="performance"><a class="doc-anchor" href="#performance">§</a>Performance</h2>
+<p>This has the same performance as
+<a href="../slice/fn.slice_range.html#performance"><code>konst::slice::slice_range</code></a></p>
+<h2 id="panics"><a class="doc-anchor" href="#panics">§</a>Panics</h2>
+<p>This function panics if either <code>start</code> or <code>end</code> are inside the string and
+don’t fall on a char boundary.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>konst::string::str_range;
+
+<span class="kw">const </span>STR: <span class="kw-2">&amp;</span>str = <span class="string">"foo bar baz"</span>;
+
+<span class="kw">const </span>SUB0: <span class="kw-2">&amp;</span>str = str_range(STR, <span class="number">0</span>, <span class="number">3</span>);
+<span class="macro">assert_eq!</span>(SUB0, <span class="string">"foo"</span>);
+
+<span class="kw">const </span>SUB1: <span class="kw-2">&amp;</span>str = str_range(STR, <span class="number">0</span>, <span class="number">7</span>);
+<span class="macro">assert_eq!</span>(SUB1, <span class="string">"foo bar"</span>);
+
+<span class="kw">const </span>SUB2: <span class="kw-2">&amp;</span>str = str_range(STR, <span class="number">4</span>, <span class="number">11</span>);
+<span class="macro">assert_eq!</span>(SUB2, <span class="string">"bar baz"</span>);
+
+<span class="kw">const </span>SUB3: <span class="kw-2">&amp;</span>str = str_range(STR, <span class="number">0</span>, <span class="number">1000</span>);
+<span class="macro">assert_eq!</span>(SUB3, STR);
+
+</code></pre></div></div></details></section></div></main></body></html>

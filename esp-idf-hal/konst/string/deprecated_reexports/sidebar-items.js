@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["str_contains","str_ends_with","str_find","str_rcontains","str_rfind","str_starts_with"]};

@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["embedded_hal",[]],["esp_idf_hal",[["impl&lt;MODE&gt; <a class=\"trait\" href=\"embedded_hal/digital/trait.ErrorType.html\" title=\"trait embedded_hal::digital::ErrorType\">ErrorType</a> for <a class=\"struct\" href=\"esp_idf_hal/gpio/struct.PinDriver.html\" title=\"struct esp_idf_hal::gpio::PinDriver\">PinDriver</a>&lt;'_, MODE&gt;",0]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[19,322]}

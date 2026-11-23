@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["iter","iter_copied"],"struct":["Iter","IterCopied","IterCopiedRev","IterRev"]};

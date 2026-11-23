@@ -1,0 +1,105 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The type of a structure containing key attributes."><title>psa_key_attributes_t in esp_idf_sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="esp_idf_sys" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc type"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">psa_key_attributes_t</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../esp_idf_sys/index.html">esp_<wbr>idf_<wbr>sys</a><span class="version">0.39.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">psa_<wbr>key_<wbr>attributes_<wbr>t</a></h2><h3><a href="#aliased-type">Aliased Type</a></h3><h3><a href="#fields">Fields</a></h3><ul class="block field"><li><a href="#structfield.private_bits" title="private_bits">private_bits</a></li><li><a href="#structfield.private_id" title="private_id">private_id</a></li><li><a href="#structfield.private_lifetime" title="private_lifetime">private_lifetime</a></li><li><a href="#structfield.private_policy" title="private_policy">private_policy</a></li><li><a href="#structfield.private_type" title="private_type">private_type</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate esp_<wbr>idf_<wbr>sys</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">esp_idf_sys</a></div><h1>Type Alias <span class="type">psa_<wbr>key_<wbr>attributes_<wbr>t</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#52521">Source</a> </span></div><pre class="rust item-decl"><code>pub type psa_key_attributes_t = <a class="struct" href="struct.psa_key_attributes_s.html" title="struct esp_idf_sys::psa_key_attributes_s">psa_key_attributes_s</a>;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The type of a structure containing key attributes.</p>
+<p>This is an opaque structure that can represent the metadata of a key
+object. Metadata that can be stored in attributes includes:</p>
+<ul>
+<li>The location of the key in storage, indicated by its key identifier
+and its lifetime.</li>
+<li>The key’s policy, comprising usage flags and a specification of
+the permitted algorithm(s).</li>
+<li>Information about the key itself: the key type and its size.</li>
+<li>Additional implementation-defined attributes.</li>
+</ul>
+<p>The actual key material is not considered an attribute of a key.
+Key attributes do not contain information that is generally considered
+highly confidential.</p>
+<p>An attribute structure works like a simple data structure where each function
+<code>psa_set_key_xxx</code> sets a field and the corresponding function
+<code>psa_get_key_xxx</code> retrieves the value of the corresponding field.
+However, a future version of the library  may report values that are
+equivalent to the original one, but have a different encoding. Invalid
+values may be mapped to different, also invalid values.</p>
+<p>An attribute structure may contain references to auxiliary resources,
+for example pointers to allocated memory or indirect references to
+pre-calculated values. In order to free such resources, the application
+must call psa_reset_key_attributes(). As an exception, calling
+psa_reset_key_attributes() on an attribute structure is optional if
+the structure has only been modified by the following functions
+since it was initialized or last reset with psa_reset_key_attributes():</p>
+<ul>
+<li>psa_set_key_id()</li>
+<li>psa_set_key_lifetime()</li>
+<li>psa_set_key_type()</li>
+<li>psa_set_key_bits()</li>
+<li>psa_set_key_usage_flags()</li>
+<li>psa_set_key_algorithm()</li>
+</ul>
+<p>Before calling any function on a key attribute structure, the application
+must initialize it by any of the following means:</p>
+<ul>
+<li>Set the structure to all-bits-zero, for example:
+\code
+psa_key_attributes_t attributes;
+memset(&amp;attributes, 0, sizeof(attributes));
+\endcode</li>
+<li>Initialize the structure to logical zero values, for example:
+\code
+psa_key_attributes_t attributes = {0};
+\endcode</li>
+<li>Initialize the structure to the initializer #PSA_KEY_ATTRIBUTES_INIT,
+for example:
+\code
+psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+\endcode</li>
+<li>Assign the result of the function psa_key_attributes_init()
+to the structure, for example:
+\code
+psa_key_attributes_t attributes;
+attributes = psa_key_attributes_init();
+\endcode</li>
+</ul>
+<p>A freshly initialized attribute structure contains the following
+values:</p>
+<ul>
+<li>lifetime: #PSA_KEY_LIFETIME_VOLATILE.</li>
+<li>key identifier: 0 (which is not a valid key identifier).</li>
+<li>type: \c 0 (meaning that the type is unspecified).</li>
+<li>key size: \c 0 (meaning that the size is unspecified).</li>
+<li>usage flags: \c 0 (which allows no usage except exporting a public key).</li>
+<li>algorithm: \c 0 (which allows no cryptographic usage, but allows
+exporting).</li>
+</ul>
+<p>A typical sequence to create a key is as follows:
+-# Create and initialize an attribute structure.
+-# If the key is persistent, call psa_set_key_id().
+Also call psa_set_key_lifetime() to place the key in a non-default
+location.
+-# Set the key policy with psa_set_key_usage_flags() and
+psa_set_key_algorithm().
+-# Set the key type with psa_set_key_type().
+Skip this step if copying an existing key with psa_copy_key().
+-# When generating a random key with psa_generate_key() or deriving a key
+with psa_key_derivation_output_key(), set the desired key size with
+psa_set_key_bits().
+-# Call a key creation function: psa_import_key(), psa_generate_key(),
+psa_key_derivation_output_key() or psa_copy_key(). This function reads
+the attribute structure, creates a key with these attributes, and
+outputs a key identifier to the newly created key.
+-# The attribute structure is now no longer necessary.
+You may call psa_reset_key_attributes(), although this is optional
+with the workflow presented here because the attributes currently
+defined in this specification do not require any additional resources
+beyond the structure itself.</p>
+<p>A typical sequence to query a key’s attributes is as follows:
+-# Call psa_get_key_attributes().
+-# Call <code>psa_get_key_xxx</code> functions to retrieve the attribute(s) that
+you are interested in.
+-# Call psa_reset_key_attributes() to free any resources that may be
+used by the attribute structure.</p>
+<p>Once a key has been created, it is impossible to change its attributes.</p>
+</div></details><h2 id="aliased-type" class="section-header">Aliased Type<a href="#aliased-type" class="anchor">§</a></h2><pre class="rust item-decl"><code><div class="code-attribute">#[repr(C)]</div>pub struct psa_key_attributes_t {
+    pub private_type: u16,
+    pub private_bits: u16,
+    pub private_lifetime: u32,
+    pub private_policy: <a class="struct" href="struct.psa_key_policy_s.html" title="struct esp_idf_sys::psa_key_policy_s">psa_key_policy_s</a>,
+    pub private_id: u32,
+}</code></pre><h2 id="fields" class="fields section-header">Fields<a href="#fields" class="anchor">§</a></h2><span id="structfield.private_type" class="structfield section-header"><a href="#structfield.private_type" class="anchor field">§</a><code>private_type: u16</code></span><span id="structfield.private_bits" class="structfield section-header"><a href="#structfield.private_bits" class="anchor field">§</a><code>private_bits: u16</code></span><span id="structfield.private_lifetime" class="structfield section-header"><a href="#structfield.private_lifetime" class="anchor field">§</a><code>private_lifetime: u32</code></span><span id="structfield.private_policy" class="structfield section-header"><a href="#structfield.private_policy" class="anchor field">§</a><code>private_policy: <a class="struct" href="struct.psa_key_policy_s.html" title="struct esp_idf_sys::psa_key_policy_s">psa_key_policy_s</a></code></span><span id="structfield.private_id" class="structfield section-header"><a href="#structfield.private_id" class="anchor field">§</a><code>private_id: u32</code></span><script src="../type.impl/esp_idf_sys/struct.psa_key_attributes_s.js" data-self-path="esp_idf_sys::bindings::psa_key_attributes_t" async></script></section></div></main></body></html>
