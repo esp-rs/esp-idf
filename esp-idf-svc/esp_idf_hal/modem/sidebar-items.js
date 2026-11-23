@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BluetoothModem","Modem","WifiModem"],"trait":["BluetoothModemPeripheral","WifiModemPeripheral"]};

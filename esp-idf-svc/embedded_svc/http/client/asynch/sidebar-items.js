@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Client","Request","Response"],"trait":["Connection"]};

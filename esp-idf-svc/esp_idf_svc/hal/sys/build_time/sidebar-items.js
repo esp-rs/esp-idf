@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["build_time_local","build_time_utc"]};

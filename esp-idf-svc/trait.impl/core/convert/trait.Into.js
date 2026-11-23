@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["embassy_sync",[["impl&lt;'a, M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>, T: Clone, const N: usize&gt; Into&lt;<a class=\"struct\" href=\"embassy_sync/watch/struct.DynAnonReceiver.html\" title=\"struct embassy_sync::watch::DynAnonReceiver\">DynAnonReceiver</a>&lt;'a, T&gt;&gt; for <a class=\"struct\" href=\"embassy_sync/watch/struct.AnonReceiver.html\" title=\"struct embassy_sync::watch::AnonReceiver\">AnonReceiver</a>&lt;'a, M, T, N&gt;",0],["impl&lt;'a, M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>, T: Clone, const N: usize&gt; Into&lt;<a class=\"struct\" href=\"embassy_sync/watch/struct.DynReceiver.html\" title=\"struct embassy_sync::watch::DynReceiver\">DynReceiver</a>&lt;'a, T&gt;&gt; for <a class=\"struct\" href=\"embassy_sync/watch/struct.Receiver.html\" title=\"struct embassy_sync::watch::Receiver\">Receiver</a>&lt;'a, M, T, N&gt;",0],["impl&lt;'a, M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>, T: Clone, const N: usize&gt; Into&lt;<a class=\"struct\" href=\"embassy_sync/watch/struct.DynSender.html\" title=\"struct embassy_sync::watch::DynSender\">DynSender</a>&lt;'a, T&gt;&gt; for <a class=\"struct\" href=\"embassy_sync/watch/struct.Sender.html\" title=\"struct embassy_sync::watch::Sender\">Sender</a>&lt;'a, M, T, N&gt;",0]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1587]}

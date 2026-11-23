@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ClockSource","CountDirection"],"struct":["AlarmConfig","TimerConfig"]};

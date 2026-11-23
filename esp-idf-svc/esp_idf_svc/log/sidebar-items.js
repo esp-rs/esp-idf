@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["init","init_from_env","init_from_esp_idf"],"struct":["EspIdfLogFilter","EspIdfLogger"],"trait":["LogFilterBackend"],"type":["EspLogger"]};

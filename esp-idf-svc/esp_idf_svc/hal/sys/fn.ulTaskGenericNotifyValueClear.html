@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="See https://www.FreeRTOS.org/RTOS-task-notifications.html for details."><title>ulTaskGenericNotifyValueClear in esp_idf_svc::hal::sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="esp_idf_svc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">ulTaskGenericNotifyValueClear</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../esp_idf_svc/index.html">esp_<wbr>idf_<wbr>svc</a><span class="version">0.54.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>svc::<wbr>hal::<wbr>sys</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">esp_idf_svc</a>::<wbr><a href="../index.html">hal</a>::<wbr><a href="index.html">sys</a></div><h1>Function <span class="fn">ulTask<wbr>Generic<wbr>Notify<wbr>Value<wbr>Clear</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#16145-16149">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn ulTaskGenericNotifyValueClear(
+    xTask: *mut <a class="struct" href="../../sys/struct.tskTaskControlBlock.html" title="struct esp_idf_svc::sys::tskTaskControlBlock">tskTaskControlBlock</a>,
+    uxIndexToClear: u32,
+    ulBitsToClear: u32,
+) -&gt; u32</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>See https://www.FreeRTOS.org/RTOS-task-notifications.html for details.</p>
+<p>configUSE_TASK_NOTIFICATIONS must be undefined or defined as 1 for these
+functions to be available.</p>
+<p>Each task has a private array of “notification values” (or ‘notifications’),
+each of which is a 32-bit unsigned integer (uint32_t).  The constant
+configTASK_NOTIFICATION_ARRAY_ENTRIES sets the number of indexes in the
+array, and (for backward compatibility) defaults to 1 if left undefined.
+Prior to FreeRTOS V10.4.0 there was only one notification value per task.</p>
+<p>ulTaskNotifyValueClearIndexed() clears the bits specified by the
+ulBitsToClear bit mask in the notification value at array index uxIndexToClear
+of the task referenced by xTask.</p>
+<p>Backward compatibility information:
+Prior to FreeRTOS V10.4.0 each task had a single “notification value”, and
+all task notification API functions operated on that value. Replacing the
+single notification value with an array of notification values necessitated a
+new set of API functions that could address specific notifications within the
+array.  ulTaskNotifyValueClear() is the original API function, and remains
+backward compatible by always operating on the notification value at index 0
+within the array. Calling ulTaskNotifyValueClear() is equivalent to calling
+ulTaskNotifyValueClearIndexed() with the uxIndexToClear parameter set to 0.</p>
+<p>@param xTask The handle of the RTOS task that will have bits in one of its
+notification values cleared. Set xTask to NULL to clear bits in a
+notification value of the calling task.  To obtain a task’s handle create the
+task using xTaskCreate() and make use of the pxCreatedTask parameter, or
+create the task using xTaskCreateStatic() and store the returned value, or
+use the task’s name in a call to xTaskGetHandle().</p>
+<p>@param uxIndexToClear The index within the target task’s array of
+notification values in which to clear the bits.  uxIndexToClear
+must be less than configTASK_NOTIFICATION_ARRAY_ENTRIES.
+ulTaskNotifyValueClear() does not have this parameter and always clears bits
+in the notification value at index 0.</p>
+<p>@param ulBitsToClear Bit mask of the bits to clear in the notification value of
+xTask. Set a bit to 1 to clear the corresponding bits in the task’s notification
+value. Set ulBitsToClear to 0xffffffff (UINT_MAX on 32-bit architectures) to clear
+the notification value to 0.  Set ulBitsToClear to 0 to query the task’s
+notification value without clearing any bits.</p>
+<p>@return The value of the target task’s notification value before the bits
+specified by ulBitsToClear were cleared.
+\ingroup TaskNotifications</p>
+</div></details></section></div></main></body></html>

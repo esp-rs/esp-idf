@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="\brief           This function feeds an input buffer into an ongoing CCM encryption or decryption operation."><title>mbedtls_ccm_update in esp_idf_svc::sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="esp_idf_svc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">mbedtls_ccm_update</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../esp_idf_svc/index.html">esp_<wbr>idf_<wbr>svc</a><span class="version">0.54.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>svc::<wbr>sys</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">esp_idf_svc</a>::<wbr><a href="index.html">sys</a></div><h1>Function <span class="fn">mbedtls_<wbr>ccm_<wbr>update</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#54836-54843">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn mbedtls_ccm_update(
+    ctx: *mut <a class="struct" href="struct.mbedtls_ccm_context.html" title="struct esp_idf_svc::sys::mbedtls_ccm_context">mbedtls_ccm_context</a>,
+    input: *const u8,
+    input_len: usize,
+    output: *mut u8,
+    output_size: usize,
+    output_len: *mut usize,
+) -&gt; i32</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>\brief           This function feeds an input buffer into an ongoing CCM
+encryption or decryption operation.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>             You may call this function zero, one or more times
+             to pass successive parts of the input: the plaintext to
+             encrypt, or the ciphertext (not including the tag) to
+             decrypt. After the last part of the input, call
+             mbedtls_ccm_finish(). The lengths \p input_len of the
+             data parts should eventually add up exactly to the
+             plaintext length \c plaintext_len passed to
+             mbedtls_ccm_set_lengths().
+
+             This function may produce output <span class="kw">in </span>one of the following
+             ways:
+             - Immediate output: the output length is always equal
+               to the input length.
+             - Buffered output: except <span class="kw">for </span>the last part of input data,
+               the output consists of a whole number of <span class="number">16</span>-byte blocks.
+               If the total input length so far (not including
+               associated data) is <span class="number">16 </span>\* <span class="kw-2">*</span>B* + <span class="kw-2">*</span>A* with <span class="kw-2">*</span>A* &lt; <span class="number">16 </span>then
+               the total output length is <span class="number">16 </span>\* <span class="kw-2">*</span>B<span class="kw-2">*</span>.
+               For the last part of input data, the output length is
+               equal to the input length plus the number of bytes (<span class="kw-2">*</span>A<span class="kw-2">*</span>)
+               buffered <span class="kw">in </span>the previous call to the function (<span class="kw">if </span>any).
+               The function uses the plaintext length
+               \c plaintext_len passed to mbedtls_ccm_set_lengths()
+               to detect the last part of input data.
+
+             In particular:
+             - It is always correct to call this function with
+               \p output_size &gt;= \p input_len + <span class="number">15.
+             </span>- If \p input_len is a multiple of <span class="number">16 </span><span class="kw">for </span>all the calls
+               to this function during an operation (not necessary <span class="kw">for
+               </span>the last one) then it is correct to <span class="kw">use </span>\p output_size
+               =\p input_len.</code></pre></div>
+<p>\note            This function is not implemented in Mbed TLS yet.</p>
+<p>\param ctx           The CCM context. This must have been started with
+mbedtls_ccm_starts() and the lengths of the message and
+additional data must have been declared with
+mbedtls_ccm_set_lengths().
+\param input         The buffer holding the input data. If \p input_len
+is greater than zero, this must be a readable buffer
+of at least \p input_len bytes.
+\param input_len     The length of the input data in bytes.
+\param output        The buffer for the output data. If \p output_size
+is greater than zero, this must be a writable buffer of
+at least \p output_size bytes.
+\param output_size   The size of the output buffer in bytes.
+See the function description regarding the output size.
+\param output_len    On success, \p *output_len contains the actual
+length of the output written in \p output.
+On failure, the content of \p *output_len is
+unspecified.</p>
+<p>\return         \c 0 on success.
+\return         #MBEDTLS_ERR_CCM_BAD_INPUT on failure:
+\p ctx is in an invalid state,
+total input length too long,
+or \p output_size too small.</p>
+</div></details></section></div></main></body></html>

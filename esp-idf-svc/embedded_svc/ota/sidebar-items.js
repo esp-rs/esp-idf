@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LoadResult","SlotState"],"mod":["asynch"],"struct":["FirmwareInfo","Slot","UpdateProgress"],"trait":["FirmwareInfoLoader","Ota","OtaUpdate","OtaUpdateFinished"]};

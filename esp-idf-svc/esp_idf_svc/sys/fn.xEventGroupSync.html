@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Atomically set bits within an event group, then wait for a combination of bits to be set within the same event group.  This functionality is typically used to synchronise multiple tasks, where each task has to wait for the other tasks to reach a synchronisation point before proceeding."><title>xEventGroupSync in esp_idf_svc::sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="esp_idf_svc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">xEventGroupSync</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../esp_idf_svc/index.html">esp_<wbr>idf_<wbr>svc</a><span class="version">0.54.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>svc::<wbr>sys</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">esp_idf_svc</a>::<wbr><a href="index.html">sys</a></div><h1>Function <span class="fn">xEvent<wbr>Group<wbr>Sync</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#16758-16763">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn xEventGroupSync(
+    xEventGroup: *mut <a class="struct" href="struct.EventGroupDef_t.html" title="struct esp_idf_svc::sys::EventGroupDef_t">EventGroupDef_t</a>,
+    uxBitsToSet: u32,
+    uxBitsToWaitFor: u32,
+    xTicksToWait: u32,
+) -&gt; u32</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Atomically set bits within an event group, then wait for a combination of
+bits to be set within the same event group.  This functionality is typically
+used to synchronise multiple tasks, where each task has to wait for the other
+tasks to reach a synchronisation point before proceeding.</p>
+<p>This function cannot be used from an interrupt.</p>
+<p>The function will return before its block time expires if the bits specified
+by the uxBitsToWait parameter are set, or become set within that time.  In
+this case all the bits specified by uxBitsToWait will be automatically
+cleared before the function returns.</p>
+<p>@param xEventGroup The event group in which the bits are being tested.  The
+event group must have previously been created using a call to
+xEventGroupCreate().</p>
+<p>@param uxBitsToSet The bits to set in the event group before determining
+if, and possibly waiting for, all the bits specified by the uxBitsToWait
+parameter are set.</p>
+<p>@param uxBitsToWaitFor A bitwise value that indicates the bit or bits to test
+inside the event group.  For example, to wait for bit 0 and bit 2 set
+uxBitsToWaitFor to 0x05.  To wait for bits 0 and bit 1 and bit 2 set
+uxBitsToWaitFor to 0x07.  Etc.</p>
+<p>@param xTicksToWait The maximum amount of time (specified in ‘ticks’) to wait
+for all of the bits specified by uxBitsToWaitFor to become set.</p>
+<p>@return The value of the event group at the time either the bits being waited
+for became set, or the block time expired.  Test the return value to know
+which bits were set.  If xEventGroupSync() returned because its timeout
+expired then not all the bits being waited for will be set.  If
+xEventGroupSync() returned because all the bits it was waiting for were
+set then the returned value is the event group value before any bits were
+automatically cleared.</p>
+<p>Example usage:
+@code{c}
+// Bits used by the three tasks.
+#define TASK_0_BIT     ( 1 &lt;&lt; 0 )
+#define TASK_1_BIT     ( 1 &lt;&lt; 1 )
+#define TASK_2_BIT     ( 1 &lt;&lt; 2 )</p>
+<p>#define ALL_SYNC_BITS ( TASK_0_BIT | TASK_1_BIT | TASK_2_BIT )</p>
+<p>// Use an event group to synchronise three tasks.  It is assumed this event
+// group has already been created elsewhere.
+EventGroupHandle_t xEventBits;</p>
+<p>void vTask0( void *pvParameters )
+{
+EventBits_t uxReturn;
+TickType_t xTicksToWait = 100 / portTICK_PERIOD_MS;</p>
+<p>for( ;; )
+{
+// Perform task functionality here.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code> <span class="comment">// Set bit 0 in the event flag to note this task has reached the
+ // sync point.  The other two tasks will set the other two bits defined
+ // by ALL_SYNC_BITS.  All three tasks have reached the synchronisation
+ // point when all the ALL_SYNC_BITS are set.  Wait a maximum of 100ms
+ // for this to happen.
+ </span>uxReturn = xEventGroupSync( xEventBits, TASK_0_BIT, ALL_SYNC_BITS, xTicksToWait );
+
+ <span class="kw">if</span>( ( uxReturn &amp; ALL_SYNC_BITS ) == ALL_SYNC_BITS )
+ {
+     <span class="comment">// All three tasks reached the synchronisation point before the call
+     // to xEventGroupSync() timed out.
+ </span>}</code></pre></div>
+<p>}
+}</p>
+<p>void vTask1( void *pvParameters )
+{
+for( ;; )
+{
+// Perform task functionality here.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code> <span class="comment">// Set bit 1 in the event flag to note this task has reached the
+ // synchronisation point.  The other two tasks will set the other two
+ // bits defined by ALL_SYNC_BITS.  All three tasks have reached the
+ // synchronisation point when all the ALL_SYNC_BITS are set.  Wait
+ // indefinitely for this to happen.
+ </span>xEventGroupSync( xEventBits, TASK_1_BIT, ALL_SYNC_BITS, portMAX_DELAY );
+
+ <span class="comment">// xEventGroupSync() was called with an indefinite block time, so
+ // this task will only reach here if the synchronisation was made by all
+ // three tasks, so there is no need to test the return value.</span></code></pre></div>
+<p>}
+}</p>
+<p>void vTask2( void *pvParameters )
+{
+for( ;; )
+{
+// Perform task functionality here.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code> <span class="comment">// Set bit 2 in the event flag to note this task has reached the
+ // synchronisation point.  The other two tasks will set the other two
+ // bits defined by ALL_SYNC_BITS.  All three tasks have reached the
+ // synchronisation point when all the ALL_SYNC_BITS are set.  Wait
+ // indefinitely for this to happen.
+ </span>xEventGroupSync( xEventBits, TASK_2_BIT, ALL_SYNC_BITS, portMAX_DELAY );
+
+ <span class="comment">// xEventGroupSync() was called with an indefinite block time, so
+ // this task will only reach here if the synchronisation was made by all
+ // three tasks, so there is no need to test the return value.</span></code></pre></div>
+<p>}
+}</p>
+<p>@endcode
+\ingroup EventGroup</p>
+</div></details></section></div></main></body></html>

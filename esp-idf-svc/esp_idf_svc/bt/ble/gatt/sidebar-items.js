@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AutoResponse","GattConnReason","GattStatus","Permission","Property","ServiceUuid"],"fn":["set_local_mtu"],"mod":["client","server"],"struct":["GattCharacteristic","GattConnParams","GattDescriptor","GattId","GattResponse","GattServiceId"],"type":["GattInterface","Handle"]};

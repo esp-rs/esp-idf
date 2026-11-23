@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["clip","clip_ascii","fmt"],"macro":[["compile_args",1],["compile_assert",1],["compile_panic",1]],"struct":["Ascii","CompileArgs","Fmt","StrLength"],"trait":["FormatArgument","MaxLength"]};

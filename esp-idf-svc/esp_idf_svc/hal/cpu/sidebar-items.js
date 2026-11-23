@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CORES"],"enum":["Core"],"fn":["core"]};

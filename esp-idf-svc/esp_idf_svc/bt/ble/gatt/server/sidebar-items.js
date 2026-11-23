@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["GattsEvent"],"struct":["EspGatts","EventRawData"],"type":["AppId","ConnectionId","TransferId"]};

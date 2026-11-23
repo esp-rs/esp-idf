@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["adc","can","cpu","delay","gpio","i2c","i2s","interrupt","io","ledc","modem","peripherals","reset","rmt","rom","sd","sleep","spi","sys","task","temp_sensor","timer","uart","units","usb_serial"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["UART_SAFE_BAUD_RATE"],"fn":["uart_default_cfg"]};

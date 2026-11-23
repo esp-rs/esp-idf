@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DB_11","DB_12","DB_2_5","DB_6","NONE","adc_atten_t_ADC_ATTEN_DB_0","adc_atten_t_ADC_ATTEN_DB_11","adc_atten_t_ADC_ATTEN_DB_12","adc_atten_t_ADC_ATTEN_DB_2_5","adc_atten_t_ADC_ATTEN_DB_6"],"type":["adc_atten_t"]};

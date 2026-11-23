@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["EspAppPartitionSubtype","EspDataPartitionSubtype","EspMemMapType","EspPartitionType"],"struct":["EspMemMappedPartition","EspPartition","EspPartitionIterator","EspWlPartition"]};

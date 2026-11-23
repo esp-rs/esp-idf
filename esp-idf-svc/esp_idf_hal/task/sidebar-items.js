@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["block_on","create","current","destroy","do_yield","get_idle_task","notify","notify_and_yield","wait_notification","yield_now"],"mod":["asynch","embassy_sync","notification","queue","thread","watchdog"],"struct":["CriticalSection","CriticalSectionGuard"]};

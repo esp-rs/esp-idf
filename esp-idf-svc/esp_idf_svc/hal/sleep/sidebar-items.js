@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["gpio","timer","uart"],"struct":["DeepSleep","LightSleep"]};

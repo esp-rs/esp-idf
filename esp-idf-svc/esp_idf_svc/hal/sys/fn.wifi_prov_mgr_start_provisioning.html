@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="@brief   Start provisioning service"><title>wifi_prov_mgr_start_provisioning in esp_idf_svc::hal::sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="esp_idf_svc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">wifi_prov_mgr_start_provisioning</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../esp_idf_svc/index.html">esp_<wbr>idf_<wbr>svc</a><span class="version">0.54.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>svc::<wbr>hal::<wbr>sys</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">esp_idf_svc</a>::<wbr><a href="../index.html">hal</a>::<wbr><a href="index.html">sys</a></div><h1>Function <span class="fn">wifi_<wbr>prov_<wbr>mgr_<wbr>start_<wbr>provisioning</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#67313-67318">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn wifi_prov_mgr_start_provisioning(
+    security: u32,
+    wifi_prov_sec_params: *const c_void,
+    service_name: *const u8,
+    service_key: *const u8,
+) -&gt; i32</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>@brief   Start provisioning service</p>
+<p>This starts the provisioning service according to the scheme
+configured at the time of initialization. For scheme :</p>
+<ul>
+<li>wifi_prov_scheme_ble : This starts protocomm_ble, which internally initializes
+BLE transport and starts GATT server for handling
+provisioning requests</li>
+<li>wifi_prov_scheme_softap : This activates SoftAP mode of Wi-Fi and starts
+protocomm_httpd, which internally starts an HTTP
+server for handling provisioning requests (If mDNS is
+active it also starts advertising service with type
+_esp_wifi_prov._tcp)</li>
+</ul>
+<p>Event WIFI_PROV_START is emitted right after provisioning starts without failure</p>
+<p>@note   This API will start provisioning service even if device is found to be
+already provisioned, i.e. wifi_prov_mgr_is_provisioned() yields true</p>
+<p>@param[in] security      Specify which protocomm security scheme to use :
+- WIFI_PROV_SECURITY_0 : For no security
+- WIFI_PROV_SECURITY_1 : x25519 secure handshake for session
+establishment followed by AES-CTR encryption of provisioning messages
+- WIFI_PROV_SECURITY_2:  SRP6a based authentication and key exchange
+followed by AES-GCM encryption/decryption of provisioning messages
+@param[in] wifi_prov_sec_params
+Pointer to security params (NULL if not needed).
+This is not needed for protocomm security 0
+This pointer should hold the struct of type
+wifi_prov_security1_params_t for protocomm security 1
+and wifi_prov_security2_params_t for protocomm security 2 respectively.
+This pointer and its contents should be valid till the provisioning service is
+running and has not been stopped or de-inited.
+@param[in] service_name  Unique name of the service. This translates to:
+- Wi-Fi SSID when provisioning mode is softAP
+- Device name when provisioning mode is BLE
+@param[in] service_key   Key required by client to access the service (NULL if not needed).
+This translates to:
+- Wi-Fi password when provisioning mode is softAP
+- ignored when provisioning mode is BLE</p>
+<p>@return</p>
+<ul>
+<li>ESP_OK      : Provisioning started successfully</li>
+<li>ESP_FAIL    : Failed to start provisioning service</li>
+<li>ESP_ERR_INVALID_STATE : Provisioning manager not initialized or already started</li>
+</ul>
+</div></details></section></div></main></body></html>

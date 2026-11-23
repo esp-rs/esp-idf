@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Replaces a substring in a `&#38;&#39;static str` constant. Returns both the new resulting `&#38;&#39;static str`, and the replaced substring."><title>str_splice in const_format - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="const_format" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc macro"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">str_splice</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../const_format/index.html">const_<wbr>format</a><span class="version">0.2.37</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">str_<wbr>splice</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#alternatives" title="Alternatives">Alternatives</a></li><li><a href="#signature" title="Signature">Signature</a><ul><li><a href="#range-argument" title="`range` argument"><code>range</code> argument</a></li></ul></li><li><a href="#example" title="Example">Example</a><ul><li><a href="#invalid-index" title="Invalid index">Invalid index</a></li></ul></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate const_<wbr>format</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">const_format</a></div><h1>Macro <span class="macro">str_<wbr>splice</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/const_format/macros/str_methods.rs.html#263-270">Source</a> </span></div><pre class="rust item-decl"><code>macro_rules! str_splice {
+    ($string:expr, $index:expr, $insert:expr $(,)*) =&gt; { ... };
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Replaces a substring in a <code>&amp;'static str</code> constant.
+Returns both the new resulting <code>&amp;'static str</code>, and the replaced substring.</p>
+<h2 id="alternatives"><a class="doc-anchor" href="#alternatives">§</a>Alternatives</h2>
+<p>For an alternative which only returns the string with the applied replacement,
+you can use <a href="./macro.str_splice_out.html"><code>str_splice_out</code></a>.</p>
+<h2 id="signature"><a class="doc-anchor" href="#signature">§</a>Signature</h2>
+<p>This macro acts like a function of this signature:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>str_splice(
+    input: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
+    range: <span class="kw">impl </span>SomeIndex,
+    replace_with: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
+) -&gt; const_format::SplicedStr</code></pre></div>
+<p>and is evaluated at compile-time.</p>
+<h4 id="range-argument"><a class="doc-anchor" href="#range-argument">§</a><code>range</code> argument</h4>
+<p>The <code>range</code> parameter determines what part of <code>input</code> is replaced,
+and can be any of these types:</p>
+<ul>
+<li><code>usize</code>: the starting index of a char, only includes that char.</li>
+<li><code>Range&lt;usize&gt;</code></li>
+<li><code>RangeTo&lt;usize&gt;</code></li>
+<li><code>RangeFrom&lt;usize&gt;</code></li>
+<li><code>RangeInclusive&lt;usize&gt;</code></li>
+<li><code>RangeToInclusive&lt;usize&gt;</code></li>
+<li><code>RangeFull</code></li>
+</ul>
+<p><a href="./struct.SplicedStr.html"><code>SplicedStr</code></a> contains:</p>
+<ul>
+<li><code>output</code>: a <code>&amp;'static str</code> with the substring at <code>range</code> in <code>input</code> replaced with
+<code>replace_with</code>.</li>
+<li><code>removed</code>: the substring at <code>range</code> in <code>input</code>.</li>
+</ul>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>const_format::{str_splice, SplicedStr};
+
+<span class="kw">const </span>OUT: SplicedStr = <span class="macro">str_splice!</span>(<span class="string">"foo bar baz"</span>, <span class="number">4</span>..=<span class="number">6</span>, <span class="string">"is"</span>);
+<span class="macro">assert_eq!</span>(OUT , SplicedStr{output: <span class="string">"foo is baz"</span>, removed: <span class="string">"bar"</span>});
+
+<span class="comment">// You can pass `const`ants to this macro, not just literals
+</span>{
+    <span class="kw">const </span>IN: <span class="kw-2">&amp;</span>str = <span class="string">"this is bad"</span>;
+    <span class="kw">const </span>INDEX: std::ops::RangeFrom&lt;usize&gt; = <span class="number">8</span>..;
+    <span class="kw">const </span>REPLACE_WITH: <span class="kw-2">&amp;</span>str = <span class="string">"... fine"</span>;
+    <span class="kw">const </span>OUT: SplicedStr = <span class="macro">str_splice!</span>(IN, INDEX, REPLACE_WITH);
+    <span class="macro">assert_eq!</span>(OUT , SplicedStr{output: <span class="string">"this is ... fine"</span>, removed: <span class="string">"bad"</span>});
+}
+{
+    <span class="kw">const </span>OUT: SplicedStr = <span class="macro">str_splice!</span>(<span class="string">"ABC豆-"</span>, <span class="number">3</span>, <span class="string">"DEFGH"</span>);
+    <span class="macro">assert_eq!</span>(OUT , SplicedStr{output: <span class="string">"ABCDEFGH-"</span>, removed: <span class="string">"豆"</span>});
+}</code></pre></div><h4 id="invalid-index"><a class="doc-anchor" href="#invalid-index">§</a>Invalid index</h4>
+<p>Invalid indices cause compilation errors.</p>
+
+<div class="example-wrap compile_fail"><a href="#" class="tooltip" title="This example deliberately fails to compile">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="macro">const_format::str_splice!</span>(<span class="string">"foo"</span>, <span class="number">0</span>..<span class="number">10</span>, <span class="string">""</span>);</code></pre></div></div></details></section></div></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BtStatus"],"fn":["reduce_bt_memory"],"mod":["ble"],"struct":["BdAddr","Ble","BtDriver","BtUuid"],"trait":["BleEnabled","BtClassicEnabled","BtMode"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["NvsDataType"],"struct":["EspKeyValueStorage","EspNvs","EspNvsKeys","EspNvsPartition","NvsCustom","NvsDefault","NvsEncrypted"],"trait":["NvsPartitionId"],"type":["EspCustomNvs","EspCustomNvsPartition","EspDefaultNvs","EspDefaultNvsPartition","EspEncryptedNvs","EspEncryptedNvsPartition"]};

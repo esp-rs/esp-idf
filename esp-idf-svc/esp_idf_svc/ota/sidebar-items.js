@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LoadResult","SlotState"],"struct":["EspFirmwareInfoLoad","EspFirmwareInfoLoader","EspNativeFirmwareInfo","EspOta","EspOtaUpdate","EspOtaUpdateFinished","FirmwareInfo","Slot","UpdateProgress"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":[["for_range",1],["konst",1],["try_",1],["try_opt",1],["unwrap_opt_or",1],["unwrap_res_or",1]],"mod":["array","iter","manually_drop","maybe_uninit","nonzero","option","other","primitive","ptr","range","result","slice","string"]};

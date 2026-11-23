@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Resolution"],"mod":["attenuation","continuous","oneshot"],"struct":["ADC1","ADC2","ADCCH0","ADCCH1","ADCCH2","ADCCH3","ADCCH4","ADCCH5","ADCCH6","ADCCH7","ADCCH8","ADCCH9","ADCU1","ADCU2"],"trait":["Adc","AdcChannel","AdcUnit"]};

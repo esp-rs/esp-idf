@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["StorageError"],"trait":["DynStorage","RawStorage","StorageBase"]};

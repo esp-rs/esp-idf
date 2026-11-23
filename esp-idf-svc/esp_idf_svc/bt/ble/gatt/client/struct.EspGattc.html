@@ -1,0 +1,572 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `EspGattc` struct in crate `esp_idf_svc`."><title>EspGattc in esp_idf_svc::bt::ble::gatt::client - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="esp_idf_svc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc struct"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">EspGattc</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../../esp_idf_svc/index.html">esp_<wbr>idf_<wbr>svc</a><span class="version">0.54.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">EspGattc</a></h2><h3><a href="#implementations">Associated Functions</a></h3><ul class="block method"><li><a href="#method.new" title="new">new</a></li></ul><h3><a href="#implementations">Methods</a></h3><ul class="block method"><li><a href="#method.aux_open" title="aux_open">aux_open</a></li><li><a href="#method.cache_assoc" title="cache_assoc">cache_assoc</a></li><li><a href="#method.cache_clean" title="cache_clean">cache_clean</a></li><li><a href="#method.cache_refresh" title="cache_refresh">cache_refresh</a></li><li><a href="#method.close" title="close">close</a></li><li><a href="#method.enh_open" title="enh_open">enh_open</a></li><li><a href="#method.execute_write" title="execute_write">execute_write</a></li><li><a href="#method.get_address_list" title="get_address_list">get_address_list</a></li><li><a href="#method.get_all_characteristics" title="get_all_characteristics">get_all_characteristics</a></li><li><a href="#method.get_all_descriptors" title="get_all_descriptors">get_all_descriptors</a></li><li><a href="#method.get_attr_count" title="get_attr_count">get_attr_count</a></li><li><a href="#method.get_characteristic_by_uuid" title="get_characteristic_by_uuid">get_characteristic_by_uuid</a></li><li><a href="#method.get_db" title="get_db">get_db</a></li><li><a href="#method.get_descriptor_by_char_handle" title="get_descriptor_by_char_handle">get_descriptor_by_char_handle</a></li><li><a href="#method.get_descriptor_by_uuid" title="get_descriptor_by_uuid">get_descriptor_by_uuid</a></li><li><a href="#method.get_include_service" title="get_include_service">get_include_service</a></li><li><a href="#method.get_service" title="get_service">get_service</a></li><li><a href="#method.mtu_req" title="mtu_req">mtu_req</a></li><li><a href="#method.open" title="open">open</a></li><li><a href="#method.prepare_write_characteristic" title="prepare_write_characteristic">prepare_write_characteristic</a></li><li><a href="#method.prepare_write_descriptor" title="prepare_write_descriptor">prepare_write_descriptor</a></li><li><a href="#method.read_by_type" title="read_by_type">read_by_type</a></li><li><a href="#method.read_characteristic" title="read_characteristic">read_characteristic</a></li><li><a href="#method.read_descriptor" title="read_descriptor">read_descriptor</a></li><li><a href="#method.read_multiple" title="read_multiple">read_multiple</a></li><li><a href="#method.read_multiple_variable" title="read_multiple_variable">read_multiple_variable</a></li><li><a href="#method.register_app" title="register_app">register_app</a></li><li><a href="#method.register_for_notify" title="register_for_notify">register_for_notify</a></li><li><a href="#method.search_service" title="search_service">search_service</a></li><li><a href="#method.subscribe" title="subscribe">subscribe</a></li><li><a href="#method.subscribe_nonstatic" title="subscribe_nonstatic">subscribe_nonstatic</a></li><li><a href="#method.unregister_app" title="unregister_app">unregister_app</a></li><li><a href="#method.unregister_for_notify" title="unregister_for_notify">unregister_for_notify</a></li><li><a href="#method.unsubscribe" title="unsubscribe">unsubscribe</a></li><li><a href="#method.write_characteristic" title="write_characteristic">write_characteristic</a></li><li><a href="#method.write_descriptor" title="write_descriptor">write_descriptor</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block trait-implementation"><li><a href="#impl-Drop-for-EspGattc%3C'd,+M,+T%3E" title="Drop">Drop</a></li><li><a href="#impl-Send-for-EspGattc%3C'd,+M,+T%3E" title="Send">Send</a></li><li><a href="#impl-Sync-for-EspGattc%3C'd,+M,+T%3E" title="Sync">Sync</a></li></ul><h3><a href="#synthetic-implementations">Auto Trait Implementations</a></h3><ul class="block synthetic-implementation"><li><a href="#impl-Freeze-for-EspGattc%3C'd,+M,+T%3E" title="Freeze">Freeze</a></li><li><a href="#impl-RefUnwindSafe-for-EspGattc%3C'd,+M,+T%3E" title="RefUnwindSafe">RefUnwindSafe</a></li><li><a href="#impl-Unpin-for-EspGattc%3C'd,+M,+T%3E" title="Unpin">Unpin</a></li><li><a href="#impl-UnsafeUnpin-for-EspGattc%3C'd,+M,+T%3E" title="UnsafeUnpin">UnsafeUnpin</a></li><li><a href="#impl-UnwindSafe-for-EspGattc%3C'd,+M,+T%3E" title="UnwindSafe">UnwindSafe</a></li></ul><h3><a href="#blanket-implementations">Blanket Implementations</a></h3><ul class="block blanket-implementation"><li><a href="#impl-Any-for-T" title="Any">Any</a></li><li><a href="#impl-Borrow%3CT%3E-for-T" title="Borrow&#60;T&#62;">Borrow&#60;T&#62;</a></li><li><a href="#impl-BorrowMut%3CT%3E-for-T" title="BorrowMut&#60;T&#62;">BorrowMut&#60;T&#62;</a></li><li><a href="#impl-From%3CT%3E-for-T" title="From&#60;T&#62;">From&#60;T&#62;</a></li><li><a href="#impl-Into%3CU%3E-for-T" title="Into&#60;U&#62;">Into&#60;U&#62;</a></li><li><a href="#impl-TryFrom%3CU%3E-for-T" title="TryFrom&#60;U&#62;">TryFrom&#60;U&#62;</a></li><li><a href="#impl-TryInto%3CU%3E-for-T" title="TryInto&#60;U&#62;">TryInto&#60;U&#62;</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>svc::<wbr>bt::<wbr>ble::<wbr>gatt::<wbr>client</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../../index.html">esp_idf_svc</a>::<wbr><a href="../../../index.html">bt</a>::<wbr><a href="../../index.html">ble</a>::<wbr><a href="../index.html">gatt</a>::<wbr><a href="index.html">client</a></div><h1>Struct <span class="struct">EspGattc</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#910-918">Source</a> </span></div><pre class="rust item-decl"><code>pub struct EspGattc&lt;'d, M, T&gt;<div class="where">where
+    T: Borrow&lt;<a class="struct" href="../../../struct.BtDriver.html" title="struct esp_idf_svc::bt::BtDriver">BtDriver</a>&lt;'d, M&gt;&gt;,
+    M: <a class="trait" href="../../../trait.BleEnabled.html" title="trait esp_idf_svc::bt::BleEnabled">BleEnabled</a>,</div>{ <span class="comment">/* private fields */</span> }</code></pre><h2 id="implementations" class="section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-EspGattc%3C'd,+M,+T%3E" class="impl"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#920-1914">Source</a><a href="#impl-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: Borrow&lt;<a class="struct" href="../../../struct.BtDriver.html" title="struct esp_idf_svc::bt::BtDriver">BtDriver</a>&lt;'d, M&gt;&gt;,
+    M: <a class="trait" href="../../../trait.BleEnabled.html" title="trait esp_idf_svc::bt::BleEnabled">BleEnabled</a>,</div></h3></section></summary><div class="impl-items"><section id="method.new" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#925-935">Source</a><h4 class="code-header">pub fn <a href="#method.new" class="fn">new</a>(driver: T) -&gt; Result&lt;Self, <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section><section id="method.subscribe" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#937-944">Source</a><h4 class="code-header">pub fn <a href="#method.subscribe" class="fn">subscribe</a>&lt;F&gt;(&amp;self, events_cb: F) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;<div class="where">where
+    F: FnMut((<a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>, <a class="enum" href="enum.GattcEvent.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattcEvent">GattcEvent</a>&lt;'_&gt;)) + Send + 'static,</div></h4></section><details class="toggle method-toggle" open><summary><section id="method.subscribe_nonstatic" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#969-976">Source</a><h4 class="code-header">pub unsafe fn <a href="#method.subscribe_nonstatic" class="fn">subscribe_nonstatic</a>&lt;F&gt;(
+    &amp;self,
+    events_cb: F,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;<div class="where">where
+    F: FnMut((<a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>, <a class="enum" href="enum.GattcEvent.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattcEvent">GattcEvent</a>&lt;'_&gt;)) + Send + 'd,</div></h4></section></summary><div class="docblock"><h5 id="safety"><a class="doc-anchor" href="#safety">§</a>Safety</h5>
+<p>This method - in contrast to method <code>subscribe</code> - allows the user to pass
+a non-static callback/closure. This enables users to borrow</p>
+<ul>
+<li>in the closure - variables that live on the stack - or more generally - in the same
+scope where the service is created.</li>
+</ul>
+<p>HOWEVER: care should be taken NOT to call <code>core::mem::forget()</code> on the service,
+as that would immediately lead to an UB (crash).
+Also note that forgetting the service might happen with <code>Rc</code> and <code>Arc</code>
+when circular references are introduced: <a href="https://github.com/rust-lang/rust/issues/24456">https://github.com/rust-lang/rust/issues/24456</a></p>
+<p>The reason is that the closure is actually sent to a hidden ESP IDF thread.
+This means that if the service is forgotten, Rust is free to e.g. unwind the stack
+and the closure now owned by this other thread will end up with references to variables that no longer exist.</p>
+<p>The destructor of the service takes care - prior to the service being dropped and e.g.
+the stack being unwind - to remove the closure from the hidden thread and destroy it.
+Unfortunately, when the service is forgotten, the un-subscription does not happen
+and invalid references are left dangling.</p>
+<p>This “local borrowing” will only be possible to express in a safe way once/if <code>!Leak</code> types
+are introduced to Rust (i.e. the impossibility to “forget” a type and thus not call its destructor).</p>
+</div></details><section id="method.unsubscribe" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#978-982">Source</a><h4 class="code-header">pub fn <a href="#method.unsubscribe" class="fn">unsubscribe</a>(&amp;self) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.register_app" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#990-992">Source</a><h4 class="code-header">pub fn <a href="#method.register_app" class="fn">register_app</a>(&amp;self, app_id: <a class="type" href="type.AppId.html" title="type esp_idf_svc::bt::ble::gatt::client::AppId">AppId</a>) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Register a GATT Client application.</p>
+<ul>
+<li><code>app_id</code> The ID for different application (max id: <code>0x7fff</code>)</li>
+</ul>
+<h5 id="note"><a class="doc-anchor" href="#note">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ClientRegistered" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ClientRegistered"><code>GattcEvent::ClientRegistered</code></a></li>
+<li>The maximum number of applications is limited to 4</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.unregister_app" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#998-1000">Source</a><h4 class="code-header">pub fn <a href="#method.unregister_app" class="fn">unregister_app</a>(&amp;self, gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Unregister a GATT Client application.</p>
+<h5 id="note-1"><a class="doc-anchor" href="#note-1">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ClientUnregistered" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ClientUnregistered"><code>GattcEvent::ClientUnregistered</code></a></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.enh_open" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1011-1057">Source</a><h4 class="code-header">pub fn <a href="#method.enh_open" class="fn">enh_open</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_params: &amp;<a class="struct" href="struct.GattCreateConnParams.html" title="struct esp_idf_svc::bt::ble::gatt::client::GattCreateConnParams">GattCreateConnParams</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Create an ACL connection.</p>
+<p>Note: <em>Do not</em> enable <code>BT_BLE_42_FEATURES_SUPPORTED</code> and <code>BT_BLE_50_FEATURES_SUPPORTED</code> in the menuconfig simultaneously.</p>
+<h5 id="note-2"><a class="doc-anchor" href="#note-2">§</a>Note</h5>
+<ol>
+<li>The function always triggers <a href="enum.GattcEvent.html#variant.Connected" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::Connected"><code>GattcEvent::Connected</code></a> and <a href="enum.GattcEvent.html#variant.Open" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::Open"><code>GattcEvent::Open</code></a></li>
+<li>When the device acts as GATT server, besides the above two events, this function triggers <a href="../server/enum.GattsEvent.html#variant.PeerConnected" title="variant esp_idf_svc::bt::ble::gatt::server::GattsEvent::PeerConnected"><code>GattsEvent::PeerConnected</code></a> as well.\</li>
+<li>This function will establish an ACL connection as a Central and a virtual connection as a GATT Client</li>
+<li>If the ACL connection already exists, it will create a virtual connection only</li>
+</ol>
+</div></details><section id="method.open" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1059-1074">Source</a><h4 class="code-header">pub fn <a href="#method.open" class="fn">open</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>,
+    addr_type: <a class="enum" href="../../gap/enum.BleAddrType.html" title="enum esp_idf_svc::bt::ble::gap::BleAddrType">BleAddrType</a>,
+    is_direct: bool,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section><section id="method.aux_open" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1076-1091">Source</a><h4 class="code-header">pub fn <a href="#method.aux_open" class="fn">aux_open</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>,
+    addr_type: <a class="enum" href="../../gap/enum.BleAddrType.html" title="enum esp_idf_svc::bt::ble::gap::BleAddrType">BleAddrType</a>,
+    is_direct: bool,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.close" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1101-1103">Source</a><h4 class="code-header">pub fn <a href="#method.close" class="fn">close</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Close the virtual GATT Client connection.</p>
+<h5 id="note-3"><a class="doc-anchor" href="#note-3">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.Close" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::Close"><code>GattcEvent::Close</code></a></li>
+<li>There may be multiple virtual GATT server connections when multiple <code>app_id</code> got registered</li>
+<li>This API closes one virtual GATT server connection only, if there exist other virtual GATT server connections. It does not close the physical connection.</li>
+<li>The API <a href="../../gap/struct.EspBleGap.html#method.disconnect" title="method esp_idf_svc::bt::ble::gap::EspBleGap::disconnect"><code>EspBleGap::disconnect()</code></a> can be used to disconnect the physical connection directly.</li>
+<li>If there is only one virtual GATT connection left, this API will terminate the ACL connection in addition and triggers [<code>GattcEvent::Disconnect</code>]. Then there is no need to call <code>disconnect()</code> anymore.</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.mtu_req" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1110-1112">Source</a><h4 class="code-header">pub fn <a href="#method.mtu_req" class="fn">mtu_req</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Configure the MTU size in the GATT channel.</p>
+<p>#Note</p>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.Mtu" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::Mtu"><code>GattcEvent::Mtu</code></a></li>
+<li>You should call <a href="../fn.set_local_mtu.html" title="fn esp_idf_svc::bt::ble::gatt::set_local_mtu"><code>gatt::set_local_mtu()</code></a> to set the desired MTU size locally before this API. If not set, the GATT channel uses the default MTU size (23 bytes)</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.search_service" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1121-1134">Source</a><h4 class="code-header">pub fn <a href="#method.search_service" class="fn">search_service</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    filter_uuid: Option&lt;&amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>&gt;,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Search services from the local GATTC cache.</p>
+<ul>
+<li><code>filter_uuid</code> A UUID of the intended service. If None is passed, this API will return all services.</li>
+</ul>
+<h5 id="note-4"><a class="doc-anchor" href="#note-4">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.SearchResult" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::SearchResult"><code>GattcEvent::SearchResult</code></a> each time a service is retrieved</li>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.SearchComplete" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::SearchComplete"><code>GattcEvent::SearchComplete</code></a> when the search is completed</li>
+<li>The 128-bit base UUID will be converted to a 16-bit UUID automatically in the search results. Other types of UUID remain unchanged</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_service" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1147-1177">Source</a><h4 class="code-header">pub fn <a href="#method.get_service" class="fn">get_service</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    svc_uuid: Option&lt;&amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>&gt;,
+    offset: u16,
+    results: &amp;mut [<a class="struct" href="struct.ServiceElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::ServiceElement">ServiceElement</a>],
+) -&gt; Result&lt;usize, <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Get the service with the given service UUID in the local GATTC cache.</p>
+<ul>
+<li><code>svc_uuid</code> The service UUID. If <code>None</code> is passed, the API will retrieve all services.</li>
+<li><code>offset</code> The position offset to retrieve</li>
+<li><code>results</code> That will be updated with the services found in the local GATTC cache</li>
+</ul>
+<h5 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-5"><a class="doc-anchor" href="#note-5">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li>[<code>cache_refresh()</code>] can be used to discover services again</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_all_characteristics" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1191-1219">Source</a><h4 class="code-header">pub fn <a href="#method.get_all_characteristics" class="fn">get_all_characteristics</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    start_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    end_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    offset: u16,
+    results: &amp;mut [<a class="struct" href="struct.CharacteristicElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::CharacteristicElement">CharacteristicElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get all characteristics with the given handle range in the local GATTC cache.</p>
+<ul>
+<li><code>start_handle</code> The attribute start handle</li>
+<li><code>end_handle</code> The attribute end handle</li>
+<li><code>offset</code> The position offset to retrieve</li>
+<li><code>results</code> That will be updated with the characteristics found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-1"><a class="doc-anchor" href="#returns-1">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-6"><a class="doc-anchor" href="#note-6">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_all_descriptors" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1232-1258">Source</a><h4 class="code-header">pub fn <a href="#method.get_all_descriptors" class="fn">get_all_descriptors</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    char_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    offset: u16,
+    results: &amp;mut [<a class="struct" href="struct.DescriptorElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::DescriptorElement">DescriptorElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get all descriptors with the given characteristic in the local GATTC cache.</p>
+<ul>
+<li><code>char_handle</code> The given characteristic handle</li>
+<li><code>offset</code> The position offset to retrieve</li>
+<li><code>results</code> That will be updated with the descriptors found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-2"><a class="doc-anchor" href="#returns-2">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-7"><a class="doc-anchor" href="#note-7">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>char_handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_characteristic_by_uuid" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1272-1296">Source</a><h4 class="code-header">pub fn <a href="#method.get_characteristic_by_uuid" class="fn">get_characteristic_by_uuid</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    start_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    end_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    char_uuid: &amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>,
+    results: &amp;mut [<a class="struct" href="struct.CharacteristicElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::CharacteristicElement">CharacteristicElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get the characteristic with the given characteristic UUID in the local GATTC cache.</p>
+<ul>
+<li><code>start_handle</code> The attribute start handle</li>
+<li><code>end_handle</code> The attribute end handle</li>
+<li><code>char_uuid</code> The characteristic UUID</li>
+<li><code>results</code> That will be updated with the characteristics found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-3"><a class="doc-anchor" href="#returns-3">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-8"><a class="doc-anchor" href="#note-8">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_descriptor_by_uuid" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1312-1338">Source</a><h4 class="code-header">pub fn <a href="#method.get_descriptor_by_uuid" class="fn">get_descriptor_by_uuid</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    start_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    end_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    char_uuid: &amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>,
+    descr_uuid: &amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>,
+    results: &amp;mut [<a class="struct" href="struct.DescriptorElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::DescriptorElement">DescriptorElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get the descriptor with the given characteristic UUID in the local GATTC cache.</p>
+<ul>
+<li><code>start_handle</code> The attribute start handle</li>
+<li><code>end_handle</code> The attribute end handle</li>
+<li><code>char_uuid</code> The characteristic UUID</li>
+<li><code>descr_uuid</code> The descriptor UUID</li>
+<li><code>results</code> That will be updated with the descriptors found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-4"><a class="doc-anchor" href="#returns-4">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-9"><a class="doc-anchor" href="#note-9">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_descriptor_by_char_handle" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1351-1373">Source</a><h4 class="code-header">pub fn <a href="#method.get_descriptor_by_char_handle" class="fn">get_descriptor_by_char_handle</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    char_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    descr_uuid: &amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>,
+    results: &amp;mut [<a class="struct" href="struct.DescriptorElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::DescriptorElement">DescriptorElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get the descriptor with the given characteristic handle in the local GATTC cache.</p>
+<ul>
+<li><code>char_handle</code> The characteristic handle</li>
+<li><code>descr_uuid</code> The descriptor UUID</li>
+<li><code>results</code> That will be updated with the descriptors found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-5"><a class="doc-anchor" href="#returns-5">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-10"><a class="doc-anchor" href="#note-10">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>char_handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_include_service" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1385-1409">Source</a><h4 class="code-header">pub fn <a href="#method.get_include_service" class="fn">get_include_service</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    start_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    end_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    incl_uuid: &amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>,
+    results: &amp;mut [<a class="struct" href="struct.IncludeServiceElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::IncludeServiceElement">IncludeServiceElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get the included services with the given service handle in the local GATTC cache.</p>
+<ul>
+<li><code>incl_uuid</code> The included service UUID</li>
+<li><code>results</code> That will be updated with the include services found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-6"><a class="doc-anchor" href="#returns-6">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-11"><a class="doc-anchor" href="#note-11">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_attr_count" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1417-1462">Source</a><h4 class="code-header">pub fn <a href="#method.get_attr_count" class="fn">get_attr_count</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    attr_type: <a class="enum" href="enum.DbAttrType.html" title="enum esp_idf_svc::bt::ble::gatt::client::DbAttrType">DbAttrType</a>,
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get the attribute count with the given service or characteristic in the local GATTC cache.</p>
+<ul>
+<li><code>type</code> The attribute type</li>
+</ul>
+<h5 id="note-12"><a class="doc-anchor" href="#note-12">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code> if the <code>type</code> is not <a href="enum.DbAttrType.html#variant.Descriptor" title="variant esp_idf_svc::bt::ble::gatt::client::DbAttrType::Descriptor"><code>DbAttrType::Descriptor</code></a></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_db" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1473-1495">Source</a><h4 class="code-header">pub fn <a href="#method.get_db" class="fn">get_db</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    start_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    end_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    results: &amp;mut [<a class="struct" href="struct.DbElement.html" title="struct esp_idf_svc::bt::ble::gatt::client::DbElement">DbElement</a>],
+) -&gt; Result&lt;usize, <a class="enum" href="../enum.GattStatus.html" title="enum esp_idf_svc::bt::ble::gatt::GattStatus">GattStatus</a>&gt;</h4></section></summary><div class="docblock"><p>Get the GATT database elements.</p>
+<ul>
+<li><code>results</code> That will be updated with the db elements found in the local GATTC cache</li>
+</ul>
+<h5 id="returns-7"><a class="doc-anchor" href="#returns-7">§</a>Returns</h5>
+<p>The number of elements in <code>results</code>, which could be 0; this is not the actual number of elements</p>
+<h5 id="note-13"><a class="doc-anchor" href="#note-13">§</a>Note</h5>
+<ol>
+<li>This API does not trigger any event</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.read_characteristic" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1505-1513">Source</a><h4 class="code-header">pub fn <a href="#method.read_characteristic" class="fn">read_characteristic</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Read the characteristics value of the given characteristic handle.</p>
+<ul>
+<li><code>handle</code> Characteristic handle to read</li>
+<li><code>auth_req</code> Authenticate request type</li>
+</ul>
+<h5 id="note-14"><a class="doc-anchor" href="#note-14">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ReadCharacteristic" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ReadCharacteristic"><code>GattcEvent::ReadCharacteristic</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.read_by_type" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1525-1544">Source</a><h4 class="code-header">pub fn <a href="#method.read_by_type" class="fn">read_by_type</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    start_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    end_handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    uuid: &amp;<a class="struct" href="../../../struct.BtUuid.html" title="struct esp_idf_svc::bt::BtUuid">BtUuid</a>,
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Read the characteristics value of the given characteristic UUID.</p>
+<ul>
+<li><code>start_handle</code> The attribute start handle</li>
+<li><code>end_handle</code> The attribute end handle</li>
+<li><code>uuid</code> The pointer to UUID of attribute to read</li>
+<li><code>auth_req</code> Authenticate request type</li>
+</ul>
+<h5 id="note-15"><a class="doc-anchor" href="#note-15">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ReadCharacteristic" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ReadCharacteristic"><code>GattcEvent::ReadCharacteristic</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+<li><code>start_handle</code> must be greater than 0, and smaller than <code>end_handle</code></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.read_multiple" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1553-1582">Source</a><h4 class="code-header">pub fn <a href="#method.read_multiple" class="fn">read_multiple</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    read_multi: &amp;[<a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>],
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Read multiple characteristic or descriptor values.</p>
+<ul>
+<li><code>read_multi</code> Handles to read, max 10 handles</li>
+<li><code>auth_req</code> Authenticate request type</li>
+</ul>
+<h5 id="note-16"><a class="doc-anchor" href="#note-16">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ReadMultipleChar" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ReadMultipleChar"><code>GattcEvent::ReadMultipleChar</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.read_multiple_variable" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1591-1620">Source</a><h4 class="code-header">pub fn <a href="#method.read_multiple_variable" class="fn">read_multiple_variable</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    read_multi: &amp;[<a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>],
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Read multiple variable length characteristic values.</p>
+<ul>
+<li><code>read_multi</code> Handles to read, max 10 handles</li>
+<li><code>auth_req</code> Authenticate request type</li>
+</ul>
+<h5 id="note-17"><a class="doc-anchor" href="#note-17">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ReadMultipleVarChar" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ReadMultipleVarChar"><code>GattcEvent::ReadMultipleVarChar</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.read_descriptor" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1628-1636">Source</a><h4 class="code-header">pub fn <a href="#method.read_descriptor" class="fn">read_descriptor</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Read a characteristics descriptor.</p>
+<h5 id="note-18"><a class="doc-anchor" href="#note-18">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ReadDescriptor" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ReadDescriptor"><code>GattcEvent::ReadDescriptor</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.write_characteristic" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1648-1672">Source</a><h4 class="code-header">pub fn <a href="#method.write_characteristic" class="fn">write_characteristic</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    value: &amp;[u8],
+    write_type: <a class="enum" href="enum.GattWriteType.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattWriteType">GattWriteType</a>,
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Write the characteristic value of a given characteristic handle.</p>
+<ul>
+<li><code>handle</code> The characteristic handle to write</li>
+<li><code>value</code> The value to write</li>
+<li><code>write_type</code> The type of Attribute write operation</li>
+<li><code>auth_req</code> Authentication request type</li>
+</ul>
+<h5 id="note-19"><a class="doc-anchor" href="#note-19">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.WriteCharacteristic" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::WriteCharacteristic"><code>GattcEvent::WriteCharacteristic</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.write_descriptor" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1684-1708">Source</a><h4 class="code-header">pub fn <a href="#method.write_descriptor" class="fn">write_descriptor</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    value: &amp;[u8],
+    write_type: <a class="enum" href="enum.GattWriteType.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattWriteType">GattWriteType</a>,
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Write Characteristic descriptor value of a given descriptor handle.</p>
+<ul>
+<li><code>handle</code> The descriptor handle to write</li>
+<li><code>value</code> The value to write</li>
+<li><code>write_type</code> The type of Attribute write operation</li>
+<li><code>auth_req</code> Authentication request type</li>
+</ul>
+<h5 id="note-20"><a class="doc-anchor" href="#note-20">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.WriteDescriptor" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::WriteDescriptor"><code>GattcEvent::WriteDescriptor</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.prepare_write_characteristic" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1722-1746">Source</a><h4 class="code-header">pub fn <a href="#method.prepare_write_characteristic" class="fn">prepare_write_characteristic</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    offset: u16,
+    value: &amp;[u8],
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Prepare to write a characteristic value which is longer than the MTU size to a specified characteristic handle.</p>
+<ul>
+<li><code>handle</code> The characteristic handle to write</li>
+<li><code>offset</code> The position offset to write</li>
+<li><code>value</code> The value to write</li>
+<li><code>auth_req</code> Authentication request type</li>
+</ul>
+<h5 id="note-21"><a class="doc-anchor" href="#note-21">§</a>Note</h5>
+<ol>
+<li>This function should be called only after the connection has been established</li>
+<li>After using this API, use [<code>execute_write()</code>] to write</li>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.PrepareWrite" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::PrepareWrite"><code>GattcEvent::PrepareWrite</code></a></li>
+<li>If <code>value.len()</code> is less than or equal to MTU size, it is recommended to [<code>write_characteristic()</code>] to write directly</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.prepare_write_descriptor" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1758-1782">Source</a><h4 class="code-header">pub fn <a href="#method.prepare_write_descriptor" class="fn">prepare_write_descriptor</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+    offset: u16,
+    value: &amp;[u8],
+    auth_req: <a class="enum" href="enum.GattAuthReq.html" title="enum esp_idf_svc::bt::ble::gatt::client::GattAuthReq">GattAuthReq</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Prepare to write a characteristic descriptor value at a given handle.</p>
+<ul>
+<li><code>handle</code> The characteristic descriptor handle to write</li>
+<li><code>offset</code> The position offset to write</li>
+<li><code>value</code> The value to write</li>
+<li><code>auth_req</code> Authentication request type</li>
+</ul>
+<h5 id="note-22"><a class="doc-anchor" href="#note-22">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.WriteCharacteristic" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::WriteCharacteristic"><code>GattcEvent::WriteCharacteristic</code></a></li>
+<li>This function should be called only after the connection has been established</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.execute_write" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1789-1796">Source</a><h4 class="code-header">pub fn <a href="#method.execute_write" class="fn">execute_write</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    conn_id: <a class="type" href="type.ConnectionId.html" title="type esp_idf_svc::bt::ble::gatt::client::ConnectionId">ConnectionId</a>,
+    is_execute: bool,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Execute a prepared writing sequence.</p>
+<ul>
+<li><code>is_execute</code> True if it is to execute the writing sequence; false if it is to cancel the writing sequence.</li>
+</ul>
+<h5 id="note-23"><a class="doc-anchor" href="#note-23">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.ExecWrite" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::ExecWrite"><code>GattcEvent::ExecWrite</code></a></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.register_for_notify" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1807-1820">Source</a><h4 class="code-header">pub fn <a href="#method.register_for_notify" class="fn">register_for_notify</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    server_addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Register to receive notification/indication of a characteristic.</p>
+<ul>
+<li><code>server_bda</code> Target GATT server device address</li>
+<li><code>handle</code> Target GATT characteristic handle</li>
+</ul>
+<h5 id="note-24"><a class="doc-anchor" href="#note-24">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.RegisterNotify" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::RegisterNotify"><code>GattcEvent::RegisterNotify</code></a></li>
+<li>You should call [<code>write_descriptor()</code>] after this API to write Client Characteristic Configuration (CCC)
+descriptor to the value of 1 (Enable Notification) or 2 (Enable Indication)</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.unregister_for_notify" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1831-1844">Source</a><h4 class="code-header">pub fn <a href="#method.unregister_for_notify" class="fn">unregister_for_notify</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    server_addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>,
+    handle: <a class="type" href="../type.Handle.html" title="type esp_idf_svc::bt::ble::gatt::Handle">Handle</a>,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Unregister the notification of a service.</p>
+<ul>
+<li><code>server_bda</code> Target GATT server device address</li>
+<li><code>handle</code> Target GATT characteristic handle</li>
+</ul>
+<h5 id="note-25"><a class="doc-anchor" href="#note-25">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.UnregisterNotify" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::UnregisterNotify"><code>GattcEvent::UnregisterNotify</code></a></li>
+<li>You should call [<code>write_descriptor()</code>] after this API to write Client Characteristic Configuration (CCC)
+descriptor value to 0</li>
+<li><code>handle</code> must be greater than 0</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.cache_refresh" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1853-1855">Source</a><h4 class="code-header">pub fn <a href="#method.cache_refresh" class="fn">cache_refresh</a>(&amp;self, remote_bda: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Refresh the cache of the remote device.</p>
+<ul>
+<li><code>remote_bda</code> Remote device address</li>
+</ul>
+<h5 id="note-26"><a class="doc-anchor" href="#note-26">§</a>Note</h5>
+<ol>
+<li>If the device is connected, this API will restart the discovery of service information of the remote device</li>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.DiscoveryCompleted" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::DiscoveryCompleted"><code>GattcEvent::DiscoveryCompleted</code></a> only after the ACL connection is established. Otherwise,
+no events will be triggered</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.cache_assoc" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1871-1886">Source</a><h4 class="code-header">pub fn <a href="#method.cache_assoc" class="fn">cache_assoc</a>(
+    &amp;self,
+    gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>,
+    src_addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>,
+    assoc_addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>,
+    is_assoc: bool,
+) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Add or remove the association between the address in the local GATTC cache with the source address
+of the remote device.</p>
+<ul>
+<li><code>src_addr</code> The source address intended to be associated to the <code>assoc_addr</code> which has been stored in the local GATTC cache</li>
+<li><code>assoc_addr</code> The associated device address intended to share the attribute table with the source address</li>
+<li><code>is_assoc</code> True if adding the association; false if removing the association</li>
+</ul>
+<h5 id="note-27"><a class="doc-anchor" href="#note-27">§</a>Note</h5>
+<ol>
+<li>This API is primarily used when the client has a stored server-side database (<code>assoc_addr</code>) and needs to connect to
+another device (<code>src_addr</code>) with the same attribute database. By invoking this API, the stored database is utilized
+as the peer server database, eliminating the need for attribute database search and discovery. This reduces
+processing time and accelerates the connection process</li>
+<li>The attribute table of a device with <code>assoc_addr</code> must be stored in the local GATTC cache first.
+Then, the attribute table of the device with <code>src_addr</code> must be the same as the one with <code>assoc_addr</code></li>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.SetAssociation" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::SetAssociation"><code>GattcEvent::SetAssociation</code></a></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_address_list" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1892-1894">Source</a><h4 class="code-header">pub fn <a href="#method.get_address_list" class="fn">get_address_list</a>(&amp;self, gattc_if: <a class="type" href="../type.GattInterface.html" title="type esp_idf_svc::bt::ble::gatt::GattInterface">GattInterface</a>) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Get the address list stored in the local GATTC cache.</p>
+<h5 id="note-28"><a class="doc-anchor" href="#note-28">§</a>Note</h5>
+<ol>
+<li>This function triggers <a href="enum.GattcEvent.html#variant.AddressList" title="variant esp_idf_svc::bt::ble::gatt::client::GattcEvent::AddressList"><code>GattcEvent::AddressList</code></a></li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.cache_clean" class="method"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1898-1900">Source</a><h4 class="code-header">pub fn <a href="#method.cache_clean" class="fn">cache_clean</a>(&amp;self, remote_addr: &amp;<a class="struct" href="../../../struct.BdAddr.html" title="struct esp_idf_svc::bt::BdAddr">BdAddr</a>) -&gt; Result&lt;(), <a class="struct" href="../../../../sys/struct.EspError.html" title="struct esp_idf_svc::sys::EspError">EspError</a>&gt;</h4></section></summary><div class="docblock"><p>Clean the service cache of the target device in the local GATTC cache.</p>
+<ul>
+<li><code>remote_bda</code> Remote device address</li>
+</ul>
+</div></details></div></details></div><h2 id="trait-implementations" class="section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-Drop-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1916-1928">Source</a><a href="#impl-Drop-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; Drop for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: Borrow&lt;<a class="struct" href="../../../struct.BtDriver.html" title="struct esp_idf_svc::bt::BtDriver">BtDriver</a>&lt;'d, M&gt;&gt;,
+    M: <a class="trait" href="../../../trait.BleEnabled.html" title="trait esp_idf_svc::bt::BleEnabled">BleEnabled</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.drop" class="method trait-impl"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1921-1927">Source</a><a href="#method.drop" class="anchor">§</a><h4 class="code-header">fn <a class="fn">drop</a>(&amp;mut self)</h4></section></summary><div class='docblock'>Executes the destructor for this type. <a>Read more</a></div></details><details class="toggle method-toggle" open><summary><section id="method.pin_drop" class="method trait-impl"><a href="#method.pin_drop" class="anchor">§</a><h4 class="code-header">fn <a class="fn">pin_drop</a>(self: Pin&lt;&amp;mut Self&gt;)</h4></section></summary><span class="item-info"><div class="stab unstable"><span class="emoji">🔬</span><span>This is a nightly-only experimental API. (<code>pin_ergonomics</code>)</span></div></span><div class='docblock'>Execute the destructor for this type, but different to <a href="crate::ops::Drop::drop"><code>Drop::drop</code></a>, it requires <code>self</code>
+to be pinned. <a>Read more</a></div></details></div></details><section id="impl-Send-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1930-1935">Source</a><a href="#impl-Send-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; Send for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: Borrow&lt;<a class="struct" href="../../../struct.BtDriver.html" title="struct esp_idf_svc::bt::BtDriver">BtDriver</a>&lt;'d, M&gt;&gt; + Send,
+    M: <a class="trait" href="../../../trait.BleEnabled.html" title="trait esp_idf_svc::bt::BleEnabled">BleEnabled</a>,</div></h3></section><section id="impl-Sync-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a class="src rightside" href="../../../../../src/esp_idf_svc/bt/ble/gatt/client.rs.html#1939-1944">Source</a><a href="#impl-Sync-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; Sync for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: Borrow&lt;<a class="struct" href="../../../struct.BtDriver.html" title="struct esp_idf_svc::bt::BtDriver">BtDriver</a>&lt;'d, M&gt;&gt; + Send,
+    M: <a class="trait" href="../../../trait.BleEnabled.html" title="trait esp_idf_svc::bt::BleEnabled">BleEnabled</a>,</div></h3></section></div><h2 id="synthetic-implementations" class="section-header">Auto Trait Implementations<a href="#synthetic-implementations" class="anchor">§</a></h2><div id="synthetic-implementations-list"><section id="impl-Freeze-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a href="#impl-Freeze-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; Freeze for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: Freeze,
+    PhantomData&lt;M&gt;: Freeze,</div></h3></section><section id="impl-RefUnwindSafe-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a href="#impl-RefUnwindSafe-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; RefUnwindSafe for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: RefUnwindSafe,
+    PhantomData&lt;M&gt;: RefUnwindSafe,</div></h3></section><section id="impl-Unpin-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a href="#impl-Unpin-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; Unpin for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: Unpin,
+    PhantomData&lt;M&gt;: Unpin,</div></h3></section><section id="impl-UnsafeUnpin-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a href="#impl-UnsafeUnpin-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; UnsafeUnpin for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: UnsafeUnpin,
+    PhantomData&lt;M&gt;: UnsafeUnpin,</div></h3></section><section id="impl-UnwindSafe-for-EspGattc%3C'd,+M,+T%3E" class="impl"><a href="#impl-UnwindSafe-for-EspGattc%3C'd,+M,+T%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'d, M, T&gt; UnwindSafe for <a class="struct" href="struct.EspGattc.html" title="struct esp_idf_svc::bt::ble::gatt::client::EspGattc">EspGattc</a>&lt;'d, M, T&gt;<div class="where">where
+    T: UnwindSafe,
+    PhantomData&lt;M&gt;: UnwindSafe,</div></h3></section></div><h2 id="blanket-implementations" class="section-header">Blanket Implementations<a href="#blanket-implementations" class="anchor">§</a></h2><div id="blanket-implementations-list"><details class="toggle implementors-toggle"><summary><section id="impl-Any-for-T" class="impl"><a href="#impl-Any-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; Any for T<div class="where">where
+    T: 'static + ?Sized,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.type_id" class="method trait-impl"><a href="#method.type_id" class="anchor">§</a><h4 class="code-header">fn <a class="fn">type_id</a>(&amp;self) -&gt; TypeId</h4></section></summary><div class='docblock'>Gets the <code>TypeId</code> of <code>self</code>. <a>Read more</a></div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-Borrow%3CT%3E-for-T" class="impl"><a href="#impl-Borrow%3CT%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; Borrow&lt;T&gt; for T<div class="where">where
+    T: ?Sized,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.borrow" class="method trait-impl"><a href="#method.borrow" class="anchor">§</a><h4 class="code-header">fn <a class="fn">borrow</a>(&amp;self) -&gt; &amp;T</h4></section></summary><div class='docblock'>Immutably borrows from an owned value. <a>Read more</a></div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-BorrowMut%3CT%3E-for-T" class="impl"><a href="#impl-BorrowMut%3CT%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; BorrowMut&lt;T&gt; for T<div class="where">where
+    T: ?Sized,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.borrow_mut" class="method trait-impl"><a href="#method.borrow_mut" class="anchor">§</a><h4 class="code-header">fn <a class="fn">borrow_mut</a>(&amp;mut self) -&gt; &amp;mut T</h4></section></summary><div class='docblock'>Mutably borrows from an owned value. <a>Read more</a></div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-From%3CT%3E-for-T" class="impl"><a href="#impl-From%3CT%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; From&lt;T&gt; for T</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.from" class="method trait-impl"><a href="#method.from" class="anchor">§</a><h4 class="code-header">fn <a class="fn">from</a>(t: T) -&gt; T</h4></section></summary><div class="docblock"><p>Returns the argument unchanged.</p>
+</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-Into%3CU%3E-for-T" class="impl"><a href="#impl-Into%3CU%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T, U&gt; Into&lt;U&gt; for T<div class="where">where
+    U: From&lt;T&gt;,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.into" class="method trait-impl"><a href="#method.into" class="anchor">§</a><h4 class="code-header">fn <a class="fn">into</a>(self) -&gt; U</h4></section></summary><div class="docblock"><p>Calls <code>U::from(self)</code>.</p>
+<p>That is, this conversion is whatever the implementation of
+<code>[From]&lt;T&gt; for U</code> chooses to do.</p>
+</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-TryFrom%3CU%3E-for-T" class="impl"><a href="#impl-TryFrom%3CU%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T, U&gt; TryFrom&lt;U&gt; for T<div class="where">where
+    U: Into&lt;T&gt;,</div></h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Error" class="associatedtype trait-impl"><a href="#associatedtype.Error" class="anchor">§</a><h4 class="code-header">type <a class="associatedtype">Error</a> = !</h4></section></summary><div class='docblock'>The type returned in the event of a conversion error.</div></details><details class="toggle method-toggle" open><summary><section id="method.try_from" class="method trait-impl"><a href="#method.try_from" class="anchor">§</a><h4 class="code-header">fn <a class="fn">try_from</a>(value: U) -&gt; Result&lt;T, !&gt;</h4></section></summary><div class='docblock'>Performs the conversion.</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-TryInto%3CU%3E-for-T" class="impl"><a href="#impl-TryInto%3CU%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T, U&gt; TryInto&lt;U&gt; for T<div class="where">where
+    U: TryFrom&lt;T&gt;,</div></h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Error-1" class="associatedtype trait-impl"><a href="#associatedtype.Error-1" class="anchor">§</a><h4 class="code-header">type <a class="associatedtype">Error</a> = &lt;U as TryFrom&lt;T&gt;&gt;::Error</h4></section></summary><div class='docblock'>The type returned in the event of a conversion error.</div></details><details class="toggle method-toggle" open><summary><section id="method.try_into" class="method trait-impl"><a href="#method.try_into" class="anchor">§</a><h4 class="code-header">fn <a class="fn">try_into</a>(self) -&gt; Result&lt;U, &lt;U as TryFrom&lt;T&gt;&gt;::Error&gt;</h4></section></summary><div class='docblock'>Performs the conversion.</div></details></div></details></div></section></div></main></body></html>

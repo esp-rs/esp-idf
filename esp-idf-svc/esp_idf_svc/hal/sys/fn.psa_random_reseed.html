@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Force an immediate reseed of the PSA random generator."><title>psa_random_reseed in esp_idf_svc::hal::sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="esp_idf_svc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">psa_random_reseed</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../esp_idf_svc/index.html">esp_<wbr>idf_<wbr>svc</a><span class="version">0.54.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In esp_<wbr>idf_<wbr>svc::<wbr>hal::<wbr>sys</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">esp_idf_svc</a>::<wbr><a href="../index.html">hal</a>::<wbr><a href="index.html">sys</a></div><h1>Function <span class="fn">psa_<wbr>random_<wbr>reseed</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/a2b9a4c3db9bffa0/out/bindings.rs.html#56796">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn psa_random_reseed(
+    perso: *const u8,
+    perso_size: usize,
+) -&gt; i32</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Force an immediate reseed of the PSA random generator.</p>
+<p>The entropy source(s) are the ones configured at compile time.</p>
+<p>The random generator is always seeded automatically before use, and
+it is reseeded as needed based on the configured policy, so most
+applications do not need to call this function.</p>
+<p>The main reason to call this function is in scenarios where the process
+state is cloned (i.e. duplicated) while the random generator is active.
+In such scenarios, you must call this function in every clone of
+the original process before performing any cryptographic operation
+that uses randomness. (Note that any operation that uses a private or
+secret key may use randomness internally even if the result is not
+randomized, but hashing and signature verification are ok.) For example:</p>
+<ul>
+<li>If the process is part of a live virtual machine that is cloned,
+call this function after cloning so that the new instance has a
+distinct random generator state.</li>
+<li>If the process is part of a hibernated image that may be resumed
+multiple times, call this function after resuming so that each
+resumed instance has a distinct random generator state.</li>
+<li>If the process is cloned through the fork() system call, the
+child process should call this function before using the random
+generator.</li>
+</ul>
+<p>An additional consideration applies in configurations where there is no
+actual entropy source, only a nonvolatile seed (i.e.
+#MBEDTLS_ENTROPY_NV_SEED is enabled, #MBEDTLS_NO_PLATFORM_ENTROPY is
+enabled and #MBEDTLS_ENTROPY_HARDWARE_ALT is disabled).
+In such configurations, simply calling psa_random_reseed() in multiple
+cloned processes would result in the same random generator state in
+all the clones. To avoid this, in such configurations, you must pass
+a unique \p perso string in every clone.</p>
+<p>\note  This function has no effect when the compilation option
+#MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG is enabled.</p>
+<p>\note  In client-server builds, this function may not be available
+from clients, since the decision to reseed is generally based
+on the server state.</p>
+<p>\note  If the entropy source fails, the random generator remains usable:
+subsequent calls to generate random data will succeed until
+the random generator itself decides to reseed. If you want to
+force a reseed, either treat the failure as a fatal error,
+or call psa_random_deplete() instead of this function (or in
+addition).</p>
+<p>\param[in] perso     A personalization string, i.e. a byte string to
+inject into the random generator state in addition
+to entropy obtained from the normal source(s).
+In most cases, it is fine for \c perso to be
+empty. The main use case for a personalization
+string is when the random generator state is cloned,
+as described above, and there is no actual entropy
+source.
+\param perso_size    Length of \c perso in bytes.</p>
+<p>\retval #PSA_SUCCESS
+The reseed succeeded.
+\retval #PSA_ERROR_BAD_STATE
+The PSA random generator is not active.
+\retval #PSA_ERROR_NOT_SUPPORTED
+PSA uses an external random generator because the compilation
+option #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG is enabled. This
+configuration does not support explicit reseeding.
+\retval #PSA_ERROR_INSUFFICIENT_ENTROPY
+The entropy source failed.</p>
+</div></details></section></div></main></body></html>

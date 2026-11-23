@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Duplex","EthEvent","Speed","SpiEthChipset"],"struct":["AsyncEth","BlockingEth","EspEth","EthConfiguration","EthDriver","EthFrame","OpenEth","RmiiEth","SpiEth","SpiEventSource"]};

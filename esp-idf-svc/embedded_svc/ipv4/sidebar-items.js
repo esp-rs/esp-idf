@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ClientConfiguration","Configuration","IpAddr","SocketAddr"],"struct":["ClientSettings","DHCPClientSettings","IpInfo","Ipv4Addr","Ipv6Addr","Mask","RouterConfiguration","SocketAddrV4","SocketAddrV6","Subnet"],"trait":["Interface"]};

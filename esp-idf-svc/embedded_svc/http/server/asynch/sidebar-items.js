@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["CompositeHandler","Request","Response"],"trait":["Connection","Error","ErrorType","Handler","Middleware"]};

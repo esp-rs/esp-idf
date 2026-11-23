@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["embassy_sync",[["impl&lt;'a, 'p, PSB, T&gt; <a class=\"trait\" href=\"futures_sink/trait.Sink.html\" title=\"trait futures_sink::Sink\">Sink</a>&lt;T&gt; for <a class=\"struct\" href=\"embassy_sync/pubsub/publisher/struct.PubSink.html\" title=\"struct embassy_sync::pubsub::publisher::PubSink\">PubSink</a>&lt;'a, 'p, PSB, T&gt;<div class=\"where\">where\n    PSB: <a class=\"trait\" href=\"embassy_sync/pubsub/trait.PubSubBehavior.html\" title=\"trait embassy_sync::pubsub::PubSubBehavior\">PubSubBehavior</a>&lt;T&gt; + ?Sized,\n    T: Clone,</div>",0],["impl&lt;'ch, M, T, const N: usize&gt; <a class=\"trait\" href=\"futures_sink/trait.Sink.html\" title=\"trait futures_sink::Sink\">Sink</a>&lt;T&gt; for <a class=\"struct\" href=\"embassy_sync/channel/struct.Sender.html\" title=\"struct embassy_sync::channel::Sender\">Sender</a>&lt;'ch, M, T, N&gt;<div class=\"where\">where\n    M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>,</div>",0],["impl&lt;M, T, const N: usize&gt; <a class=\"trait\" href=\"futures_sink/trait.Sink.html\" title=\"trait futures_sink::Sink\">Sink</a>&lt;T&gt; for <a class=\"struct\" href=\"embassy_sync/channel/struct.Channel.html\" title=\"struct embassy_sync::channel::Channel\">Channel</a>&lt;M, T, N&gt;<div class=\"where\">where\n    M: <a class=\"trait\" href=\"embassy_sync/blocking_mutex/raw/trait.RawMutex.html\" title=\"trait embassy_sync::blocking_mutex::raw::RawMutex\">RawMutex</a>,</div>",0]]],["futures_sink",[]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1549,20]}

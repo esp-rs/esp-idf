@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AdvertisingDataType","AppearanceCategory","AuthenticationRequest","BleAddrType","BleEncryption","BleEventType","BleGapEvent","BtDevType","GapSearchEvent","IOCapabilities","KeyMask","ScanDuplicate","ScanFilter","ScanType"],"struct":["AdvConfiguration","EspBleGap","EventRawData","GapSearchResult","ScanParams","SecurityConfiguration"]};
