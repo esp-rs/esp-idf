@@ -1,6 +1,6 @@
 [package]
 name = "esp-idf-svc"
-version = "0.53.0"
+version = "0.54.0"
 authors = ["Ivan Markov <ivan.markov@gmail.com>"]
 edition.workspace = true
 rust-version.workspace = true

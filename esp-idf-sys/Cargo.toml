@@ -1,6 +1,6 @@
 [package]
 name = "esp-idf-sys"
-version = "0.38.1"
+version = "0.39.0"
 authors = ["Alexey Arbuzov <aarbuzov@termt.com>", "sapir <yasapir@gmail.com>", "Ivan Markov <ivan.markov@gmail.com>", "Dominik Gschwind <dominik.gschwind99@gmail.com>"]
 edition.workspace = true
 rust-version.workspace = true

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.54.0] - 2026-11-23
 
 ### Added
 - HTTP client: `Configuration::save_client_session`, for resuming TLS sessions (ESP-IDF v5.3+ with `CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS`)

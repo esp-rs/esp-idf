@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.39.0] - 2026-11-23
 
 ### Breaking
 - `checks/libc.rs`: with picolibc (the default since ESP-IDF v6.0), fail the build unless the `libc` crate is built with `--cfg espidf_picolibc`, as otherwise its `O_APPEND`, `O_CREAT` and `O_TRUNC` (which `std::fs` uses) have the values of newlib
-- `checks/libc.rs`: the checks fail with the `libc` crate 0.2.189 or older and a 64-bit `time_t` (`stat` field offsets), and with 0.2.183 (`DT_*` values); `cargo update -p libc` fixes this
+- Require the `libc` crate 0.2.190 or newer, as the checks fail with older ones (the `stat` layout with a 64-bit `time_t`, and the `DT_*` values of 0.2.183). Note that `rustix` 0.38 does not build for ESP-IDF with `libc` 0.2.190 and 0.2.191
 - With the `std` feature, fail the build if no `rustfmt` can format the generated bindings, instead of silently generating no checks against `libc`
 
 ### Added

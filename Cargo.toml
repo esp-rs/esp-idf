@@ -11,9 +11,9 @@ repository = "https://github.com/esp-rs/esp-idf"
 [workspace.dependencies]
 # The crates of this workspace. The `version` is what dependents pin to when the crates
 # are published; the `path` makes the workspace build against the in-tree sources.
-esp-idf-sys = { version = "0.38", path = "esp-idf-sys", default-features = false }
-esp-idf-hal = { version = "0.47", path = "esp-idf-hal", default-features = false }
-esp-idf-svc = { version = "0.53", path = "esp-idf-svc", default-features = false }
+esp-idf-sys = { version = "0.39", path = "esp-idf-sys", default-features = false }
+esp-idf-hal = { version = "0.48", path = "esp-idf-hal", default-features = false }
+esp-idf-svc = { version = "0.54", path = "esp-idf-svc", default-features = false }
 
 # Build scripts
 embuild = "0.33.7"
@@ -28,7 +28,7 @@ toml = "0.8"
 which = "4.4"
 
 # esp-idf-sys
-libc = "0.2.183"
+libc = "0.2.190"
 compile-fmt = "0.1"
 build-time = "0.1"
 const_format = "0.2"
