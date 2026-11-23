@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rmt-legacy: the `clock_divider` docs now note that the tick period depends on the chip's RMT source clock (e.g. 2.5 µs with the default divider on the esp32h2)
 
 ### Breaking
-- `rmt::encoder::EncoderState` is now `EnumSet<EncoderState>` instead of a standalone enum, fixing a panic/ISR-abort on real hardware when the RMT driver returned a combined state (e.g. `COMPLETE | MEM_FULL`).
+- `rmt::encoder::EncoderState` is now `EnumSet<EncoderState>` instead of a standalone enum, fixing a panic/ISR-abort on real hardware when the RMT driver returned a combined state (e.g. `COMPLETE | MEM_FULL`). `Encoder::encode` returns the set, the variants are now `Complete`, `MemFull` and `WithEof`, `EncodingReset` (now the empty set) and the `From` conversions from and to `rmt_encode_state_t` are removed, and custom encoders need the `enumset` crate
 
 ## [0.47.0] - 2026-09-15
 

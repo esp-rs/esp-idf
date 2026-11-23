@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 - `checks/libc.rs`: with picolibc (the default since ESP-IDF v6.0), fail the build unless the `libc` crate is built with `--cfg espidf_picolibc`, as otherwise its `O_APPEND`, `O_CREAT` and `O_TRUNC` (which `std::fs` uses) have the values of newlib
+- `checks/libc.rs`: the checks fail with the `libc` crate 0.2.189 or older and a 64-bit `time_t` (`stat` field offsets), and with 0.2.183 (`DT_*` values); `cargo update -p libc` fixes this
+- With the `std` feature, fail the build if no `rustfmt` can format the generated bindings, instead of silently generating no checks against `libc`
 
 ### Added
 - Bindings for formatting the log timestamp with log v2 (`esp_log_timestamp_str`, `esp_log_timestamp64`)
@@ -30,7 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sort the extra components' dirs so that we get a predictable build hash by the ESP-IDF Component Manager
 - Native builder: with cargo's new build-dir layout, `bootloader.bin` and `partition-table.bin` went to `target/<triple>/<profile>/build/` instead of `target/<triple>/<profile>/`; an unknown layout now warns instead of copying them elsewhere (#631)
 - `checks/libc.rs`: gate the IPv4-specific checks (`sockaddr_in`, `ip_mreq`, `IP_ADD_MEMBERSHIP`, `IP_DROP_MEMBERSHIP`) on `esp_idf_lwip_ipv4`, so builds with `CONFIG_LWIP_IPV4=n` no longer fail
-- With the `std` feature, fail the build if no `rustfmt` can format the generated bindings, instead of silently generating no checks against `libc`
 
 ## [0.38.1] - 2026-09-16
 

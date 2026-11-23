@@ -62,6 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Eth: all `EthDriver` constructors (`new`, `new_rmii`, `new_openeth`, `new_spi`, `new_spi_with_event_source`) take a new `config: &EthConfiguration` argument (before `sysloop`), which sets the stack size and the priority of the receive task, which runs the receive callbacks. Pass `&EthConfiguration::new()` for the previous defaults
 - WS client: `WebSocketEventType::Text` and `Binary` now carry a `WebSocketMessage`, which is either a whole message or a chunk of one (a message larger than `buffer_size`, or split by the peer into several frames, arrives in several chunks). `WebSocketMessage::complete()` / `complete_str()` return a message delivered in a single event; `data()`, `offset()`, `is_first()` and `is_last()` allow reassembling the chunks of a larger one. Previously each chunk was emitted as a separate `Text(&str)` / `Binary(&[u8])` event with no way to tell where the message ends, a text chunk splitting a multi-byte UTF-8 character failed with an error, and continuation frames were reported as errors
 - MQTT: `EspMqttEvent` now uses `EspMqttError` instead of `EspError` in its payload and `ErrorType` implementation. Error events borrow ESP-IDF's TLS, certificate verification, socket, and broker error details. Copy the error to retain a snapshot beyond the event lifetime. Use `esp_tls_last_esp_err()` for the underlying `EspError`, or `raw()` for all fields. Client operations and connection `next()` errors still use `EspError`.
+- HTTP client, MQTT client: `http::client::Configuration` has new `if_name` and `save_client_session` fields, and `MqttClientConfiguration` a new `if_name` field
+- Netif: `NetifStack` has a new `Bridge` variant (with `CONFIG_ESP_NETIF_BRIDGE_EN=y`)
+- ble: `GapEvent` has new `EncChange` and `RepeatPairing` variants; these events used to arrive as `GapEvent::Other`
 
 ## [0.53.0] - 2026-09-25
 

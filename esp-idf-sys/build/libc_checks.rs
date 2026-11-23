@@ -19,6 +19,9 @@ const MISMATCHES: &[(&str, Option<&str>)] = &[
     ("wchar_t", Some("not(target_arch = \"xtensa\")")),
     // LWIP sizes it for the largest sockaddr, while libc assumes that IPv6 is there
     ("sockaddr_storage", Some("esp_idf_lwip_ipv6")),
+    // Without IPv6, LWIP defines them as `AF_UNSPEC` (0), while libc has 10
+    ("AF_INET6", Some("esp_idf_lwip_ipv6")),
+    ("PF_INET6", Some("esp_idf_lwip_ipv6")),
     // A 4-byte pointer to a heap object in ESP-IDF and in libc, but libc aligns it to 8, so it pads
     // it to 8 bytes too. Harmless where Rust owns the memory and only passes pointers to ESP-IDF
     ("pthread_cond_t", None),
