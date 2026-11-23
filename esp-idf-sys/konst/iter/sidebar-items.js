@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":[["collect_const",1],["eval",1],["for_each",1],["into_iter",1]],"mod":["iterator_dsl"],"struct":["IntoIterWrapper","IsIntoIterKind","IsIteratorKind","IsNonIteratorKind","IsStdKind"],"trait":["IntoIterKind"]};

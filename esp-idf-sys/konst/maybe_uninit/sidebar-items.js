@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["array_assume_init","as_ptr","assume_init","assume_init_ref","uninit_array"],"struct":["UNINIT","UNINIT_ARRAY"]};

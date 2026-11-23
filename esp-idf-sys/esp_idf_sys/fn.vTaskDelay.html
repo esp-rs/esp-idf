@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Delay a task for a given number of ticks.  The actual time that the task remains blocked depends on the tick rate.  The constant portTICK_PERIOD_MS can be used to calculate real time from the tick rate - with the resolution of one tick period."><title>vTaskDelay in esp_idf_sys - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="esp_idf_sys" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">vTaskDelay</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../esp_idf_sys/index.html">esp_<wbr>idf_<wbr>sys</a><span class="version">0.39.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">esp_idf_sys</a></div><h1>Function <span class="fn">vTask<wbr>Delay</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/esp_idf_sys/home/runner/work/esp-idf/esp-idf/target/riscv32imc-esp-espidf/debug/build/esp-idf-sys/fdba8509f6ff5b1b/out/bindings.rs.html#15928">Source</a> </span></div><pre class="rust item-decl"><code>pub unsafe extern &quot;C&quot; fn vTaskDelay(xTicksToDelay: <a class="type" href="type.TickType_t.html" title="type esp_idf_sys::TickType_t">TickType_t</a>)</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Delay a task for a given number of ticks.  The actual time that the
+task remains blocked depends on the tick rate.  The constant
+portTICK_PERIOD_MS can be used to calculate real time from the tick
+rate - with the resolution of one tick period.</p>
+<p>INCLUDE_vTaskDelay must be defined as 1 for this function to be available.
+See the configuration section for more information.</p>
+<p>vTaskDelay() specifies a time at which the task wishes to unblock relative to
+the time at which vTaskDelay() is called.  For example, specifying a block
+period of 100 ticks will cause the task to unblock 100 ticks after
+vTaskDelay() is called.  vTaskDelay() does not therefore provide a good method
+of controlling the frequency of a periodic task as the path taken through the
+code, as well as other task and interrupt activity, will affect the frequency
+at which vTaskDelay() gets called and therefore the time at which the task
+next executes.  See xTaskDelayUntil() for an alternative API function designed
+to facilitate fixed frequency execution.  It does this by specifying an
+absolute time (rather than a relative time) at which the calling task should
+unblock.</p>
+<p>@param xTicksToDelay The amount of time, in tick periods, that
+the calling task should block.</p>
+<p>Example usage:
+@code{c}
+void vTaskFunction( void * pvParameters )
+{
+// Block for 500ms.
+const TickType_t xDelay = 500 / portTICK_PERIOD_MS;</p>
+<p>for( ;; )
+{
+// Simply toggle the LED every 500ms, blocking between each toggle.
+vToggleLED();
+vTaskDelay( xDelay );
+}
+}
+@endcode
+\ingroup TaskCtrl</p>
+</div></details></section></div></main></body></html>

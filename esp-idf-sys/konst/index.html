@@ -1,0 +1,254 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Const equivalents of std functions, compile-time comparison, and parsing."><title>konst - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="konst" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (b6eeb93c9 2026-10-18)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate konst</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../konst/index.html">konst</a><span class="version">0.2.20</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#features" title="Features">Features</a></li><li><a href="#examples" title="Examples">Examples</a><ul><li><a href="#parsing-an-enum" title="Parsing an enum">Parsing an enum</a></li><li><a href="#parsing-csv" title="Parsing CSV">Parsing CSV</a></li><li><a href="#parsing-a-struct" title="Parsing a struct">Parsing a struct</a></li></ul></li><li><a href="#cargo-features" title="Cargo features">Cargo features</a><ul><li><a href="#rust-release-related" title="Rust release related">Rust release related</a></li></ul></li><li><a href="#no-std-support" title="No-std support">No-std support</a></li><li><a href="#minimum-supported-rust-version" title="Minimum Supported Rust Version">Minimum Supported Rust Version</a></li></ul><h3><a href="#reexports">Crate Items</a></h3><ul class="block"><li><a href="#reexports" title="Re-exports">Re-exports</a></li><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#macros" title="Macros">Macros</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>konst</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/konst/lib.rs.html#1-422">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Const equivalents of std functions, compile-time comparison, and parsing.</p>
+<h2 id="features"><a class="doc-anchor" href="#features">§</a>Features</h2>
+<p>This crate provides:</p>
+<ul>
+<li>
+<p>Const fn equivalents of standard library functions and methods.</p>
+</li>
+<li>
+<p>Compile-time parsing through the <a href="./parsing/struct.Parser.html"><code>Parser</code></a> type, and <a href="macro.parse_any.html"><code>parse_any</code></a> macro.</p>
+</li>
+<li>
+<p>Functions for comparing many standard library types,
+with the <a href="./macro.const_eq.html"><code>const_eq</code></a>/<a href="./macro.const_eq_for.html"><code>const_eq_for</code></a>/<a href="./macro.const_cmp.html"><code>const_cmp</code></a>/<a href="./macro.const_cmp_for.html"><code>const_cmp_for</code></a> macros
+for more conveniently calling them, powered by the <a href="./polymorphism/index.html"><code>polymorphism</code></a> module.</p>
+</li>
+</ul>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2><h4 id="parsing-an-enum"><a class="doc-anchor" href="#parsing-an-enum">§</a>Parsing an enum</h4>
+<p>This example demonstrates how you can parse a simple enum from an environment variable,
+at compile-time.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>konst::eq_str;
+<span class="kw">use </span>konst::{unwrap_opt_or, unwrap_ctx};
+
+<span class="attr">#[derive(Debug, PartialEq)]
+</span><span class="kw">enum </span>Direction {
+    Forward,
+    Backward,
+    Left,
+    Right,
+}
+
+<span class="kw">impl </span>Direction {
+    <span class="kw">const fn </span>try_parse(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ParseDirectionError&gt; {
+        <span class="comment">// As of Rust 1.51.0, string patterns don't work in const contexts
+        </span><span class="kw">match </span>() {
+            <span class="kw">_ if </span>eq_str(input, <span class="string">"forward"</span>) =&gt; <span class="prelude-val">Ok</span>(Direction::Forward),
+            <span class="kw">_ if </span>eq_str(input, <span class="string">"backward"</span>) =&gt; <span class="prelude-val">Ok</span>(Direction::Backward),
+            <span class="kw">_ if </span>eq_str(input, <span class="string">"left"</span>) =&gt; <span class="prelude-val">Ok</span>(Direction::Left),
+            <span class="kw">_ if </span>eq_str(input, <span class="string">"right"</span>) =&gt; <span class="prelude-val">Ok</span>(Direction::Right),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(ParseDirectionError),
+        }
+    }
+}
+
+<span class="kw">const </span>CHOICE: <span class="kw-2">&amp;</span>str = <span class="macro">unwrap_opt_or!</span>(<span class="macro">option_env!</span>(<span class="string">"chosen-direction"</span>), <span class="string">"forward"</span>);
+
+<span class="kw">const </span>DIRECTION: Direction = <span class="macro">unwrap_ctx!</span>(Direction::try_parse(CHOICE));
+
+<span class="kw">fn </span>main() {
+    <span class="kw">match </span>DIRECTION {
+        Direction::Forward =&gt; <span class="macro">assert_eq!</span>(CHOICE, <span class="string">"forward"</span>),
+        Direction::Backward =&gt; <span class="macro">assert_eq!</span>(CHOICE, <span class="string">"backward"</span>),
+        Direction::Left =&gt; <span class="macro">assert_eq!</span>(CHOICE, <span class="string">"left"</span>),
+        Direction::Right =&gt; <span class="macro">assert_eq!</span>(CHOICE, <span class="string">"right"</span>),
+    }
+}
+</code></pre></div><h4 id="parsing-csv"><a class="doc-anchor" href="#parsing-csv">§</a>Parsing CSV</h4>
+<p>This example demonstrates how an CSV environment variable can be parsed into integers.</p>
+<p>This requires the <code>"rust_1_64"</code> and <code>""parsing_no_proc""</code> features
+(the latter is enabled by default).</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>konst::{
+    primitive::parse_u64,
+    result::unwrap_ctx,
+    iter, string,
+};
+
+<span class="kw">const </span>CSV: <span class="kw-2">&amp;</span>str = <span class="macro">env!</span>(<span class="string">"NUMBERS"</span>);
+
+<span class="kw">static </span>PARSED: [u64; <span class="number">5</span>] = <span class="macro">iter::collect_const!</span>(u64 =&gt;
+    string::split(CSV, <span class="string">","</span>),
+        map(string::trim),
+        map(|s| <span class="macro">unwrap_ctx!</span>(parse_u64(s))),
+);
+
+<span class="macro">assert_eq!</span>(PARSED, [<span class="number">3</span>, <span class="number">8</span>, <span class="number">13</span>, <span class="number">21</span>, <span class="number">34</span>]);
+</code></pre></div><h4 id="parsing-a-struct"><a class="doc-anchor" href="#parsing-a-struct">§</a>Parsing a struct</h4>
+<p>This example demonstrates how you can use <a href="./parsing/struct.Parser.html"><code>Parser</code></a> to parse a struct at compile-time.</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>konst::{
+    parsing::{Parser, ParseValueResult},
+    for_range, parse_any, try_rebind, unwrap_ctx,
+};
+
+<span class="kw">const </span>PARSED: Struct = {
+    <span class="comment">// You can also parse strings from environment variables, or from an `include_str!(....)`
+    </span><span class="kw">let </span>input = <span class="string">"\
+        1000,
+        circle,
+        red, blue, green, blue,
+    "</span>;
+     
+    <span class="macro">unwrap_ctx!</span>(parse_struct(Parser::from_str(input))).<span class="number">0
+</span>};
+
+<span class="kw">fn </span>main(){
+    <span class="macro">assert_eq!</span>(
+        PARSED,
+        Struct{
+            amount: <span class="number">1000</span>,
+            repeating: Shape::Circle,
+            colors: [Color::Red, Color::Blue, Color::Green, Color::Blue],
+        }
+    );
+}
+
+<span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Struct {
+    <span class="kw">pub </span>amount: usize,
+    <span class="kw">pub </span>repeating: Shape,
+    <span class="kw">pub </span>colors: [Color; <span class="number">4</span>],
+}
+
+<span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>Shape {
+    Circle,
+    Square,
+    Line,
+}
+
+<span class="attr">#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>Color {
+    Red,
+    Blue,
+    Green,
+}
+
+<span class="kw">pub const fn </span>parse_struct(<span class="kw-2">mut </span>parser: Parser&lt;<span class="lifetime">'_</span>&gt;) -&gt; ParseValueResult&lt;<span class="lifetime">'_</span>, Struct&gt; {
+    <span class="macro">try_rebind!</span>{(<span class="kw">let </span>amount, parser) = parser.trim_start().parse_usize()}
+    <span class="macro">try_rebind!</span>{parser = parser.strip_prefix(<span class="string">","</span>)}
+
+    <span class="macro">try_rebind!</span>{(<span class="kw">let </span>repeating, parser) = parse_shape(parser.trim_start())}
+    <span class="macro">try_rebind!</span>{parser = parser.strip_prefix(<span class="string">","</span>)}
+
+    <span class="macro">try_rebind!</span>{(<span class="kw">let </span>colors, parser) = parse_colors(parser.trim_start())}
+
+    <span class="prelude-val">Ok</span>((Struct{amount, repeating, colors}, parser))
+}
+
+<span class="kw">pub const fn </span>parse_shape(<span class="kw-2">mut </span>parser: Parser&lt;<span class="lifetime">'_</span>&gt;) -&gt; ParseValueResult&lt;<span class="lifetime">'_</span>, Shape&gt; {
+    <span class="kw">let </span>shape = <span class="macro">parse_any!</span>{parser, strip_prefix;
+        <span class="string">"circle" </span>=&gt; Shape::Circle,
+        <span class="string">"square" </span>=&gt; Shape::Square,
+        <span class="string">"line" </span>=&gt; Shape::Line,
+        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(parser.into_other_error())
+    };
+    <span class="prelude-val">Ok</span>((shape, parser))
+}
+
+<span class="kw">pub const fn </span>parse_colors(<span class="kw-2">mut </span>parser: Parser&lt;<span class="lifetime">'_</span>&gt;) -&gt; ParseValueResult&lt;<span class="lifetime">'_</span>, [Color; <span class="number">4</span>]&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>colors = [Color::Red; <span class="number">4</span>];
+
+    <span class="macro">for_range!</span>{i <span class="kw">in </span><span class="number">0</span>..<span class="number">4 </span>=&gt;
+        <span class="macro">try_rebind!</span>{(colors[i], parser) = parse_color(parser.trim_start())}
+        <span class="macro">try_rebind!</span>{parser = parser.strip_prefix(<span class="string">","</span>)}
+    }
+
+    <span class="prelude-val">Ok</span>((colors, parser))
+}
+
+<span class="kw">pub const fn </span>parse_color(<span class="kw-2">mut </span>parser: Parser&lt;<span class="lifetime">'_</span>&gt;) -&gt; ParseValueResult&lt;<span class="lifetime">'_</span>, Color&gt; {
+    <span class="kw">let </span>color = <span class="macro">parse_any!</span>{parser, strip_prefix;
+        <span class="string">"red" </span>=&gt; Color::Red,
+        <span class="string">"blue" </span>=&gt; Color::Blue,
+        <span class="string">"green" </span>=&gt; Color::Green,
+        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(parser.into_other_error())
+    };
+    <span class="prelude-val">Ok</span>((color, parser))
+}
+
+
+</code></pre></div><h2 id="cargo-features"><a class="doc-anchor" href="#cargo-features">§</a>Cargo features</h2>
+<p>These are the features of these crates:</p>
+<ul>
+<li>
+<p><code>"cmp"</code>(enabled by default):
+Enables all comparison functions and macros,
+the string equality and ordering comparison functions don’t require this feature.</p>
+</li>
+<li>
+<p><code>"parsing"</code>(enabled by default):
+Enables the <code>"parsing_no_proc"</code> feature, compiles the <code>konst_proc_macros</code> dependency,
+and enables the <a href="macro.parse_any.html"><code>parse_any</code></a> macro.
+You can use this feature instead of <code>"parsing_no_proc"</code> if the slightly longer
+compile times aren’t a problem.</p>
+</li>
+<li>
+<p><code>"parsing_no_proc"</code>(enabled by default):
+Enables the <a href="./parsing/index.html"><code>parsing</code></a> module (for parsing from <code>&amp;str</code> and <code>&amp;[u8]</code>),
+the <code>primitive::parse_*</code> functions, <code>try_rebind</code>, and <code>rebind_if_ok</code> macros.</p>
+</li>
+<li>
+<p><code>alloc"</code>:
+Enables items that use types from the <a href="https://doc.rust-lang.org/alloc/"><code>alloc</code></a> crate, including <code>Vec</code> and <code>String</code>.</p>
+</li>
+</ul>
+<h4 id="rust-release-related"><a class="doc-anchor" href="#rust-release-related">§</a>Rust release related</h4>
+<p>None of thse features are enabled by default.</p>
+<ul>
+<li>
+<p><code>"rust_1_51"</code>:
+Enables items that require const generics,
+and impls for arrays to use const generics instead of only supporting small arrays.</p>
+</li>
+<li>
+<p><code>"rust_1_55"</code>: Enables the <code>string::from_utf8</code> function
+(the macro works in all versions),
+<code>str</code> indexing functions,  and the <code>"rust_1_51"</code> feature.</p>
+</li>
+<li>
+<p><code>"rust_1_56"</code>:
+Enables items that internally use raw pointer dereferences or transmutes,
+and the <code>"rust_1_55"</code> feature.</p>
+</li>
+<li>
+<p><code>"rust_1_57"</code>: Allows <code>konst</code> to use the <code>panic</code> macro,
+and enables the <code>"rust_1_56"</code> feature.</p>
+</li>
+<li>
+<p><code>"rust_1_61"</code>:
+Enables const fns that use trait bounds, and the <code>"rust_1_57"</code> feature.</p>
+</li>
+<li>
+<p><code>"rust_1_64"</code>:<br>
+Adds slice and string iterators,
+string splitting functions(<code>[r]split_once</code>),
+const equivalents of iterator methods(in <code>konst::iter</code>),
+and makes slicing functions more efficient.
+<br>Note that only functions which mention this feature in their documentation are affected.
+<br>Enables the <code>"rust_1_61"</code> feature.</p>
+</li>
+<li>
+<p><code>"rust_latest_stable"</code>: enables the latest <code>"rust_1_*"</code> feature.
+Only recommendable if you can update the Rust compiler every stable release.</p>
+</li>
+<li>
+<p><code>"mut_refs"</code>(disabled by default):
+Enables const functions that take mutable references.
+Use this whenever mutable references in const contexts are stabilized.
+Also enables the <code>"rust_latest_stable"</code> feature.</p>
+</li>
+<li>
+<p><code>"nightly_mut_refs"</code>(disabled by default):
+Enables the <code>"mut_refs"</code> feature. Requires Rust nightly.</p>
+</li>
+</ul>
+<h2 id="no-std-support"><a class="doc-anchor" href="#no-std-support">§</a>No-std support</h2>
+<p><code>konst</code> is <code>#![no_std]</code>, it can be used anywhere Rust can be used.</p>
+<h2 id="minimum-supported-rust-version"><a class="doc-anchor" href="#minimum-supported-rust-version">§</a>Minimum Supported Rust Version</h2>
+<p><code>konst</code> requires Rust 1.46.0, because it uses looping an branching in const contexts.</p>
+<p>Features that require newer versions of Rust, or the nightly compiler,
+need to be explicitly enabled with cargo features.</p>
+</div></details><h2 id="reexports" class="section-header">Re-exports<a href="#reexports" class="anchor">§</a></h2><dl class="item-table reexports"><dt id="reexport.cmp_str"><code>pub use crate::string::<a class="fn" href="string/fn.cmp_str.html" title="fn konst::string::cmp_str">cmp_str</a>;</code></dt><dt id="reexport.eq_str"><code>pub use crate::string::<a class="fn" href="string/fn.eq_str.html" title="fn konst::string::eq_str">eq_str</a>;</code></dt><dt id="reexport.unwrap_ctx"><code>pub use crate::result::<a class="macro" href="result/macro.unwrap_ctx.html" title="macro konst::result::unwrap_ctx">unwrap_ctx</a>;</code></dt></dl><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="array/index.html" title="mod konst::array">array</a></dt><dd>Const equivalents of array functions.</dd><dt><a class="mod" href="iter/index.html" title="mod konst::iter">iter</a></dt><dd>Const equivalent of iterators with a specific <code>next</code> function signature.</dd><dt><a class="mod" href="manually_drop/index.html" title="mod konst::manually_drop">manually_<wbr>drop</a></dt><dd>Const fn equivalents of <a href="core::mem::ManuallyDrop"><code>ManuallyDrop&lt;T&gt;</code></a> methods.</dd><dt><a class="mod" href="maybe_uninit/index.html" title="mod konst::maybe_uninit">maybe_<wbr>uninit</a></dt><dd>Const fn equivalents of
+<a href="https://doc.rust-lang.org/core/mem/union.MaybeUninit.html"><code>MaybeUninit&lt;T&gt;</code></a> methods.</dd><dt><a class="mod" href="nonzero/index.html" title="mod konst::nonzero">nonzero</a></dt><dd><code>const fn</code> equivalents of <code>NonZero*</code> methods.</dd><dt><a class="mod" href="option/index.html" title="mod konst::option">option</a></dt><dd><code>const</code> equivalents of <code>Option</code> methods.</dd><dt><a class="mod" href="other/index.html" title="mod konst::other">other</a></dt><dd><code>const fn</code> equivalents of methods from miscelaneous standard library types.</dd><dt><a class="mod" href="primitive/index.html" title="mod konst::primitive">primitive</a></dt><dd><code>const fn</code> equivalents of primitive type methods.</dd><dt><a class="mod" href="ptr/index.html" title="mod konst::ptr">ptr</a></dt><dd>Const equivalents of raw pointer and <a href="core::ptr::NonNull"><code>NonNull</code></a> methods.</dd><dt><a class="mod" href="range/index.html" title="mod konst::range">range</a></dt><dd><code>const fn</code> equivalents of range methods.</dd><dt><a class="mod" href="result/index.html" title="mod konst::result">result</a></dt><dd><code>const</code> equivalents of <code>Result</code> methods.</dd><dt><a class="mod" href="slice/index.html" title="mod konst::slice">slice</a></dt><dd><code>const fn</code> equivalents of slice methods.</dd><dt><a class="mod" href="string/index.html" title="mod konst::string">string</a></dt><dd><code>const fn</code> equivalents of <code>str</code> methods.</dd></dl><h2 id="macros" class="section-header">Macros<a href="#macros" class="anchor">§</a></h2><dl class="item-table"><dt><a class="macro" href="macro.for_range.html" title="macro konst::for_range">for_<wbr>range</a></dt><dd>For loop over a range</dd><dt><a class="macro" href="macro.konst.html" title="macro konst::konst">konst</a></dt><dd>Emulates the <a href="https://doc.rust-lang.org/1.50.0/unstable-book/language-features/inline-const.html">inline const feature</a>, eg: <code>const{ foo() }</code>,</dd><dt><a class="macro" href="macro.try_.html" title="macro konst::try_">try_</a></dt><dd><code>?</code>-like macro, which allows optionally mapping errors.</dd><dt><a class="macro" href="macro.try_opt.html" title="macro konst::try_opt">try_opt</a></dt><dd><code>?</code>-like macro for <code>Option</code>s.</dd><dt class="deprecated"><a class="macro" href="macro.unwrap_opt_or.html" title="macro konst::unwrap_opt_or">unwrap_<wbr>opt_<wbr>or</a><wbr><span class="stab deprecated" title="">Deprecated</span></dt><dd>For unwrapping <code>Option</code>s in const contexts, with a default value when it’s a <code>None</code>.</dd><dt class="deprecated"><a class="macro" href="macro.unwrap_res_or.html" title="macro konst::unwrap_res_or">unwrap_<wbr>res_<wbr>or</a><wbr><span class="stab deprecated" title="">Deprecated</span></dt><dd>For unwrapping <code>Result</code>s in const contexts, with a default value when it’s an error.</dd></dl></section></div></main></body></html>
