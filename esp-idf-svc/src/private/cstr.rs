@@ -20,7 +20,9 @@ pub fn set_str(buf: &mut [u8], s: &str) -> Result<(), EspError> {
     Ok(())
 }
 
-#[cfg(esp_idf_comp_lwip_enabled)]
+// `esp_http_client.h` brings in `struct ifreq` (with `sys/socket.h`) also when `lwip` is not
+// among the components, as in a CMake build that does not list it
+#[cfg(any(esp_idf_comp_lwip_enabled, esp_idf_comp_esp_http_client_enabled))]
 pub fn to_ifreq(if_name: &str) -> Result<crate::sys::ifreq, EspError> {
     if if_name.is_empty() || !if_name.is_ascii() {
         return Err(EspError::from_infallible::<ESP_ERR_INVALID_ARG>());
