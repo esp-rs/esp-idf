@@ -17,9 +17,13 @@
 ## Rust configuration flags
 The following are flags passed to `rustc` that influence the build.
 
-- ### `--cfg espidf_time64`
-  This is a flag for the [libc crate](https://docs.rs/libc/) that uses 64-bits (instead of 32-bits) for
-  `time_t`. This *must be set* for ESP-IDF 5.0 and above and *must be unset* for lesser versions.
+- ### `--cfg espidf_time32`
+  This is a flag for the [libc crate](https://docs.rs/libc/) that uses 32-bits (instead of 64-bits) for
+  `time_t`. This *must be set* for ESP-IDF 4.x and *must be unset* for ESP-IDF 5.0 and above.
+  `esp-idf-sys` fails the build if it does not match the ESP-IDF.
+
+  Note: before version 0.2.162, the `libc` crate used the opposite flag, `--cfg espidf_time64`, which had to be set
+  for ESP-IDF 5.0 and above. Newer versions of the `libc` crate do not read it any more, so it can be removed.
 
 - ### `--cfg espidf_picolibc`
   This is a flag for the [libc crate](https://docs.rs/libc/) that uses the values of picolibc (instead of newlib)
@@ -241,7 +245,7 @@ The following configuration options are available:
   - `v<major>.<minor>` or `<major>.<minor>`: Uses the tag `v<major>.<minor>` of the `esp-idf` repository.
   - `<branch>`: Uses the branch `<branch>` of the `esp-idf` repository.
 
-  Defaults to `v4.4.1`.
+  Defaults to `v5.5.5`.
 
 - ### *`esp_idf_repository`*, `$ESP_IDF_REPOSITORY` (*native* builder only)
 

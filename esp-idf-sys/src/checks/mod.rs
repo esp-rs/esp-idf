@@ -1,14 +1,17 @@
 //! This module contains compile-time checks only, and will generate no code.
 
-/// If any of the two constants below do not compile, you have not properly setup the rustc cfg flag `espidf_time64`:
-/// When compiling against ESP-IDF V5.X or later, you need to define the following in your `.config/cargo.toml` file
-/// (look for this file in the root of your binary crate):
-/// ```
-/// [build]
-/// rustflags = "--cfg espidf_time64"
+/// If any of the two constants below do not compile, the `time_t` of the `libc` crate
+/// does not match the one of ESP-IDF.
+///
+/// ESP-IDF 5.0 and later use a 64-bit `time_t`, which is also the default of the `libc` crate.
+/// When compiling against ESP-IDF 4.x, add the rustc cfg flag `espidf_time32` in the `.cargo/config.toml` file
+/// of your binary crate, for example:
+/// ```toml
+/// [target.'cfg(target_os = "espidf")']
+/// rustflags = ["--cfg", "espidf_time32"]
 /// ```
 ///
-/// When compiling against ESP-IDF V4.X, you need to remove the above flag
+/// When compiling against ESP-IDF 5.0 or later, remove that flag.
 #[allow(deprecated)]
 #[allow(unused)]
 #[cfg(feature = "std")]
