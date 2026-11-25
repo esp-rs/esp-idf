@@ -29,9 +29,12 @@
 <h3 id="rust-configuration-flags"><a class="doc-anchor" href="#rust-configuration-flags">§</a>Rust configuration flags</h3>
 <p>The following are flags passed to <code>rustc</code> that influence the build.</p>
 <ul>
-<li><h4 id="--cfg-espidf_time64"><a class="doc-anchor" href="#--cfg-espidf_time64">§</a><code>--cfg espidf_time64</code></h4>
-<p>This is a flag for the <a href="https://docs.rs/libc/">libc crate</a> that uses 64-bits (instead of 32-bits) for
-<code>time_t</code>. This <em>must be set</em> for ESP-IDF 5.0 and above and <em>must be unset</em> for lesser versions.</p>
+<li><h4 id="--cfg-espidf_time32"><a class="doc-anchor" href="#--cfg-espidf_time32">§</a><code>--cfg espidf_time32</code></h4>
+<p>This is a flag for the <a href="https://docs.rs/libc/">libc crate</a> that uses 32-bits (instead of 64-bits) for
+<code>time_t</code>. This <em>must be set</em> for ESP-IDF 4.x and <em>must be unset</em> for ESP-IDF 5.0 and above.
+<code>esp-idf-sys</code> fails the build if it does not match the ESP-IDF.</p>
+<p>Note: before version 0.2.162, the <code>libc</code> crate used the opposite flag, <code>--cfg espidf_time64</code>, which had to be set
+for ESP-IDF 5.0 and above. Newer versions of the <code>libc</code> crate do not read it any more, so it can be removed.</p>
 </li>
 <li><h4 id="--cfg-espidf_picolibc"><a class="doc-anchor" href="#--cfg-espidf_picolibc">§</a><code>--cfg espidf_picolibc</code></h4>
 <p>This is a flag for the <a href="https://docs.rs/libc/">libc crate</a> that uses the values of picolibc (instead of newlib)
@@ -261,7 +264,7 @@ Note that this will clone the whole <code>esp-idf</code> not just one commit.</l
 <li><code>v&lt;major&gt;.&lt;minor&gt;</code> or <code>&lt;major&gt;.&lt;minor&gt;</code>: Uses the tag <code>v&lt;major&gt;.&lt;minor&gt;</code> of the <code>esp-idf</code> repository.</li>
 <li><code>&lt;branch&gt;</code>: Uses the branch <code>&lt;branch&gt;</code> of the <code>esp-idf</code> repository.</li>
 </ul>
-<p>Defaults to <code>v4.4.1</code>.</p>
+<p>Defaults to <code>v5.5.5</code>.</p>
 </li>
 <li><h4 id="esp_idf_repository-esp_idf_repository-native-builder-only"><a class="doc-anchor" href="#esp_idf_repository-esp_idf_repository-native-builder-only">§</a><em><code>esp_idf_repository</code></em>, <code>$ESP_IDF_REPOSITORY</code> (<em>native</em> builder only)</h4>
 <p>The URL to the git repository of the <code>esp-idf</code>, defaults to <a href="https://github.com/espressif/esp-idf.git">https://github.com/espressif/esp-idf.git</a>.</p>
