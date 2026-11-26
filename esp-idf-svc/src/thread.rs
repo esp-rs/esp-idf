@@ -129,25 +129,43 @@ pub(crate) fn ot_esp_err(ot_code: u32) -> EspError {
 }
 
 /// Active scan result
+///
+/// A beacon from [`EspThread::scan`], or a Discovery Response from
+/// [`EspThread::discover`] (see [`Self::discover`]), which fill different
+/// fields. A beacon carries only the extended address, the PAN ID, the channel,
+/// the RSSI and the LQI, unless it has a payload and OpenThread parses it
+/// (`OPENTHREAD_CONFIG_MAC_BEACON_PAYLOAD_PARSING_ENABLE`, off by default).
+/// Thread 1.2+ beacons have none.
 pub struct ActiveScanResult<'a>(&'a otActiveScanResult);
 
 impl<'a> ActiveScanResult<'a> {
+    /// Whether this is a Discovery Response, rather than a beacon
+    pub fn discover(&self) -> bool {
+        self.0.mDiscover()
+    }
+
     /// IEEE 802.15.4 Extended Address
     pub fn extended_address(&self) -> &'a [u8] {
         &self.0.mExtAddress.m8
     }
 
     /// Thread Network Name
+    ///
+    /// Empty in a beacon without a parsed payload
     pub fn network_name_cstr(&self) -> &'a CStr {
         unsafe { ffi::CStr::from_ptr(&self.0.mNetworkName.m8 as *const _ as *const _) }
     }
 
     /// Thread Extended PAN ID
+    ///
+    /// Zero in a beacon without a parsed payload
     pub fn extended_pan_id(&self) -> &[u8] {
         &self.0.mExtendedPanId.m8
     }
 
     /// Steering Data
+    ///
+    /// Only in a Discovery Response
     pub fn steering_data(&self) -> &[u8] {
         &self.0.mSteeringData.m8
     }
@@ -158,6 +176,8 @@ impl<'a> ActiveScanResult<'a> {
     }
 
     /// Joiner UDP Port
+    ///
+    /// Only in a Discovery Response
     pub fn joiner_udp_port(&self) -> u16 {
         self.0.mJoinerUdpPort
     }
@@ -178,16 +198,22 @@ impl<'a> ActiveScanResult<'a> {
     }
 
     /// Version
+    ///
+    /// Zero in a beacon without a parsed payload
     pub fn version(&self) -> u8 {
         self.0.mVersion() as _
     }
 
     /// Native Commissioner
+    ///
+    /// False in a beacon without a parsed payload
     pub fn native_commissioner(&self) -> bool {
         self.0.mIsNative()
     }
 
     /// Join permitted
+    ///
+    /// Only in a beacon with a parsed payload; false in a Discovery Response
     pub fn join_permitted(&self) -> bool {
         self.0.mIsJoinable()
     }
@@ -534,6 +560,9 @@ impl<'d> ThreadDriver<'d, Host> {
 
     /// Perform an active scan for Thread networks
     ///
+    /// This is an IEEE 802.15.4 beacon scan. Thread 1.2+ beacons carry no
+    /// network name or extended PAN ID; use [`Self::discover`] for those.
+    ///
     /// The callback will be called for each found network
     /// At the end of the scan, the callback will be called with `None`
     pub fn scan<F: FnMut(Option<ActiveScanResult>) + Send + 'static>(
@@ -576,6 +605,57 @@ impl<'d> ThreadDriver<'d, Host> {
         let _lock = self.inner();
 
         Ok(unsafe { otLinkIsActiveScanInProgress(esp_openthread_get_instance()) })
+    }
+
+    /// Discover Thread networks with an MLE Discovery scan
+    ///
+    /// Unlike [`Self::scan`], the results carry the network name and the
+    /// extended PAN ID. The Thread network interface has to be up.
+    ///
+    /// The callback will be called for each found network
+    /// At the end of the discovery, the callback will be called with `None`
+    pub fn discover<F: FnMut(Option<ActiveScanResult>) + Send + 'static>(
+        &self,
+        callback: F,
+    ) -> Result<(), EspError> {
+        let mut inner = self.inner();
+
+        if inner.scan_cb.is_some() {
+            return Err(EspError::from_infallible::<ESP_ERR_INVALID_STATE>());
+        }
+
+        #[allow(clippy::type_complexity)]
+        let callback: Box<Box<dyn FnMut(Option<ActiveScanResult>) + Send + 'static>> =
+            Box::new(Box::new(callback));
+
+        // Store callback where on_active_scan_result can get to it
+        inner.scan_cb = Some(callback);
+
+        match ot_esp!(unsafe {
+            otThreadDiscover(
+                esp_openthread_get_instance(),
+                0,                         // All channels
+                OT_PANID_BROADCAST as u16, // Any PAN
+                false,                     // Not as a joiner
+                false,                     // No EUI-64 filtering
+                Some(Self::on_active_scan_result),
+                &mut *inner as *mut ThreadDriverInner as *mut c_void,
+            )
+        }) {
+            Ok(()) => Ok(()),
+            Err(err) => {
+                // Clean up inner if we fail to start the discovery
+                inner.scan_cb = None;
+                Err(err)
+            }
+        }
+    }
+
+    /// Check if a discovery is in progress
+    pub fn is_discover_in_progress(&self) -> Result<bool, EspError> {
+        let _lock = self.inner();
+
+        Ok(unsafe { otThreadIsDiscoverInProgress(esp_openthread_get_instance()) })
     }
 
     /// Perform an energy scan for Thread networks
@@ -1931,8 +2011,11 @@ where
     }
 
     /// Perform an active scan for Thread networks
-    /// The callback will be called for each found network
     ///
+    /// This is an IEEE 802.15.4 beacon scan. Thread 1.2+ beacons carry no
+    /// network name or extended PAN ID; use [`Self::discover`] for those.
+    ///
+    /// The callback will be called for each found network
     /// At the end of the scan, the callback will be called with `None`
     pub fn scan<F: FnMut(Option<ActiveScanResult>) + Send + 'static>(
         &self,
@@ -1944,6 +2027,25 @@ where
     /// Check if an active scan is in progress
     pub fn is_scan_in_progress(&self) -> Result<bool, EspError> {
         self.driver().is_scan_in_progress()
+    }
+
+    /// Discover Thread networks with an MLE Discovery scan
+    ///
+    /// Unlike [`Self::scan`], the results carry the network name and the
+    /// extended PAN ID. The Thread network interface has to be up.
+    ///
+    /// The callback will be called for each found network
+    /// At the end of the discovery, the callback will be called with `None`
+    pub fn discover<F: FnMut(Option<ActiveScanResult>) + Send + 'static>(
+        &self,
+        callback: F,
+    ) -> Result<(), EspError> {
+        self.driver().discover(callback)
+    }
+
+    /// Check if a discovery is in progress
+    pub fn is_discover_in_progress(&self) -> Result<bool, EspError> {
+        self.driver().is_discover_in_progress()
     }
 
     /// Perform an energy scan for Thread networks
